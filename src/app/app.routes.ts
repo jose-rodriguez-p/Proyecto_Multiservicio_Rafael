@@ -5,6 +5,8 @@ import { Dashboard } from './sistema/dashboard/dashboard';
 import { Cliente } from './sistema/cliente/cliente';
 import { Trabajador } from './sistema/trabajador/trabajador';
 import { Proveedor } from './sistema/proveedor/proveedor';
+import { AgregarTrabajador } from './sistema/trabajador/agregar-trabajador/agregar-trabajador';
+import { EditarTrabajdor } from './sistema/trabajador/editar-trabajdor/editar-trabajdor';
 export const routes: Routes = [
     {
         path:'',redirectTo:'login',pathMatch:'full'
@@ -19,10 +21,19 @@ export const routes: Routes = [
                 path:"dashboard",component:Dashboard
             },
             {
-                path:"cliente",component:Cliente
+                path:"cliente",component:Cliente,
+                
             },
             {
-                path:"trabajador",component:Trabajador
+                path:"trabajador",component:Trabajador,
+                children:[
+                    {
+                        path:"agregar-trabajador",component:AgregarTrabajador
+                    },
+                    {
+                        path:"editar-trabajador",component:EditarTrabajdor
+                    }
+                ]
             },
             {
                 path:"proveedor",component:Proveedor

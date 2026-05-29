@@ -1,21 +1,25 @@
 <div>
     <nav class="navbar navbar-expand-lg bg-dark navbar-dark shadow-sm">
         <div class="container-fluid px-3 py-2">
-            <div class="d-flex flex-column flex-sm-row align-items-stretch align-items-sm-center flex-grow-1 gap-3">
-                
-                <div class="input-group flex-grow-1" style="max-width: 100%; width: auto; max-width: 450px;"> 
-                    <span class="input-group-text bg-secondary text-white border-0">
+            <div
+                class="d-flex flex-column flex-sm-row align-items-stretch align-items-sm-center flex-grow-1 gap-3">
+
+                <div class="input-group flex-grow-1"
+                    style="max-width: 100%; width: auto; max-width: 450px;">
+                    <span
+                        class="input-group-text bg-secondary text-white border-0">
                         <i class="bi bi-search"></i>
                     </span>
-                    <input 
+                    <input
                         #txtBuscar
-                        class="form-control border-0" 
-                        type="text" 
+                        class="form-control border-0"
+                        type="text"
                         placeholder="Buscar cliente..." />
                 </div>
 
-                <div class="d-flex align-items-center justify-content-between justify-content-sm-end gap-2 w-100 w-sm-auto">
-                    
+                <div
+                    class="d-flex align-items-center justify-content-between justify-content-sm-end gap-2 w-100 w-sm-auto">
+
                     <div class="btn-group flex-grow-1 flex-sm-grow-0">
                         <button type="button"
                             class="btn btn-outline-light dropdown-toggle w-100 d-inline-flex align-items-center justify-content-center"
@@ -23,11 +27,25 @@
                             <i class="bi bi-funnel-fill me-2 text-danger"></i>
                             Filtrar
                         </button>
-                        <ul class="dropdown-menu dropdown-menu-dark dropdown-menu-end shadow">
-                            <li><a class="dropdown-item d-flex align-items-center" href="javascript:void(0)"><i class="bi bi-star-fill text-warning me-2"></i>Más frecuentes</a></li>
-                            <li><a class="dropdown-item d-flex align-items-center" href="javascript:void(0)"><i class="bi bi-clock-history text-info me-2"></i>Recientes (Nuevos)</a></li>
-                            <li><hr class="dropdown-divider border-secondary"></li>
-                            <li><a class="dropdown-item d-flex align-items-center" href="javascript:void(0)"><i class="bi bi-exclamation-triangle-fill text-danger me-2"></i>No frecuentes / Inactivos</a></li>
+                        <ul
+                            class="dropdown-menu dropdown-menu-dark dropdown-menu-end shadow">
+                            <li><a
+                                    class="dropdown-item d-flex align-items-center"
+                                    href="javascript:void(0)"><i
+                                        class="bi bi-star-fill text-warning me-2"></i>Más
+                                    frecuentes</a></li>
+                            <li><a
+                                    class="dropdown-item d-flex align-items-center"
+                                    href="javascript:void(0)"><i
+                                        class="bi bi-clock-history text-info me-2"></i>Recientes
+                                    (Nuevos)</a></li>
+                            <li><hr
+                                    class="dropdown-divider border-secondary"></li>
+                            <li><a
+                                    class="dropdown-item d-flex align-items-center"
+                                    href="javascript:void(0)"><i
+                                        class="bi bi-exclamation-triangle-fill text-danger me-2"></i>No
+                                    frecuentes / Inactivos</a></li>
                         </ul>
                     </div>
 
@@ -38,9 +56,18 @@
                             <i class="bi bi-download me-2 text-danger"></i>
                             Exportar
                         </button>
-                        <ul class="dropdown-menu dropdown-menu-dark dropdown-menu-end shadow">
-                            <li><a class="dropdown-item d-flex align-items-center" href="javascript:void(0)"><i class="bi bi-file-earmark-excel text-success me-2"></i>Exportar a Excel (.xlsx)</a></li>
-                            <li><a class="dropdown-item d-flex align-items-center" href="javascript:void(0)"><i class="bi bi-file-earmark-pdf text-danger me-2"></i>Exportar a PDF</a></li>
+                        <ul
+                            class="dropdown-menu dropdown-menu-dark dropdown-menu-end shadow">
+                            <li><a
+                                    class="dropdown-item d-flex align-items-center"
+                                    href="javascript:void(0)"><i
+                                        class="bi bi-file-earmark-excel text-success me-2"></i>Exportar
+                                    a Excel (.xlsx)</a></li>
+                            <li><a
+                                    class="dropdown-item d-flex align-items-center"
+                                    href="javascript:void(0)"><i
+                                        class="bi bi-file-earmark-pdf text-danger me-2"></i>Exportar
+                                    a PDF</a></li>
                         </ul>
                     </div>
 
@@ -53,15 +80,18 @@
         <div class="card shadow-sm border-0">
             <div class="card-body p-0">
                 <div class="table-responsive">
-                    <table class="table table-hover align-middle mb-0" style="min-width: 800px;">
+                    <table class="table table-hover align-middle mb-0"
+                        style="min-width: 800px;">
                         <thead class="table-dark">
                             <tr>
                                 <th scope="col" class="ps-4">DNI/RUC</th>
                                 <th scope="col">Nombres</th>
                                 <th scope="col">Apellido Paterno</th>
-                                <th scope="col">Apellido Materno</th> <th scope="col">Vehículo</th>
+                                <th scope="col">Apellido Materno</th> <th
+                                    scope="col">Vehículo</th>
                                 <th scope="col">Contacto</th>
-                                <th scope="col" class="text-center">Acciones</th>
+                                <th scope="col"
+                                    class="text-center">Acciones</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -72,18 +102,30 @@
                                 <td>peña</td>
                                 <td class="align-middle">
                                     <div class="d-flex flex-column gap-2 w-100">
-                                        <span class="badge bg-secondary text-start p-2 border border-dark rounded-2" style="max-width: 250px;">
-                                            <i class="bi bi-car-front-fill text-danger me-2"></i>Toyota Hilux (Placa: ABC-123)
+                                        <span
+                                            class="badge bg-secondary text-start p-2 border border-dark rounded-2"
+                                            style="max-width: 250px;">
+                                            <i
+                                                class="bi bi-car-front-fill text-danger me-2"></i>Toyota
+                                            Hilux (Placa: ABC-123)
                                         </span>
-                                        <span class="badge bg-dark text-start p-2 border border-secondary rounded-2" style="max-width: 250px;">
-                                            <i class="bi bi-car-front-fill text-danger me-2"></i>Hyundai Accent (Placa: XYZ-789)
+                                        <span
+                                            class="badge bg-dark text-start p-2 border border-secondary rounded-2"
+                                            style="max-width: 250px;">
+                                            <i
+                                                class="bi bi-car-front-fill text-danger me-2"></i>Hyundai
+                                            Accent (Placa: XYZ-789)
                                         </span>
                                     </div>
                                 </td>
                                 <td class="text-nowrap">987-654-321</td>
                                 <td class="text-center text-nowrap">
-                                    <button class="btn btn-sm btn-outline-dark me-1"><i class="bi bi-pencil"></i></button>
-                                    <button class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
+                                    <button
+                                        class="btn btn-sm btn-outline-dark me-1"><i
+                                            class="bi bi-pencil"></i></button>
+                                    <button
+                                        class="btn btn-sm btn-outline-danger"><i
+                                            class="bi bi-trash"></i></button>
                                 </td>
                             </tr>
                             <tr>
@@ -93,18 +135,30 @@
                                 <td>Otto</td>
                                 <td class="align-middle">
                                     <div class="d-flex flex-column gap-2 w-100">
-                                        <span class="badge bg-secondary text-start p-2 border border-dark rounded-2" style="max-width: 250px;">
-                                            <i class="bi bi-car-front-fill text-danger me-2"></i>Toyota Hilux (Placa: ABC-123)
+                                        <span
+                                            class="badge bg-secondary text-start p-2 border border-dark rounded-2"
+                                            style="max-width: 250px;">
+                                            <i
+                                                class="bi bi-car-front-fill text-danger me-2"></i>Toyota
+                                            Hilux (Placa: ABC-123)
                                         </span>
-                                        <span class="badge bg-dark text-start p-2 border border-secondary rounded-2" style="max-width: 250px;">
-                                            <i class="bi bi-car-front-fill text-danger me-2"></i>Hyundai Accent (Placa: XYZ-789)
+                                        <span
+                                            class="badge bg-dark text-start p-2 border border-secondary rounded-2"
+                                            style="max-width: 250px;">
+                                            <i
+                                                class="bi bi-car-front-fill text-danger me-2"></i>Hyundai
+                                            Accent (Placa: XYZ-789)
                                         </span>
                                     </div>
                                 </td>
                                 <td class="text-nowrap">951-753-852</td>
                                 <td class="text-center text-nowrap">
-                                    <button class="btn btn-sm btn-outline-dark me-1"><i class="bi bi-pencil"></i></button>
-                                    <button class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
+                                    <button
+                                        class="btn btn-sm btn-outline-dark me-1"><i
+                                            class="bi bi-pencil"></i></button>
+                                    <button
+                                        class="btn btn-sm btn-outline-danger"><i
+                                            class="bi bi-trash"></i></button>
                                 </td>
                             </tr>
                             <tr>
@@ -114,18 +168,30 @@
                                 <td>Doe</td>
                                 <td class="align-middle">
                                     <div class="d-flex flex-column gap-2 w-100">
-                                        <span class="badge bg-secondary text-start p-2 border border-dark rounded-2" style="max-width: 250px;">
-                                            <i class="bi bi-car-front-fill text-danger me-2"></i>Toyota Hilux (Placa: ABC-123)
+                                        <span
+                                            class="badge bg-secondary text-start p-2 border border-dark rounded-2"
+                                            style="max-width: 250px;">
+                                            <i
+                                                class="bi bi-car-front-fill text-danger me-2"></i>Toyota
+                                            Hilux (Placa: ABC-123)
                                         </span>
-                                        <span class="badge bg-dark text-start p-2 border border-secondary rounded-2" style="max-width: 250px;">
-                                            <i class="bi bi-car-front-fill text-danger me-2"></i>Hyundai Accent (Placa: XYZ-789)
+                                        <span
+                                            class="badge bg-dark text-start p-2 border border-secondary rounded-2"
+                                            style="max-width: 250px;">
+                                            <i
+                                                class="bi bi-car-front-fill text-danger me-2"></i>Hyundai
+                                            Accent (Placa: XYZ-789)
                                         </span>
                                     </div>
                                 </td>
                                 <td class="text-nowrap">963-852-741</td>
                                 <td class="text-center text-nowrap">
-                                    <button class="btn btn-sm btn-outline-dark me-1"><i class="bi bi-pencil"></i></button>
-                                    <button class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
+                                    <button
+                                        class="btn btn-sm btn-outline-dark me-1"><i
+                                            class="bi bi-pencil"></i></button>
+                                    <button
+                                        class="btn btn-sm btn-outline-danger"><i
+                                            class="bi bi-trash"></i></button>
                                 </td>
                             </tr>
                         </tbody>

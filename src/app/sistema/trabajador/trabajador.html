@@ -26,27 +26,20 @@
                             class="btn btn-outline-light dropdown-toggle w-100 d-inline-flex align-items-center justify-content-center"
                             data-bs-toggle="dropdown" aria-expanded="false">
                             <i class="bi bi-funnel-fill me-2 text-danger"></i>
-                            Filtrar
+                            Cargo
                         </button>
                         <ul
                             class="dropdown-menu dropdown-menu-dark dropdown-menu-end shadow">
                             <li><a
                                     class="dropdown-item d-flex align-items-center"
-                                    href="javascript:void(0)"><i
-                                        class="bi bi-star-fill text-warning me-2"></i>Más
-                                    frecuentes</a></li>
+                                    href="javascript:void(0)"><i class="bi bi-tools"></i> Mecanico</a></li>
                             <li><a
                                     class="dropdown-item d-flex align-items-center"
-                                    href="javascript:void(0)"><i
-                                        class="bi bi-clock-history text-info me-2"></i>Recientes
-                                    (Nuevos)</a></li>
-                            <li><hr
-                                    class="dropdown-divider border-secondary"></li>
+                                    href="javascript:void(0)"><i class="bi bi-person-badge"></i> Administrador</a></li>
                             <li><a
                                     class="dropdown-item d-flex align-items-center"
-                                    href="javascript:void(0)"><i
-                                        class="bi bi-exclamation-triangle-fill text-danger me-2"></i>No
-                                    frecuentes / Inactivos</a></li>
+                                    href="javascript:void(0)"><i class="bi bi-person-rolodex"></i> Vendedor</a></li>
+                            
                         </ul>
                     </div>
 
@@ -72,7 +65,8 @@
                         </ul>
                     </div>
                     <button type="button"
-                        class="btn btn-danger d-inline-flex align-items-center">
+                        class="btn btn-danger d-inline-flex align-items-center"
+                        (click)="agregarTrabajador()">
                         <i class="bi bi-plus-circle-fill me-2"></i> Agregar
                         Trabajador
                     </button>
@@ -92,13 +86,15 @@
                                 <th scope="col" class="ps-4">DNI/RUC</th>
                                 <th scope="col">Nombres</th>
                                 <th scope="col">Apellido Paterno</th>
-                                <th scope="col">Apellido Materno</th> 
+                                <th scope="col">Apellido Materno</th>
                                 <th scope="col">Celular</th>
                                 <th scope="col">Correo Electornico</th>
-                                <th scope="col"class="text-center">Cargo</th>
-                                <th scope="col"class="text-center">Estado</th>
-                                <th scope="col"class="text-center">fecha de Registro</th>
-                                <th scope="col"class="text-center">Acciones</th>
+                                <th scope="col" class="text-center">Cargo</th>
+                                <th scope="col" class="text-center">Estado</th>
+                                <th scope="col" class="text-center">fecha de
+                                    Registro</th>
+                                <th scope="col"
+                                    class="text-center">Acciones</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -109,10 +105,12 @@
                                 <td>peña</td>
                                 <td class="text-nowrap">987-654-321</td>
                                 <td>rodriguezpenajosemanuel62@gmail.com</td>
-                                <td class="text-center text-nowrap">Administrador</td>
+                                <td
+                                    class="text-center text-nowrap">Administrador</td>
                                 <td class="text-center text-nowrap"><span
                                         class="badge bg-success">Activo</span></td>
-                                <td class="text-center text-nowrap">12/06/2024</td>
+                                <td
+                                    class="text-center text-nowrap">12/06/2024</td>
                                 <td class="text-center text-nowrap">
                                     <button
                                         class="btn btn-sm btn-outline-dark me-1"><i
@@ -128,11 +126,14 @@
                                 <td>Thornton</td>
                                 <td>Otto</td>
                                 <td class="text-nowrap">951-753-852</td>
-                                <td class="text-center text-nowrap">jacobthornton@gmail.com</td>
-                                <td class="text-center text-nowrap">Vendedor</td>
+                                <td
+                                    class="text-center text-nowrap">jacobthornton@gmail.com</td>
+                                <td
+                                    class="text-center text-nowrap">Vendedor</td>
                                 <td class="text-center text-nowrap"><span
                                         class="badge bg-warning">Inactivo</span></td>
-                                <td class="text-center text-nowrap">15/06/2024</td>
+                                <td
+                                    class="text-center text-nowrap">15/06/2024</td>
                                 <td class="text-center text-nowrap">
                                     <button
                                         class="btn btn-sm btn-outline-dark me-1"><i
@@ -146,13 +147,16 @@
                                 <th scope="row" class="ps-4">73415263</th>
                                 <td>John</td>
                                 <td>Doe</td>
-                                <td>Doe</td>             
+                                <td>Doe</td>
                                 <td class="text-nowrap">963-852-741</td>
-                                <td class="text-center text-nowrap">jacobthornton@gmail.com</td>
-                                <td class="text-center text-nowrap">Vendedor</td>
+                                <td
+                                    class="text-center text-nowrap">jacobthornton@gmail.com</td>
+                                <td
+                                    class="text-center text-nowrap">Vendedor</td>
                                 <td class="text-center text-nowrap"><span
                                         class="badge bg-warning">Inactivo</span></td>
-                                <td class="text-center text-nowrap">15/06/2024</td>
+                                <td
+                                    class="text-center text-nowrap">15/06/2024</td>
                                 <td class="text-center text-nowrap">
                                     <button
                                         class="btn btn-sm btn-outline-dark me-1"><i
@@ -168,4 +172,8 @@
             </div>
         </div>
     </div>
+</div>
+
+<div>
+    <router-outlet></router-outlet>
 </div>

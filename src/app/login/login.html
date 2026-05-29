@@ -13,13 +13,13 @@
         <form class="px-4">
             <div class="mb-3">
                 <label for="usuario" class="form-label">Usuario</label>
-                <input type="text" class="form-control" id="usuario">
+                <input type="text" class="form-control" [(ngModel)]="txtusuario" id="usuario" name="usuario">
             </div>
 
             <div class="mb-3">
                 <label for="contrasena" class="form-label">Contraseña</label>
                 <input [type]="ocultarContrasena ? 'password' : 'text'"
-                    class="form-control" id="contrasena">
+                    class="form-control" [(ngModel)]="txtcontrasena" id="contrasena" name="contrasena">
             </div>
 
             <div class="mb-3 form-check">
@@ -52,13 +52,13 @@
         <form class="px-4">
             <div class="mb-3">
                 <label for="codigo" class="form-label">Codigo</label>
-                <input type="text" class="form-control" id="codigo">
+                <input type="text" class="form-control" id="codigo" name="codigo">
             </div>
             <div class="mb-3">
                 <label for="contrasena" class="form-label">Nueva
                     Contraseña</label>
                 <input [type]="ocultarContrasena ? 'password' : 'text'"
-                    class="form-control" id="contrasena"
+                    class="form-control" id="contrasena" name="contrasena"
                     [disabled]="inputBloqueados">
             </div>
             <div class="mb-3">
