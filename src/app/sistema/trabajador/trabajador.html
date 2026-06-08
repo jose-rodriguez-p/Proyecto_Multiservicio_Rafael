@@ -9,22 +9,22 @@
     <div class="card border-0 shadow-sm mb-4">
         <div class="card-body p-3">
             <div class="row g-3 align-items-center">
-                <div class="col-12 col-md-6 col-lg-4">
+                            <div class="col-12 col-md-6 col-lg-4">
                     <div class="input-group">
                         <span class="input-group-text bg-white border-end-0"><i class="bi bi-search text-muted"></i></span>
-                        <input type="text" class="form-control border-start-0" placeholder="Buscar trabajador por nombre o DNI...">
+                        <input type="text" class="form-control border-start-0" placeholder="Buscar trabajador por nombre o DNI..." [(ngModel)]="filtroBusqueda" name="filtroBusqueda" (input)="aplicarFiltros()">
                     </div>
                 </div>
                 <div class="col-12 col-md-6 col-lg-3">
-                    <select class="form-select">
+                    <select class="form-select" [(ngModel)]="cargoSeleccionado" name="cargoSeleccionado" (change)="onCargoChange()">
                         <option value="">Todos los cargos</option>
-                        <option *ngFor="let cargo of cargos" [value]="cargo.id">{{ cargo.nombre }}</option>
+                        <option *ngFor="let cargo of cargos" [value]="cargo.nombre">{{ cargo.nombre }}</option>
                     </select>
                 </div>
                 <div class="col-12 col-lg-5 text-end">
                     <div class="btn-group shadow-sm">
-                        <button class="btn btn-outline-dark btn-sm"><i class="bi bi-file-earmark-excel me-1"></i> Excel</button>
-                        <button class="btn btn-outline-dark btn-sm"><i class="bi bi-file-earmark-pdf me-1"></i> PDF</button>
+                        <button class="btn btn-outline-dark btn-sm" (click)="exportarExcel()"><i class="bi bi-file-earmark-excel me-1"></i> Excel</button>
+                        <button class="btn btn-outline-dark btn-sm" (click)="exportarPDF()"><i class="bi bi-file-earmark-pdf me-1"></i> PDF</button>
                     </div>
                 </div>
             </div>
@@ -48,7 +48,7 @@
                     </tr>
                 </thead>
                 <tbody>
-                    <tr *ngFor="let trab of trabajadores">
+                    <tr *ngFor="let trab of filteredList">
                         <td class="ps-4 fw-bold">{{ trab.numeroDocumento }}</td>
                         <td class="ps-4 fw-bold">{{ trab.nombre }}</td>
                         <td>{{ trab.apellido_paterno }}</td>
@@ -73,6 +73,7 @@
                             <div class="btn-group">
                                 <button class="btn btn-sm btn-outline-dark" (click)="abrirModalEdit(trab)"><i class="bi bi-pencil"></i></button>
                                 <button class="btn btn-sm btn-outline-danger" (click)="eliminarTrabajador(trab.numeroDocumento)"><i class="bi bi-trash"></i></button>
+                                <!-- opciones de menú movidas al modal de editar/crear -->
                             </div>
                         </td>
                     </tr>
@@ -82,141 +83,40 @@
     </div>
 </div>
 
-<!-- Modal para Agregar Trabajador -->
+<!-- Modal para Agregar/Editar Trabajador (ruta hija renderiza el contenido) -->
 <div class="modal fade" [class.show]="mostrarModal" [style.display]="mostrarModal ? 'block' : 'none'" tabindex="-1" role="dialog">
     <div class="modal-dialog modal-lg modal-dialog-centered">
         <div class="modal-content border-0 shadow-lg">
-            <div class="modal-header bg-danger text-white border-0">
-                <h5 class="modal-title fw-bold"><i class="bi bi-person-plus-fill me-2"></i> Nuevo Trabajador</h5>
-                <button type="button" class="btn-close btn-close-white" (click)="cerrarModal()"></button>
-            </div>
-            <div class="modal-body p-4">
-                <form #trabajadorForm="ngForm">
-                    <div class="row g-3">
-                        <div class="col-md-6">
-                            <label class="form-label fw-bold small">Tipo Documento</label>
-                            <select class="form-select form-select-sm" [(ngModel)]="nuevoTrabajador.id_documento" name="id_documento">
-                                <option *ngFor="let doc of documentos" [value]="doc.id">{{ doc.nombre }}</option>
-                            </select>
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label fw-bold small">Número Documento</label>
-                            <input type="text" class="form-control form-control-sm" placeholder="Ej: 74622233" required>
-                        </div>
-                        <div class="col-md-4">
-                            <label class="form-label fw-bold small">Nombres</label>
-                            <input type="text" class="form-control form-control-sm" [(ngModel)]="nuevoTrabajador.nombre" name="nombre" required>
-                        </div>
-                        <div class="col-md-4">
-                            <label class="form-label fw-bold small">Apellido Paterno</label>
-                            <input type="text" class="form-control form-control-sm" [(ngModel)]="nuevoTrabajador.apellido_paterno" name="apellido_paterno" required>
-                        </div>
-                        <div class="col-md-4">
-                            <label class="form-label fw-bold small">Apellido Materno</label>
-                            <input type="text" class="form-control form-control-sm" [(ngModel)]="nuevoTrabajador.apellido_materno" name="apellido_materno" required>
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label fw-bold small">Celular</label>
-                            <input type="text" class="form-control form-control-sm" [(ngModel)]="nuevoTrabajador.celular" name="celular" placeholder="987-654-321">
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label fw-bold small">Correo Electrónico</label>
-                            <input type="email" class="form-control form-control-sm" [(ngModel)]="nuevoTrabajador.correo" name="correo" placeholder="ejemplo@gmail.com">
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label fw-bold small">Cargo</label>
-                            <select class="form-select form-select-sm" [(ngModel)]="nuevoTrabajador.id_cargo" name="id_cargo" (change)="onCargoChange()">
-                                <option *ngFor="let cargo of cargos" [value]="cargo.id">{{ cargo.nombre }}</option>
-                            </select>
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label fw-bold small">Estado</label>
-                            <select class="form-select form-select-sm" [(ngModel)]="nuevoTrabajador.estado" name="estado">
-                                <option value="Activo">Activo</option>
-                                <option value="Inactivo">Inactivo</option>
-                            </select>
-                        </div>
-
-                        <!-- Campos Condicionales para Administrador (ID 2) o Vendedor (ID 3) -->
-                        <div class="col-12 mt-4" *ngIf="nuevoTrabajador.id_cargo == 2 || nuevoTrabajador.id_cargo == 3">
-                            <div class="p-3 bg-light rounded border border-dashed">
-                                <h6 class="fw-bold text-danger mb-3"><i class="bi bi-shield-lock me-2"></i> Credenciales de Acceso</h6>
-                                <div class="row g-3">
-                                    <div class="col-md-6">
-                                        <label class="form-label fw-bold small">Nombre de Usuario</label>
-                                        <input type="text" class="form-control form-control-sm" name="username" placeholder="usuario123">
-                                    </div>
-                                    <div class="col-md-6">
-                                        <label class="form-label fw-bold small">Contraseña</label>
-                                        <input type="password" class="form-control form-control-sm" name="password" placeholder="********">
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </form>
-            </div>
-            <div class="modal-footer border-0">
-                <button type="button" class="btn btn-outline-secondary px-4" (click)="cerrarModal()">Cancelar</button>
-                <button type="button" class="btn btn-danger px-4" (click)="guardarTrabajador()">Guardar Trabajador</button>
-            </div>
+            <router-outlet></router-outlet>
         </div>
     </div>
 </div>
 
-<!-- Modal para Editar Trabajador -->
-<div class="modal fade" [class.show]="mostrarModalEdit" [style.display]="mostrarModalEdit ? 'block' : 'none'" tabindex="-1" role="dialog">
-    <div class="modal-dialog modal-lg modal-dialog-centered">
+<div *ngIf="mostrarModal" class="modal-backdrop fade show"></div>
+
+<!-- Modal flotante para asignar menus -->
+<div class="modal fade" [class.show]="mostrarModalMenus" [style.display]="mostrarModalMenus ? 'block' : 'none'" tabindex="-1" role="dialog">
+    <div class="modal-dialog modal-md modal-dialog-centered">
         <div class="modal-content border-0 shadow-lg">
-            <div class="modal-header bg-dark text-white border-0">
-                <h5 class="modal-title fw-bold"><i class="bi bi-pencil-square me-2 text-danger"></i> Editar Trabajador</h5>
-                <button type="button" class="btn-close btn-close-white" (click)="cerrarModalEdit()"></button>
+            <div class="modal-header bg-danger text-white border-0">
+                <h5 class="modal-title fw-bold"><i class="bi bi-list-check me-2"></i> Asignar Menús</h5>
+                <button type="button" class="btn-close btn-close-white" (click)="cerrarModalMenus()"></button>
             </div>
             <div class="modal-body p-4">
-                <form #trabajadorEditForm="ngForm">
-                    <div class="row g-3">
-                        <div class="col-md-6">
-                            <label class="form-label fw-bold small">Nombres</label>
-                            <input type="text" class="form-control form-control-sm" [(ngModel)]="trabajadorEditando.nombre" name="nombre_edit" required>
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label fw-bold small">DNI / RUC</label>
-                            <input type="text" class="form-control form-control-sm bg-light" [(ngModel)]="trabajadorEditando.dni" name="dni_edit" readonly>
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label fw-bold small">Apellido Paterno</label>
-                            <input type="text" class="form-control form-control-sm" [(ngModel)]="trabajadorEditando.apellido_paterno" name="ap_edit" required>
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label fw-bold small">Apellido Materno</label>
-                            <input type="text" class="form-control form-control-sm" [(ngModel)]="trabajadorEditando.apellido_materno" name="am_edit" required>
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label fw-bold small">Celular</label>
-                            <input type="text" class="form-control form-control-sm" [(ngModel)]="trabajadorEditando.celular" name="cel_edit">
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label fw-bold small">Cargo</label>
-                            <select class="form-select form-select-sm" [(ngModel)]="trabajadorEditando.id_cargo" name="cargo_edit">
-                                <option *ngFor="let cargo of cargos" [value]="cargo.id">{{ cargo.nombre }}</option>
-                            </select>
-                        </div>
-                        <div class="col-12">
-                            <label class="form-label fw-bold small">Estado</label>
-                            <select class="form-select form-select-sm" [(ngModel)]="trabajadorEditando.estado" name="estado_edit">
-                                <option value="Activo">Activo</option>
-                                <option value="Inactivo">Inactivo</option>
-                            </select>
-                        </div>
+                <div *ngIf="menus && menus.length > 0">
+                    <div *ngFor="let m of menus" class="form-check mb-2">
+                        <input class="form-check-input" type="checkbox" [id]="'menu_'+m.id" [checked]="selectedMenus.indexOf(m.id) !== -1" (change)="toggleMenuSeleccion(m.id)">
+                        <label class="form-check-label" [for]="'menu_'+m.id">{{ m.nombre }}</label>
                     </div>
-                </form>
+                </div>
+                <div *ngIf="menus && menus.length === 0" class="text-center text-muted">No hay menús disponibles.</div>
             </div>
             <div class="modal-footer border-0">
-                <button type="button" class="btn btn-outline-secondary px-4" (click)="cerrarModalEdit()">Cancelar</button>
-                <button type="button" class="btn btn-danger px-4" (click)="actualizarTrabajador()">Actualizar Datos</button>
+                <button type="button" class="btn btn-outline-secondary px-4" (click)="cerrarModalMenus()">Cancelar</button>
+                <button type="button" class="btn btn-danger px-4" (click)="guardarMenusAsignados()">Guardar</button>
             </div>
         </div>
     </div>
 </div>
 
-<div *ngIf="mostrarModal || mostrarModalEdit" class="modal-backdrop fade show"></div>
+<div *ngIf="mostrarModalMenus" class="modal-backdrop fade show"></div>

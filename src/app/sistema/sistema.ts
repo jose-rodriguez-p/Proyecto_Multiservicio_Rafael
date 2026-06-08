@@ -31,6 +31,7 @@ export class Sistema {
   }
 
   cerrarSesion() {
+    localStorage.removeItem('currentUser');
     this.router.navigate(['/login']);
   }
 }

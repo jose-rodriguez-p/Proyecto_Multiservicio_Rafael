@@ -1,1 +1,126 @@
-<p>editar-trabajdor works!</p>
+<div class="modal-header bg-dark text-white border-0">
+    <h5 class="modal-title fw-bold"><i
+            class="bi bi-pencil-square me-2 text-danger"></i> Editar
+        Trabajador</h5>
+    <button type="button" class="btn-close btn-close-white"
+        (click)="cerrarModal()"></button>
+</div>
+<div class="modal-body p-4">
+    <form #trabajadorEditForm="ngForm">
+        <div class="row g-3">
+            <div class="col-md-6">
+                <label class="form-label fw-bold small">Nombres</label>
+                <input type="text" class="form-control form-control-sm"
+                    [(ngModel)]="trabajadorEditando.nombre" name="nombre_edit"
+                    required>
+            </div>
+            <div class="col-md-6">
+                <label class="form-label fw-bold small">DNI / RUC</label>
+                <input type="text" class="form-control form-control-sm bg-light"
+                    [(ngModel)]="trabajadorEditando.numeroDocumento"
+                    name="dni_edit" readonly>
+            </div>
+            <div class="col-md-6">
+                <label class="form-label fw-bold small">Apellido Paterno</label>
+                <input type="text" class="form-control form-control-sm"
+                    [(ngModel)]="trabajadorEditando.apellido_paterno"
+                    name="ap_edit" required>
+            </div>
+            <div class="col-md-6">
+                <label class="form-label fw-bold small">Apellido Materno</label>
+                <input type="text" class="form-control form-control-sm"
+                    [(ngModel)]="trabajadorEditando.apellido_materno"
+                    name="am_edit" required>
+            </div>
+            <div class="col-md-6">
+                <label class="form-label fw-bold small">Celular</label>
+                <input type="text" class="form-control form-control-sm"
+                    [(ngModel)]="trabajadorEditando.celular" name="cel_edit">
+            </div>
+            <div class="col-md-6">
+                <label class="form-label fw-bold small">Cargo</label>
+                <div class="d-flex align-items-center gap-2">
+                    <select
+                        class="form-select form-select-sm flex-grow-1"
+                        [(ngModel)]="trabajadorEditando.id_cargo"
+                        name="cargo_edit">
+                        <option
+                            *ngFor="let cargo of cargos"
+                            [value]="cargo.id">
+                            {{ cargo.nombre }}
+                        </option>
+                    </select>
+                    <button
+                        *ngIf="trabajadorEditando.id_cargo == 2 || trabajadorEditando.id_cargo == 3"
+                        type="button" class="btn btn-outline-primary btn-sm"
+                        (click)="abrirModalMenus()" title="Asignar Menús"><i
+                            class="bi bi-gear me-1"></i> Menús</button>
+                </div>
+            </div>
+            <div class="col-12">
+                <label class="form-label fw-bold small">Estado</label>
+                <select class="form-select form-select-sm"
+                    [(ngModel)]="trabajadorEditando.estado" name="estado_edit">
+                    <option value="Activo">Activo</option>
+                    <option value="Inactivo">Inactivo</option>
+                </select>
+            </div>
+        </div>
+    </form>
+</div>
+<div class="modal-footer border-0">
+    <button type="button" class="btn btn-outline-secondary px-4"
+        (click)="cerrarModal()">Cancelar</button>
+    <button type="button" class="btn btn-danger px-4"
+        (click)="actualizarTrabajador()">Actualizar Datos</button>
+</div>
+
+<!-- Modal para seleccionar menús (Editar) -->
+<div class="modal fade" [class.show]="mostrarModalMenus"
+    [style.display]="mostrarModalMenus ? 'block' : 'none'" tabindex="-1"
+    role="dialog">
+    <div class="modal-dialog modal-md modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg">
+            <div class="modal-header bg-danger text-white border-0">
+                <h5 class="modal-title fw-bold"><i
+                        class="bi bi-list-check me-2"></i> Seleccionar
+                    Menús</h5>
+                <button type="button" class="btn-close btn-close-white"
+                    (click)="cerrarModalMenus()"></button>
+            </div>
+            <div class="modal-body p-4">
+                <div *ngIf="menus && menus.length > 0">
+                    <div *ngIf="menus.length > 0">
+                        <div
+                            *ngFor="let m of menus"
+                            class="form-check mb-2">
+                            <input
+                                class="form-check-input"
+                                type="checkbox"
+                                [id]="'menu_edit_' + m"
+                                [checked]="selectedMenus.indexOf(m) !== -1"
+                                (change)="toggleMenuSeleccion(m)">
+                            <label
+                                class="form-check-label"
+                                [for]="'menu_edit_' + m">
+                                {{ m }}
+
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                <div *ngIf="menus && menus.length === 0"
+                    class="text-center text-muted">No hay menús
+                    disponibles.</div>
+            </div>
+            <div class="modal-footer border-0">
+                <button type="button" class="btn btn-outline-secondary px-4"
+                    (click)="cerrarModalMenus()">Cancelar</button>
+                <button type="button" class="btn btn-danger px-4"
+                    (click)="guardarMenusAsignados()">Guardar Permisos</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div *ngIf="mostrarModalMenus" class="modal-backdrop fade show"></div>

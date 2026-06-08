@@ -1,41 +1,165 @@
+<div class="modal-header bg-danger text-white border-0">
+    <h5 class="modal-title fw-bold"><i class="bi bi-person-plus-fill me-2"></i>
+        Nuevo Trabajador</h5>
+    <button type="button" class="btn-close btn-close-white"
+        (click)="cerrarModal()"></button>
+</div>
+<div class="modal-body p-4">
+    <form #trabajadorForm="ngForm">
+        <div class="row g-3">
+            <div class="col-md-6">
+                <label class="form-label fw-bold small">Tipo Documento</label>
+                <select class="form-select form-select-sm"
+                    [(ngModel)]="nuevoTrabajador.id_documento"
+                    name="id_documento">
+                    <option *ngFor="let doc of documentos" [value]="doc.id">{{
+                        doc.nombre }}</option>
+                </select>
+            </div>
+            <div class="col-md-6">
+                <label class="form-label fw-bold small">Número Documento</label>
+                <input type="text" class="form-control form-control-sm"
+                    [(ngModel)]="nuevoTrabajador.numeroDocumento"
+                    name="numeroDocumento" placeholder="Ej: 74622233" required>
+            </div>
+            <div class="col-md-4">
+                <label class="form-label fw-bold small">Nombres</label>
+                <input type="text" class="form-control form-control-sm"
+                    [(ngModel)]="nuevoTrabajador.nombre" name="nombre" required>
+            </div>
+            <div class="col-md-4">
+                <label class="form-label fw-bold small">Apellido Paterno</label>
+                <input type="text" class="form-control form-control-sm"
+                    [(ngModel)]="nuevoTrabajador.apellido_paterno"
+                    name="apellido_paterno" required>
+            </div>
+            <div class="col-md-4">
+                <label class="form-label fw-bold small">Apellido Materno</label>
+                <input type="text" class="form-control form-control-sm"
+                    [(ngModel)]="nuevoTrabajador.apellido_materno"
+                    name="apellido_materno" required>
+            </div>
+            <div class="col-md-6">
+                <label class="form-label fw-bold small">Celular</label>
+                <input type="text" class="form-control form-control-sm"
+                    [(ngModel)]="nuevoTrabajador.celular" name="celular"
+                    placeholder="987-654-321">
+            </div>
+            <div class="col-md-6">
+                <label class="form-label fw-bold small">Correo
+                    Electrónico</label>
+                <input type="email" class="form-control form-control-sm"
+                    [(ngModel)]="nuevoTrabajador.correo" name="correo"
+                    placeholder="ejemplo@gmail.com">
+            </div>
+            <div class="col-md-6">
+                <label class="form-label fw-bold small">Cargo</label>
+                <div class="d-flex align-items-center gap-2">
+                    <select class="form-select form-select-sm flex-grow-1"
+                        [(ngModel)]="nuevoTrabajador.id_cargo" name="id_cargo"
+                        (change)="onCargoChange()">
+                        <option *ngFor="let cargo of cargos"
+                            [ngValue]="cargo.id">{{ cargo.nombre }}</option>
+                    </select>
+                    <button
+                        *ngIf="nuevoTrabajador.id_cargo == 2 || nuevoTrabajador.id_cargo == 3"
+                        type="button" class="btn btn-outline-primary btn-sm"
+                        (click)="abrirModalMenus()" title="Asignar Menús"><i
+                            class="bi bi-gear me-1"></i> Menús</button>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <label class="form-label fw-bold small">Estado</label>
+                <select class="form-select form-select-sm"
+                    [(ngModel)]="nuevoTrabajador.estado" name="estado">
+                    <option value="Activo">Activo</option>
+                    <option value="Inactivo">Inactivo</option>
+                </select>
+            </div>
 
-<div
-    class="position-fixed top-0 start-0 w-100 h-100 d-flex justify-content-center align-items-center"
-    style="background-color: rgba(0, 0, 0, 0.5); z-index: 1050;">
-    <div class="card" style="width: 24rem;">
-        <div class="card-header d-flex align-items-center gap-2"
-            style="background-color: red;">
-            <h3>Agregar Trabajador</h3>
-            <i class="bi bi-person-badge-fill fs-2"></i>
+            <!-- Campos Condicionales para Administrador (ID 2) o Vendedor (ID 3) -->
+            <div class="col-12 mt-4"
+                *ngIf="nuevoTrabajador.id_cargo == 2 || nuevoTrabajador.id_cargo == 3">
+                <div class="p-3 bg-light rounded border border-dashed">
+                    <h6 class="fw-bold text-danger mb-3"><i
+                            class="bi bi-shield-lock me-2"></i> Credenciales de
+                        Acceso</h6>
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold small">Nombre de
+                                Usuario</label>
+                            <input type="text"
+                                class="form-control form-control-sm"
+                                [(ngModel)]="nuevoTrabajador.usuario"
+                                name="usuario" placeholder="usuario123">
+                        </div>
+                        <div class="col-md-6">
+                            <label
+                                class="form-label fw-bold small">Contraseña</label>
+                            <input type="password"
+                                class="form-control form-control-sm"
+                                [(ngModel)]="nuevoTrabajador.contrasena"
+                                name="contrasena" placeholder="********">
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
-        <div class="card-body">
-            <form>
-                <div class="mb-3">
-                    <label for="exampleInputEmail1" class="form-label">Email
-                        address</label>
-                    <input type="email" class="form-control"
-                        id="exampleInputEmail1" aria-describedby="emailHelp">
-                    <div id="emailHelp" class="form-text">We'll never share your
-                        email with anyone else.</div>
-                </div>
-                <div class="mb-3">
-                    <label for="exampleInputPassword1"
-                        class="form-label">Password</label>
-                    <input type="password" class="form-control"
-                        id="exampleInputPassword1">
-                </div>
-                <div class="mb-3 form-check">
-                    <input type="checkbox" class="form-check-input"
-                        id="exampleCheck1">
-                    <label class="form-check-label" for="exampleCheck1">Check me
-                        out</label>
+    </form>
+</div>
+<div class="modal-footer border-0">
+    <button type="button" class="btn btn-outline-secondary px-4"
+        (click)="cerrarModal()">Cancelar</button>
+    <button type="button" class="btn btn-danger px-4"
+        (click)="guardarTrabajador()">Guardar Trabajador</button>
+</div>
+
+<!-- Modal para seleccionar menús (Agregar) -->
+<div class="modal fade" [class.show]="mostrarModalMenus"
+    [style.display]="mostrarModalMenus ? 'block' : 'none'" tabindex="-1"
+    role="dialog">
+    <div class="modal-dialog modal-md modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg">
+            <div class="modal-header bg-danger text-white border-0">
+                <h5 class="modal-title fw-bold"><i
+                        class="bi bi-list-check me-2"></i> Seleccionar
+                    Menús</h5>
+                <button type="button" class="btn-close btn-close-white"
+                    (click)="cerrarModalMenus()"></button>
+            </div>
+            <div class="modal-body p-4">
+                <div *ngIf="menus && menus.length > 0">
+                    <div *ngFor="let m of menus" class="form-check mb-2">
+
+                        <input
+                            class="form-check-input"
+                            type="checkbox"
+                            [id]="'menu_add_' + m"
+                            [checked]="selectedMenus.indexOf(m) !== -1"
+                            (change)="toggleMenuSeleccion(m)">
+
+                        <label
+                            class="form-check-label"
+                            [for]="'menu_add_' + m">
+
+                            {{ m }}
+
+                        </label>
+
+                    </div>
                 </div>
 
-            </form>
-            <button type="submit" class="btn btn-primary">Submit</button>
-            <button
-                class="btn btn-sm btn-danger ms-2">Cerrar</button>
+                <div *ngIf="menus && menus.length === 0"
+                    class="text-center text-muted">
+                    No hay menús disponibles.
+                </div>
+            </div>
+            <div class="modal-footer border-0">
+                <button type="button" class="btn btn-outline-secondary px-4"
+                    (click)="cerrarModalMenus()">Cerrar</button>
+            </div>
         </div>
     </div>
-
 </div>
+
+<div *ngIf="mostrarModalMenus" class="modal-backdrop fade show"></div>

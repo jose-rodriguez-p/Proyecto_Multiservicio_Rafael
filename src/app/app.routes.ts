@@ -10,6 +10,8 @@ import { EditarTrabajdor } from './sistema/trabajador/editar-trabajdor/editar-tr
 import { Producto } from './sistema/producto/producto';
 import { Configuracion } from './sistema/configuracion/configuracion';
 import { Servicio } from './sistema/servicio/servicio';
+import { Venta } from './sistema/servicio/venta/venta';
+import { Mantenimiento } from './sistema/servicio/mantenimiento/mantenimiento';
 import { Reabastecimiento } from './sistema/reabastecimiento/reabastecimiento';
 import { authGuard } from './auth.guard';
 
@@ -40,10 +42,11 @@ export const routes: Routes = [
                 path:"reabastecimiento",component:Reabastecimiento
             },
             {
-                path:"servicio",component:Servicio,
+                path: "servicio",
+                component: Servicio,
                 children: [
-                    { path: "venta", component: Servicio },
-                    { path: "mantenimiento", component: Servicio }
+                    { path: "venta", component: Venta },
+                    { path: "mantenimiento", component: Mantenimiento }
                 ]
             },
             {
@@ -66,3 +69,5 @@ export const routes: Routes = [
         ]
     }
 ];
+
+

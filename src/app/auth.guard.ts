@@ -5,19 +5,16 @@ import { isPlatformBrowser } from '@angular/common';
 export const authGuard: CanActivateFn = (route, state) => {
   const router = inject(Router);
   const platformId = inject(PLATFORM_ID);
-
-  // Solo ejecutar lógica de localStorage en el navegador
   if (isPlatformBrowser(platformId)) {
     const currentUser = localStorage.getItem('currentUser');
+    
     if (currentUser) {
-      return true;
+      return true; 
     }
     
     console.warn('Acceso denegado. Redirigiendo al login...');
     router.navigate(['/login']);
     return false;
   }
-
-  // En el servidor (SSR), permitir el paso para que el navegador maneje la hidratación
-  return true;
+  return false;
 };
