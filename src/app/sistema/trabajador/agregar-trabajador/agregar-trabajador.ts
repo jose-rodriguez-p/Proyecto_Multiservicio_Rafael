@@ -1,4 +1,8 @@
+<<<<<<< robert/frontend-avance
 import { Component, OnInit, inject, ChangeDetectorRef } from '@angular/core';
+=======
+import { Component, OnInit, ChangeDetectorRef, inject } from '@angular/core';
+>>>>>>> main
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
