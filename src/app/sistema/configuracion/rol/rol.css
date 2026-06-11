@@ -1,0 +1,19 @@
+.modal.show {
+  display: flex !important;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.55) !important; 
+  z-index: 9999;
+}
+
+.modal-dialog {
+  width: 100%;
+  max-width: 850px;
+  margin: auto;
+  background: transparent !important; 
+  border: none;
+}
+
+.card {
+  border-radius: 14px;
+}

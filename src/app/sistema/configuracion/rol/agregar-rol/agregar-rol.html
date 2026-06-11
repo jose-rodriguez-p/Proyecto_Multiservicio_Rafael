@@ -1,0 +1,55 @@
+<div class="bg-white rounded-3 overflow-hidden shadow-lg w-100">
+  <div class="modal-header bg-danger text-white border-0">
+    <h4 class="fw-bold mb-0">
+      <i class="bi bi-plus-circle me-2"></i> Nuevo Rol
+    </h4>
+  </div>
+  <div class="modal-body p-4">
+    <div class="row g-4">
+
+      <div class="col-md-6">
+        <label class="form-label fw-semibold text-dark">Nombre del Rol</label>
+        <input 
+          class="form-control" 
+          placeholder="Ej. Administrador" 
+          [(ngModel)]="newRole.nombre" />
+      </div>
+
+      <div class="col-md-6">
+        <label class="form-label fw-semibold text-dark">Estado</label>
+        <select class="form-select" [(ngModel)]="newRole.activo">
+          <option [ngValue]="true">Activo</option>
+          <option [ngValue]="false">Inactivo</option>
+        </select>
+      </div>
+
+      <div class="col-12 mt-4">
+        <h5 class="fw-semibold text-dark border-bottom pb-2">Menús asignados</h5>
+      </div>
+
+      <div *ngFor="let menu of availableMenus" class="col-md-6">
+        <div class="form-check">
+          <input 
+            type="checkbox" 
+            class="form-check-input" 
+            [checked]="newRole.menus.includes(menu)" 
+            (change)="toggleMenu(menu)" />
+          <label class="form-check-label text-dark fw-medium">
+            {{ menu }}
+          </label>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="modal-footer border-0 bg-light p-3">
+    <button type="button" class="btn btn-outline-secondary" (click)="cancelar()">
+      Cancelar
+    </button>
+    <button type="button" class="btn btn-dangerpx px-4" (click)="guardarRol()">
+      Guardar Rol
+    </button>
+  </div>
+
+</div>

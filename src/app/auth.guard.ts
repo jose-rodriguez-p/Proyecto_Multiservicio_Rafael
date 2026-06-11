@@ -6,18 +6,16 @@ export const authGuard: CanActivateFn = (route, state) => {
   const router = inject(Router);
   const platformId = inject(PLATFORM_ID);
 
-  // Solo ejecutar lógica de localStorage en el navegador
-  if (isPlatformBrowser(platformId)) {
-    const currentUser = localStorage.getItem('currentUser');
-    if (currentUser) {
-      return true;
-    }
-    
-    console.warn('Acceso denegado. Redirigiendo al login...');
-    router.navigate(['/login']);
-    return false;
+  if (!isPlatformBrowser(platformId)) {
+    return true;
   }
 
-  // En el servidor (SSR), permitir el paso para que el navegador maneje la hidratación
-  return true;
+  const currentUser = localStorage.getItem('currentUser');
+  if (currentUser) {
+    return true;
+  }
+
+  console.warn('Acceso denegado. Redirigiendo al login...');
+  router.navigate(['/login']);
+  return false;
 };

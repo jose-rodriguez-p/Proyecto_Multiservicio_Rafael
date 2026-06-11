@@ -1,1 +1,98 @@
-<p>editar-proveedor works!</p>
+<div class="modal-header bg-danger text-white border-0">
+    <h5 class="modal-title fw-bold">
+        <i class="bi bi-pencil-square me-2"></i>
+        Editar Proveedor
+    </h5>
+    <button type="button" class="btn-close btn-close-white" (click)="cerrarModal()"></button>
+</div>
+
+<div class="modal-body p-4">
+    <form #proveedorForm="ngForm">
+        <div class="row g-3">
+
+            <div class="col-md-6">
+                <label class="form-label fw-bold small">Número de RUC</label>
+                <input type="text" class="form-control" maxlength="11"
+                    [(ngModel)]="proveedor.ruc"
+                    (input)="validarRuc()" name="ruc"
+                    placeholder="Ingrese 11 dígitos"
+                    [ngClass]="{'is-invalid': errorRuc}" required>
+                <div class="text-danger small mt-1" *ngIf="errorRuc">
+                    Debe tener exactamente 11 números (iniciar con 10 o 20).
+                </div>
+                <div class="text-success small mt-1" *ngIf="rucValidado">
+                    RUC verificado con SUNAT.
+                </div>
+            </div>
+
+            <div class="col-md-6">
+                <label class="form-label fw-bold small">Razón Social (Empresa)</label>
+                <input type="text" class="form-control"
+                    [(ngModel)]="proveedor.nombre_empresa"
+                    name="nombre_empresa" readonly required
+                    placeholder="Se autocompleta con el RUC">
+            </div>
+
+            <div class="col-md-6">
+                <label class="form-label fw-bold small">Celular</label>
+                <input type="text" maxlength="9" class="form-control"
+                    [(ngModel)]="proveedor.celular"
+                    (input)="validarCelular()" name="celular"
+                    placeholder="9XXXXXXXX"
+                    [ngClass]="{'is-invalid': errorCelular}" required>
+                <div class="text-danger small mt-1" *ngIf="errorCelular">
+                    Debe comenzar con 9 y tener 9 dígitos.
+                </div>
+            </div>
+
+            <div class="col-md-6">
+                <label class="form-label fw-bold small">Correo Electrónico</label>
+                <div class="input-group">
+                    <input type="email" class="form-control"
+                        [(ngModel)]="proveedor.correo"
+                        (input)="validarCorreo()"
+                        name="correo" placeholder="correo@dominio.com"
+                        [ngClass]="{'is-invalid': errorCorreo}" required>
+                    
+                    <button *ngIf="correoValido && !correoValidado"
+                        class="btn btn-outline-success" type="button"
+                        [disabled]="validandoCorreo"
+                        (click)="validarCorreoBackend()">
+                        <span *ngIf="validandoCorreo" class="spinner-border spinner-border-sm me-1"></span>
+                        Validar correo
+                    </button>
+                </div>
+                <div class="text-danger small mt-1" *ngIf="errorCorreo">
+                    Formato de correo inválido.
+                </div>
+                <div class="text-success small mt-1" *ngIf="correoValidado">
+                    Correo verificado correctamente.
+                </div>
+            </div>
+
+            <div class="col-12">
+                <label class="form-label fw-bold small">Dirección Fiscal</label>
+                <input type="text" class="form-control"
+                    [(ngModel)]="proveedor.direccion"
+                    name="direccion" placeholder="Ingrese la dirección fiscal">
+            </div>
+
+            <div class="col-12">
+                <label class="form-label fw-bold small">Estado</label>
+                <select class="form-select" [(ngModel)]="proveedor.estado" name="estado">
+                    <option value="Activo">Activo</option>
+                    <option value="Inactivo">Inactivo</option>
+                </select>
+            </div>
+
+        </div>
+    </form>
+</div>
+
+<div class="modal-footer border-0">
+    <button class="btn btn-outline-secondary" (click)="cerrarModal()">Cancelar</button>
+    <button class="btn btn-danger" (click)="actualizarProveedor()"
+        [disabled]="!correoValidado || !rucValidado || errorCelular || errorRuc">
+        Actualizar Proveedor
+    </button>
+</div>

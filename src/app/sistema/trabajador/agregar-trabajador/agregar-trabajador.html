@@ -1,41 +1,140 @@
+<div class="modal-header bg-danger text-white border-0">
+    <h5 class="modal-title fw-bold">
+        <i class="bi bi-person-plus-fill me-2"></i>
+        Nuevo Trabajador
+    </h5>
+    <button type="button" class="btn-close btn-close-white"
+        (click)="cerrarModal()"></button>
+</div>
 
-<div
-    class="position-fixed top-0 start-0 w-100 h-100 d-flex justify-content-center align-items-center"
-    style="background-color: rgba(0, 0, 0, 0.5); z-index: 1050;">
-    <div class="card" style="width: 24rem;">
-        <div class="card-header d-flex align-items-center gap-2"
-            style="background-color: red;">
-            <h3>Agregar Trabajador</h3>
-            <i class="bi bi-person-badge-fill fs-2"></i>
-        </div>
-        <div class="card-body">
-            <form>
-                <div class="mb-3">
-                    <label for="exampleInputEmail1" class="form-label">Email
-                        address</label>
+<div class="modal-body p-4">
+    <form #trabajadorForm="ngForm">
+        <div class="row g-3">
+
+            <div class="col-md-6">
+                <label class="form-label fw-bold small">Tipo Documento</label>
+                <select class="form-select"
+                    [(ngModel)]="nuevoTrabajador.id_documento"
+                    name="id_documento">
+                    <option *ngFor="let doc of documentos" [value]="doc.id">{{
+                        doc.nombre }}</option>
+                </select>
+            </div>
+
+            <div class="col-md-6">
+                <label class="form-label fw-bold small">Número Documento</label>
+                <input type="text" class="form-control" maxlength="8"
+                    [(ngModel)]="nuevoTrabajador.numeroDocumento"
+                    (input)="validarDni()" name="numeroDocumento"
+                    placeholder="Ingrese documento"
+                    [ngClass]="{'is-invalid': errorDni}" required>
+                <div class="text-danger small mt-1" *ngIf="errorDni">Debe tener
+                    exactamente 8 números.</div>
+                <div class="text-success small mt-1"
+                    *ngIf="dniValidado">Documento validado.</div>
+            </div>
+
+            <div class="col-md-4">
+                <label class="form-label fw-bold small">Nombres</label>
+                <input type="text" class="form-control"
+                    [(ngModel)]="nuevoTrabajador.nombre"
+                    name="nombre" [readonly]="dniValidado" required>
+            </div>
+
+            <div class="col-md-4">
+                <label class="form-label fw-bold small">Apellido Paterno</label>
+                <input type="text" class="form-control"
+                    [(ngModel)]="nuevoTrabajador.apellido_paterno"
+                    name="apellido_paterno" [readonly]="dniValidado" required>
+            </div>
+
+            <div class="col-md-4">
+                <label class="form-label fw-bold small">Apellido Materno</label>
+                <input type="text" class="form-control"
+                    [(ngModel)]="nuevoTrabajador.apellido_materno"
+                    name="apellido_materno" [readonly]="dniValidado" required>
+            </div>
+
+            <div class="col-md-6">
+                <label class="form-label fw-bold small">Celular</label>
+                <input type="text" maxlength="9" class="form-control"
+                    [(ngModel)]="nuevoTrabajador.celular"
+                    (input)="validarCelular()" name="celular"
+                    placeholder="9XXXXXXXX"
+                    [ngClass]="{'is-invalid': errorCelular}">
+                <div class="text-danger small mt-1" *ngIf="errorCelular">Debe
+                    comenzar con 9 y tener 9 dígitos.</div>
+            </div>
+
+            <div class="col-md-6">
+                <label class="form-label fw-bold small">Correo
+                    Electrónico</label>
+                <div class="input-group">
                     <input type="email" class="form-control"
-                        id="exampleInputEmail1" aria-describedby="emailHelp">
-                    <div id="emailHelp" class="form-text">We'll never share your
-                        email with anyone else.</div>
+                        [(ngModel)]="nuevoTrabajador.correo"
+                        (input)="validarCorreo()"
+                        name="correo" placeholder="correo@dominio.com"
+                        [ngClass]="{'is-invalid': errorCorreo}">
+                    <button *ngIf="correoValido && !correoValidado"
+                        class="btn btn-outline-success" type="button"
+                        (click)="validarCorreoBackend()">
+                        Validar correo
+                    </button>
                 </div>
-                <div class="mb-3">
-                    <label for="exampleInputPassword1"
-                        class="form-label">Password</label>
-                    <input type="password" class="form-control"
-                        id="exampleInputPassword1">
-                </div>
-                <div class="mb-3 form-check">
-                    <input type="checkbox" class="form-check-input"
-                        id="exampleCheck1">
-                    <label class="form-check-label" for="exampleCheck1">Check me
-                        out</label>
-                </div>
+                <div class="text-danger small mt-1" *ngIf="errorCorreo">Formato
+                    de correo inválido.</div>
+                <div class="text-success small mt-1"
+                    *ngIf="correoValidado">Correo validado correctamente.</div>
+            </div>
 
-            </form>
-            <button type="submit" class="btn btn-primary">Submit</button>
-            <button
-                class="btn btn-sm btn-danger ms-2">Cerrar</button>
+            <div class="col-md-6">
+                <label class="form-label fw-bold small">Cargo</label>
+                <select class="form-select"
+                    [(ngModel)]="nuevoTrabajador.id_cargo" name="id_cargo"
+                    (change)="onCargoChange()">
+                    <option *ngFor="let cargo of cargos" [ngValue]="cargo.id">{{
+                        cargo.nombre }}</option>
+                </select>
+            </div>
+            <div class="col-md-6">
+                <label class="form-label fw-bold small">Estado</label>
+                <select class="form-select" [(ngModel)]="nuevoTrabajador.estado"
+                    name="estado">
+                    <option value="Activo">Activo</option>
+                    <option value="Inactivo">Inactivo</option>
+                </select>
+            </div>
+
+            <div class="col-12 mt-4"
+                *ngIf="nuevoTrabajador.id_cargo == 2 || nuevoTrabajador.id_cargo == 3">
+                <div class="p-3 bg-light rounded">
+                    <h6 class="fw-bold text-danger">Credenciales</h6>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <label>Usuario</label>
+                            <input class="form-control"
+                                [(ngModel)]="nuevoTrabajador.usuario"
+                                name="usuario">
+                        </div>
+                        <div class="col-md-6">
+                            <label>Contraseña</label>
+                            <input type="password" class="form-control"
+                                [(ngModel)]="nuevoTrabajador.contrasena"
+                                name="contrasena">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
         </div>
-    </div>
+    </form>
+</div>
 
+<div class="modal-footer border-0">
+    <button class="btn btn-outline-secondary"
+        (click)="cerrarModal()">Cancelar</button>
+    <button class="btn btn-danger" (click)="guardarTrabajador()"
+        [disabled]="!correoValidado || !dniValidado">
+        Guardar Trabajador
+    </button>
 </div>

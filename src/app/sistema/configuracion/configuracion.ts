@@ -1,16 +1,27 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { Router, RouterOutlet, NavigationEnd } from '@angular/router';
+import { filter } from 'rxjs/operators';
 import Swal from 'sweetalert2';
 
 @Component({
   selector: 'app-configuracion',
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, RouterOutlet],
   templateUrl: './configuracion.html',
   styleUrl: './configuracion.css',
 })
 export class Configuracion {
-  
+  showRolOverlay = false;
+
+  constructor(public router: Router) {
+    this.router.events.pipe(
+      filter((event): event is NavigationEnd => event instanceof NavigationEnd)
+    ).subscribe((event) => {
+      this.showRolOverlay = event.urlAfterRedirects.includes('/sistema/configuracion/rol');
+    });
+  }
+
   // Métodos para manejar los formularios mediante SweetAlert2 (Modales dinámicos)
   
   abrirRecuperarContrasena() {
@@ -34,21 +45,8 @@ export class Configuracion {
     });
   }
 
-  abrirAgregarRoles() {
-    Swal.fire({
-      title: 'Nuevo Rol de Usuario',
-      html: `
-        <input type="text" id="rol_name" class="swal2-input" placeholder="Nombre del Rol">
-        <div class="mt-3 text-start px-3">
-          <label class="small fw-bold">Permisos:</label><br>
-          <input type="checkbox"> Ventas <br>
-          <input type="checkbox"> Inventario <br>
-          <input type="checkbox"> Usuarios
-        </div>
-      `,
-      confirmButtonText: 'Guardar Rol',
-      showCancelButton: true
-    });
+  abrirRoles() {
+    this.router.navigate(['/sistema/configuracion/rol']);
   }
 
   abrirCategoriasProductos() {

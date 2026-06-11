@@ -1,0 +1,231 @@
+<div class="container-fluid p-4">
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="text-secondary fw-bold">
+            <i class="bi bi-tools me-2 text-danger"></i> Registro de Mantenimiento
+        </h2>
+    </div>
+
+    <div class="row g-3">
+
+        <div class="col-12 col-lg-8">
+
+            <div class="card border-0 shadow-sm mb-3">
+                <div class="card-body p-3">
+                    <div class="fw-bold small mb-2">Servicio Técnico</div>
+                    <div class="input-group mb-3">
+                        <span class="input-group-text bg-white border-end-0">
+                            <i class="bi bi-search"></i>
+                        </span>
+                        <input type="text" class="form-control border-start-0"
+                            placeholder="Buscar servicio..."
+                            [(ngModel)]="filtroBusqueda">
+                    </div>
+                    <div class="row g-2">
+                        <div class="col-12 col-md-6" *ngFor="let s of serviciosFiltrados">
+                            <div class="servicio-card"
+                                [class.servicio-card--selected]="servicioSeleccionado?.id === s.id"
+                                (click)="seleccionarServicio(s)">
+                                <div class="servicio-icono">
+                                    <i class="bi {{ s.icono }}"></i>
+                                </div>
+                                <div class="servicio-nombre">{{ s.nombre }}</div>
+                                <div class="servicio-desc">{{ s.descripcion }}</div>
+                                <div class="d-flex justify-content-between align-items-center mt-2">
+                                    <span class="servicio-precio">S/ {{ s.precio | number:'1.2-2' }}</span>
+                                    <i class="bi bi-check-circle-fill text-danger"
+                                        *ngIf="servicioSeleccionado?.id === s.id"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card border-0 shadow-sm">
+                <div class="card-body p-3">
+                    <div class="fw-bold small mb-1">
+                        <i class="bi bi-plus-circle me-1 text-danger"></i>
+                        Productos Adicionales
+                    </div>
+                    <div class="text-muted small mb-3">Agrega repuestos o insumos requeridos para el servicio</div>
+                    <div class="input-group mb-3">
+                        <span class="input-group-text bg-white border-end-0">
+                            <i class="bi bi-search"></i>
+                        </span>
+                        <input type="text" class="form-control border-start-0"
+                            placeholder="Buscar producto..."
+                            [(ngModel)]="filtroProducto">
+                    </div>
+                    <div class="row g-2">
+                        <div class="col-12 col-md-6" *ngFor="let p of productosFiltrados">
+                            <div class="producto-card"
+                                [class.producto-card--selected]="p.cantidad > 0"
+                                (click)="toggleProducto(p)">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <div class="producto-nombre">{{ p.nombre }}</div>
+                                        <div class="producto-marca">{{ p.marca }}</div>
+                                    </div>
+                                    <div class="text-end">
+                                        <div class="producto-precio">S/ {{ p.precio_venta | number:'1.2-2' }}</div>
+                                        <div class="producto-stock" [class.text-danger]="p.stock < 10">Stock: {{ p.stock }}</div>
+                                    </div>
+                                </div>
+                                <div class="qty-control mt-2" *ngIf="p.cantidad > 0" (click)="$event.stopPropagation()">
+                                    <button class="qty-btn" (click)="quitarProducto(p)"><i class="bi bi-dash"></i></button>
+                                    <input type="number" class="qty-input" [(ngModel)]="p.cantidad" [max]="p.stock" min="1">
+                                    <button class="qty-btn qty-btn--add" (click)="agregarProducto(p)"><i class="bi bi-plus"></i></button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12 col-lg-4">
+            <div class="card border-0 shadow-sm resumen-sticky">
+                <div class="card-body p-3">
+                    <div class="fw-bold mb-1">Resumen</div>
+                    <div class="text-muted small mb-3">Paso 1 de 2 — Servicio</div>
+
+                    <div class="small fw-bold text-muted mb-1">Servicio</div>
+                    <div *ngIf="servicioSeleccionado" class="resumen-servicio mb-2">
+                        <div class="resumen-item-nombre">{{ servicioSeleccionado.nombre }}</div>
+                        <span class="resumen-item-precio">S/ {{ servicioSeleccionado.precio | number:'1.2-2' }}</span>
+                    </div>
+                    <div *ngIf="!servicioSeleccionado" class="text-muted small text-center py-2">
+                        <i class="bi bi-tools d-block fs-5 mb-1"></i>
+                        Selecciona un servicio
+                    </div>
+
+                    <div *ngIf="productosSeleccionados.length > 0">
+                        <hr class="my-2">
+                        <div class="small fw-bold text-muted mb-1">Productos</div>
+                        <div class="resumen-item" *ngFor="let p of productosSeleccionados">
+                            <div>
+                                <div class="resumen-item-nombre">{{ p.nombre }}</div>
+                                <div class="resumen-item-det">{{ p.cantidad }} × S/ {{ p.precio_venta | number:'1.2-2' }}</div>
+                            </div>
+                            <span class="resumen-item-precio">S/ {{ (p.precio_venta * p.cantidad) | number:'1.2-2' }}</span>
+                        </div>
+                    </div>
+
+                    <hr class="my-2">
+
+                    <div class="d-flex justify-content-between small mb-1">
+                        <span class="text-muted">Subtotal</span>
+                        <span>S/ {{ subtotal | number:'1.2-2' }}</span>
+                    </div>
+                    <div class="d-flex justify-content-between small mb-2">
+                        <span class="text-muted">IGV (18%)</span>
+                        <span>S/ {{ igv | number:'1.2-2' }}</span>
+                    </div>
+                    <div class="d-flex justify-content-between fw-bold mb-3">
+                        <span>Total</span>
+                        <span class="text-danger fs-5">S/ {{ total | number:'1.2-2' }}</span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold">Método de Pago</label>
+                        <select class="form-select form-select-sm" [(ngModel)]="metodoPago">
+                            <option>Efectivo</option>
+                            <option>Tarjeta</option>
+                            <option>Transferencia</option>
+                            <option>Yape / Plin</option>
+                        </select>
+                    </div>
+
+                    <button class="btn btn-danger w-100 mb-2" (click)="abrirModal()">
+                        Siguiente <i class="bi bi-arrow-right ms-1"></i>
+                    </button>
+                    <button class="btn btn-outline-secondary w-100 btn-sm" (click)="limpiar()">Limpiar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade"
+    [class.show]="mostrarModal"
+    [style.display]="mostrarModal ? 'block' : 'none'"
+    tabindex="-1" role="dialog">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg">
+            <div class="modal-header bg-dark text-white border-0">
+                <h5 class="modal-title fw-bold">
+                    <i class="bi bi-person-plus-fill me-2 text-danger"></i> Datos del Cliente
+                </h5>
+                <button type="button" class="btn-close btn-close-white" (click)="cerrarModal()"></button>
+            </div>
+
+            <div class="pasos-bar px-4 pt-3 pb-1">
+                <div class="d-flex align-items-center gap-2">
+                    <div class="paso-circulo paso-done"><i class="bi bi-check"></i></div>
+                    <span class="small text-muted">Servicio</span>
+                    <div class="paso-linea"></div>
+                    <div class="paso-circulo paso-active">2</div>
+                    <span class="small fw-bold">Cliente</span>
+                    <div class="paso-linea"></div>
+                    <div class="paso-circulo paso-pending">3</div>
+                    <span class="small text-muted">Confirmar</span>
+                </div>
+            </div>
+
+            <div class="modal-body p-4">
+                <div class="mb-3">
+                    <label class="form-label fw-bold small">DNI / RUC</label>
+                    <input type="text" class="form-control"
+                        [(ngModel)]="clienteModal.dni"
+                        (input)="buscarCliente()"
+                        placeholder="Ej: 74622233"
+                        maxlength="11">
+                    <div class="mt-1 small" *ngIf="clienteModal.dni.length >= 8">
+                        <span *ngIf="clienteEncontrado" class="text-success">
+                            <i class="bi bi-check-circle me-1"></i>Cliente encontrado — datos cargados
+                        </span>
+                        <span *ngIf="!clienteEncontrado && !buscandoCliente" class="text-muted">
+                            <i class="bi bi-info-circle me-1"></i>Cliente no registrado — se creará un registro nuevo
+                        </span>
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label fw-bold small">Nombres</label>
+                    <input type="text" class="form-control" [(ngModel)]="clienteModal.nombre" placeholder="Nombres completos">
+                </div>
+                <div class="row g-2 mb-3">
+                    <div class="col-6">
+                        <label class="form-label fw-bold small">Apellido Paterno</label>
+                        <input type="text" class="form-control" [(ngModel)]="clienteModal.apellido_paterno">
+                    </div>
+                    <div class="col-6">
+                        <label class="form-label fw-bold small">Apellido Materno</label>
+                        <input type="text" class="form-control" [(ngModel)]="clienteModal.apellido_materno">
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label fw-bold small">Celular</label>
+                    <input type="text" class="form-control" [(ngModel)]="clienteModal.celular" placeholder="Ej: 987654321">
+                </div>
+                <div class="mb-3">
+                    <label class="form-label fw-bold small">Correo <span class="text-muted fw-normal">(opcional)</span></label>
+                    <input type="email" class="form-control" [(ngModel)]="clienteModal.correo" placeholder="ejemplo@gmail.com">
+                </div>
+                <div class="mb-2">
+                    <label class="form-label fw-bold small">Vehículo <span class="text-muted fw-normal">(opcional)</span></label>
+                    <input type="text" class="form-control" [(ngModel)]="clienteModal.vehiculo" placeholder="Ej: Toyota Corolla ABC-123">
+                </div>
+            </div>
+
+            <div class="modal-footer border-0 pt-0">
+                <button type="button" class="btn btn-outline-secondary px-4" (click)="cerrarModal()">Volver</button>
+                <button type="button" class="btn btn-danger px-4" (click)="confirmarMantenimiento()">
+                    <i class="bi bi-check-lg me-1"></i> Confirmar y Registrar
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div *ngIf="mostrarModal" class="modal-backdrop fade show"></div>

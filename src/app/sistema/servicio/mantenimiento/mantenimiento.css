@@ -1,0 +1,97 @@
+.servicio-card {
+    background: #ffffff;
+    border: 0.5px solid #dee2e6;
+    border-radius: 12px;
+    padding: 14px;
+    cursor: pointer;
+    transition: border-color 0.15s, box-shadow 0.15s;
+    height: 100%;
+}
+.servicio-card:hover {
+    border-color: #ff3b30;
+    box-shadow: 0 2px 8px rgba(255, 59, 48, 0.1);
+}
+.servicio-card--selected {
+    border: 1.5px solid #ff3b30 !important;
+    background: #fff8f8;
+}
+.servicio-nombre {
+    font-size: 14px;
+    font-weight: 500;
+    color: #1c1c1e;
+    margin-bottom: 2px;
+}
+.servicio-desc {
+    font-size: 12px;
+    color: #888;
+    margin-bottom: 8px;
+}
+.servicio-precio {
+    font-size: 16px;
+    font-weight: 600;
+    color: #ff3b30;
+}
+.servicio-icono {
+    width: 38px;
+    height: 38px;
+    background: rgba(255, 59, 48, 0.1);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #ff3b30;
+    font-size: 18px;
+    flex-shrink: 0;
+    margin-bottom: 8px;
+}
+.producto-card {
+    background: #ffffff;
+    border: 0.5px solid #dee2e6;
+    border-radius: 10px;
+    padding: 10px 12px;
+    cursor: pointer;
+    transition: border-color 0.15s;
+}
+.producto-card:hover { border-color: #ff3b30; }
+.producto-card--selected { border: 1.5px solid #ff3b30; background: #fff8f8; }
+.producto-nombre { font-size: 13px; font-weight: 500; color: #1c1c1e; }
+.producto-marca { font-size: 11px; color: #888; }
+.producto-precio { font-size: 14px; font-weight: 600; color: #ff3b30; }
+.producto-stock { font-size: 11px; color: #888; }
+.qty-control { display: flex; align-items: center; gap: 8px; }
+.qty-btn {
+    width: 26px; height: 26px; border-radius: 6px;
+    border: 0.5px solid #dee2e6; background: #f4f5f7;
+    color: #1c1c1e; display: flex; align-items: center;
+    justify-content: center; cursor: pointer; font-size: 13px;
+}
+.qty-btn--add { background: #ff3b30; border-color: #ff3b30; color: #fff; }
+.qty-input {
+    width: 40px; text-align: center; font-size: 12px;
+    border: 0.5px solid #dee2e6; border-radius: 5px;
+    padding: 3px; background: #fff;
+}
+.resumen-sticky { position: sticky; top: 16px; }
+.resumen-servicio {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: rgba(255,59,48,0.06);
+    border: 0.5px solid rgba(255,59,48,0.2);
+    border-radius: 8px;
+    padding: 8px 10px;
+}
+.resumen-item { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px; }
+.resumen-item-nombre { font-size: 13px; font-weight: 500; color: #1c1c1e; }
+.resumen-item-det { font-size: 11px; color: #888; }
+.resumen-item-precio { font-size: 13px; font-weight: 500; color: #1c1c1e; flex-shrink: 0; }
+.pasos-bar { background: #f8f9fa; border-bottom: 0.5px solid #dee2e6; }
+.paso-circulo {
+    width: 24px; height: 24px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 500; flex-shrink: 0;
+}
+.paso-done { background: #1c1c1e; color: #fff; }
+.paso-active { background: #ff3b30; color: #fff; }
+.paso-pending { background: #f4f5f7; color: #888; border: 0.5px solid #dee2e6; }
+.paso-linea { flex: 1; height: 1px; background: #dee2e6; }

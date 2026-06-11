@@ -1,50 +1,63 @@
 <div class="container-fluid p-4">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2 class="text-secondary fw-bold"><i class="bi bi-truck me-2 text-danger"></i> Gestión de Proveedores</h2>
-        <div class="d-flex gap-2">
-            <div class="input-group" style="width: 300px;">
-                <span class="input-group-text bg-white border-end-0"><i class="bi bi-search text-muted"></i></span>
-                <input type="text" class="form-control border-start-0" placeholder="Buscar por nombre o RUC..." [(ngModel)]="filtroBusqueda">
-            </div>
-            <button class="btn btn-danger d-flex align-items-center" (click)="agregarProveedor()">
-                <i class="bi bi-plus-circle me-2"></i> Agregar Proveedor
-            </button>
-        </div>
-    </div>
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="text-secondary fw-bold">
+      <i class="bi bi-truck me-2 text-danger"></i> Gestión de Proveedores
+    </h2>
+    <button class="btn btn-danger d-flex align-items-center" (click)="abrirModal()">
+      <i class="bi bi-plus-circle me-2"></i> Agregar Proveedor
+    </button>
+  </div>
 
-    <div class="row g-4">
-        <div *ngFor="let prov of proveedores" class="col-12 col-md-6 col-lg-4">
-            <div class="card h-100 shadow-sm border-0 provider-card">
-                <div class="card-body p-4">
-                    <div class="d-flex justify-content-between align-items-start mb-3">
-                        <div class="icon-box bg-danger bg-opacity-10 text-danger rounded-3 p-3">
-                            <i class="bi bi-building fs-3"></i>
-                        </div>
-                        <span class="badge" [class.bg-success]="prov.estado === 'Activo'" [class.bg-secondary]="prov.estado !== 'Activo'">
-                            {{ prov.estado }}
-                        </span>
-                    </div>
-                    
-                    <h5 class="fw-bold mb-1">{{ prov.nombre_empresa }}</h5>
-                    <p class="text-muted small mb-3">RUC: {{ prov.ruc }}</p>
-
-                    <div class="space-y-2">
-                        <div class="d-flex align-items-center text-muted small mb-2">
-                            <i class="bi bi-telephone me-2"></i> {{ prov.celular }}
-                        </div>
-                        <div class="d-flex align-items-center text-muted small mb-2">
-                            <i class="bi bi-envelope me-2"></i> {{ prov.correo }}
-                        </div>
-                        <div class="d-flex align-items-start text-muted small">
-                            <i class="bi bi-geo-alt me-2 mt-1"></i> {{ prov.direccion }}
-                        </div>
-                    </div>
-                </div>
-                <div class="card-footer bg-light border-0 d-flex justify-content-end gap-2 p-3">
-                    <button class="btn btn-sm btn-outline-dark" (click)="editarProveedor(prov)"><i class="bi bi-pencil me-1"></i> Editar</button>
-                    <button class="btn btn-sm btn-outline-danger" (click)="eliminarProveedor(prov.ruc)"><i class="bi bi-trash me-1"></i> Eliminar</button>
-                </div>
-            </div>
-        </div>
+  <div class="card border-0 shadow-sm mb-4">
+    <div class="card-body p-3">
+      <input type="text" class="form-control" placeholder="Buscar por nombre o RUC..." 
+             [(ngModel)]="filtroBusqueda">
     </div>
+  </div>
+
+  <div class="row g-4">
+    <div *ngFor="let prov of proveedoresFiltrados" class="col-12 col-md-6 col-lg-4">
+      <div class="card h-100 shadow-sm border-0 provider-card">
+        <div class="card-body p-4">
+          <div class="d-flex justify-content-between align-items-start mb-3">
+            <div class="icon-box bg-danger bg-opacity-10 text-danger rounded-3 p-3">
+              <i class="bi bi-building fs-3"></i>
+            </div>
+            <span class="badge" [class.bg-success]="prov.estado === 'Activo'" [class.bg-secondary]="prov.estado !== 'Activo'">
+              {{ prov.estado }}
+            </span>
+          </div>
+          <h5 class="fw-bold mb-1">{{ prov.nombre_empresa }}</h5>
+          <p class="text-muted small mb-3">RUC: {{ prov.ruc }}</p>
+          <div class="d-flex align-items-center text-muted small mb-2">
+            <i class="bi bi-telephone me-2"></i> {{ prov.celular }}
+          </div>
+          <div class="d-flex align-items-center text-muted small mb-2">
+            <i class="bi bi-envelope me-2"></i> {{ prov.correo }}
+          </div>
+          <div class="d-flex align-items-start text-muted small">
+            <i class="bi bi-geo-alt me-2 mt-1"></i> {{ prov.direccion }}
+          </div>
+        </div>
+        
+        <div class="card-footer bg-light border-0 d-flex justify-content-end gap-2 p-3">
+          <button class="btn btn-sm btn-outline-dark" (click)="abrirModalEdit(prov)">
+            <i class="bi bi-pencil me-1"></i> Editar
+          </button>
+          <button class="btn btn-sm btn-outline-danger" (click)="eliminarProveedor(prov.ruc)">
+            <i class="bi bi-trash me-1"></i> Eliminar
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>
+
+<div class="modal fade" [class.show]="mostrarModal" [style.display]="mostrarModal ? 'block' : 'none'" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content border-0 shadow-lg">
+      <router-outlet></router-outlet>
+    </div>
+  </div>
+</div>
+<div *ngIf="mostrarModal" class="modal-backdrop fade show"></div>

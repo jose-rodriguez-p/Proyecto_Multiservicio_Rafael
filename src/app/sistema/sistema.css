@@ -43,8 +43,8 @@
 }
 
 .sidebar-brand-logo {
-    width: 38px;
-    height: 38px;
+    width: 42px;
+    height: 42px;
     border-radius: 8px;
     overflow: hidden;
     background: none;
@@ -55,9 +55,9 @@
 }
 
 .sidebar-brand-logo img {
-    width: 38px;
-    height: 38px;
-    object-fit: cover;
+    width: 42px;
+    height: 42px;
+    object-fit: contain;
 }
 
 .sidebar-brand-name {

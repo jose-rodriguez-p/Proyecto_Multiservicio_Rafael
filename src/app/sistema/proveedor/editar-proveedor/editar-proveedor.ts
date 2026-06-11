@@ -1,9 +1,200 @@
-import { Component } from '@angular/core';
+import { Component, OnInit, inject, PLATFORM_ID, ChangeDetectorRef } from '@angular/core';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+import { Router, ActivatedRoute } from '@angular/router';
+import { HttpClient } from '@angular/common/http';
+import Swal from 'sweetalert2';
 
 @Component({
   selector: 'app-editar-proveedor',
-  imports: [],
+  standalone: true,
+  imports: [CommonModule, FormsModule],
   templateUrl: './editar-proveedor.html',
   styleUrl: './editar-proveedor.css',
 })
-export class EditarProveedor {}
+export class EditarProveedor implements OnInit {
+  URL_API = 'http://localhost:8080/api/proveedores';
+
+  private platformId = inject(PLATFORM_ID);
+  private cdr = inject(ChangeDetectorRef);
+  private http = inject(HttpClient);
+  private router = inject(Router);
+  private route = inject(ActivatedRoute);
+
+  idProveedor!: string;
+  correoOriginal = '';
+
+  rucValidado = true;
+  correoValidado = true;
+  validandoCorreo = false;
+
+  errorRuc = false;
+  errorCelular = false;
+  errorCorreo = false;
+
+  proveedor: any = {
+    ruc: '',
+    nombre_empresa: '',
+    celular: '',
+    correo: '',
+    direccion: '',
+    estado: '',
+  };
+
+  ngOnInit() {
+    if (isPlatformBrowser(this.platformId)) {
+      const state = window.history.state;
+      if (state?.proveedor) {
+        this.proveedor = { ...state.proveedor };
+        this.idProveedor = this.proveedor.ruc;
+        this.correoOriginal = this.proveedor.correo;
+        return;
+      }
+    }
+
+    this.route.params.subscribe((params) => {
+      const ruc = params['id'];
+      if (ruc) {
+        this.idProveedor = ruc;
+        this.cargarProveedor(ruc);
+      }
+    });
+  }
+
+  cargarProveedor(ruc: string) {
+    this.http.get<any>(`${this.URL_API}/${ruc}`).subscribe({
+      next: (res) => {
+        this.proveedor = res;
+        this.correoOriginal = res.correo;
+        this.rucValidado = true;
+        this.correoValidado = true;
+        this.cdr.detectChanges();
+      },
+      error: () => Swal.fire('Error', 'No se pudieron cargar los datos', 'error'),
+    });
+  }
+
+  validarRuc() {
+    let ruc = this.proveedor.ruc.replace(/\D/g, '');
+    this.proveedor.ruc = ruc;
+    this.errorRuc = !(/^\d{11}$/.test(ruc) && (ruc.startsWith('10') || ruc.startsWith('20')));
+
+    if (this.errorRuc) {
+      this.rucValidado = false;
+      this.proveedor.nombre_empresa = '';
+      return;
+    }
+
+    this.http.get<any>(`${this.URL_API}/buscar-ruc/${ruc}`).subscribe({
+      next: (res) => {
+        if (res?.success) {
+          this.rucValidado = true;
+          this.proveedor.nombre_empresa = res.razonSocial || res.nombre_empresa;
+          if (res.direccion) this.proveedor.direccion = res.direccion;
+        } else {
+          this.rucValidado = false;
+          this.proveedor.nombre_empresa = '';
+        }
+      },
+    });
+  }
+
+  validarCelular() {
+    let celular = this.proveedor.celular.replace(/\D/g, '');
+    this.proveedor.celular = celular;
+    this.errorCelular = !/^[9]\d{8}$/.test(celular);
+  }
+
+  validarCorreo() {
+    this.errorCorreo = !this.correoValido;
+    this.correoValidado = this.proveedor.correo === this.correoOriginal;
+  }
+
+  get correoValido(): boolean {
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(this.proveedor.correo);
+  }
+
+  validarCorreoBackend() {
+    if (!this.correoValido) {
+      this.errorCorreo = true;
+      return;
+    }
+
+    this.validandoCorreo = true;
+    this.http
+      .post(
+        `${this.URL_API}/correo/enviar`,
+        {
+          correo: this.proveedor.correo,
+          dni: this.proveedor.ruc,
+        },
+        { responseType: 'text' },
+      )
+      .subscribe({
+        next: (res) => {
+          this.validandoCorreo = false;
+          if (res === 'CODIGO_ENVIADO') {
+            Swal.fire({
+              title: 'Código de verificación',
+              input: 'text',
+              inputAttributes: { maxlength: '6' },
+              showCancelButton: true,
+            }).then((r) => {
+              if (r.isConfirmed) this.validarCodigo(r.value);
+            });
+          }
+        },
+        error: () => {
+          this.validandoCorreo = false;
+          Swal.fire('Error', 'No se pudo enviar el correo', 'error');
+        },
+      });
+  }
+
+  validarCodigo(codigo: string) {
+    this.http
+      .post(
+        `${this.URL_API}/correo/validar`,
+        {
+          dni: this.proveedor.ruc,
+          codigo,
+        },
+        { responseType: 'text' },
+      )
+      .subscribe({
+        next: (res) => {
+          if (res === 'CODIGO_VALIDO') {
+            this.correoValidado = true;
+            this.correoOriginal = this.proveedor.correo;
+            Swal.fire('Éxito', 'Correo verificado', 'success');
+          }
+        },
+      });
+  }
+
+  formularioEsValido(): boolean {
+    return this.rucValidado && this.correoValidado && !this.errorCelular && !this.errorRuc;
+  }
+
+  actualizarProveedor() {
+    if (!this.formularioEsValido()) {
+      Swal.fire('Campos inválidos', 'Por favor, revise los datos en rojo.', 'warning');
+      return;
+    }
+    this.http.put(`${this.URL_API}/actualizar/${this.idProveedor}`, this.proveedor).subscribe({
+      next: () => {
+        Swal.fire('Éxito', 'Proveedor actualizado correctamente', 'success').then(() =>
+          this.cerrarModal(),
+        );
+      },
+      error: (err) => {
+        console.error('Error al actualizar:', err);
+        Swal.fire('Error', 'No se pudo actualizar el proveedor. Inténtelo de nuevo.', 'error');
+      },
+    });
+  }
+
+  cerrarModal() {
+    this.router.navigate(['/sistema/proveedor']);
+  }
+}
