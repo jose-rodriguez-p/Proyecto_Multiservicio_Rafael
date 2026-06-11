@@ -5,6 +5,8 @@ import { Dashboard } from './sistema/dashboard/dashboard';
 import { Cliente } from './sistema/cliente/cliente';
 import { Trabajador } from './sistema/trabajador/trabajador';
 import { Proveedor } from './sistema/proveedor/proveedor';
+import {AgregarProveedor} from './sistema/proveedor/agregar-proveedor/agregar-proveedor';
+import {EditarProveedor} from './sistema/proveedor/editar-proveedor/editar-proveedor';
 import { AgregarTrabajador } from './sistema/trabajador/agregar-trabajador/agregar-trabajador';
 import { EditarTrabajdor } from './sistema/trabajador/editar-trabajdor/editar-trabajdor';
 import { Producto } from './sistema/producto/producto';
@@ -79,7 +81,14 @@ export const routes: Routes = [
           { path: 'editar-trabajador',  component: EditarTrabajdor },
         ],
       },
-      { path: 'proveedor', component: Proveedor },
+      {
+        path: 'proveedor',
+        component: Proveedor,
+        children: [
+          { path: 'agregar-proveedor', component: AgregarProveedor },
+          { path: 'editar-proveedor/:id', component: EditarProveedor },
+        ],
+      },
     ],
   },
 ];
