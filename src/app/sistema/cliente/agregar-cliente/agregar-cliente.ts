@@ -14,15 +14,13 @@ import Swal from 'sweetalert2';
 export class AgregarCliente {
   private http = inject(HttpClient);
   private router = inject(Router);
-  private cdr = inject(ChangeDetectorRef); // Inyectamos el detector de cambios
+  private cdr = inject(ChangeDetectorRef);
   private URL_API = 'http://localhost:8080/api/clientes';
 
-  // Datos
   nuevoCliente: any = { dni: '', nombre: '', apellido_paterno: '', apellido_materno: '', celular: '', correo: '', estado: 'Activo' };
   vehiculos: any[] = [];
   nuevoVehiculo: any = { placa: '', marca: '', modelo: '' };
   
-  // Estados de control
   mostrarModalVehiculo = false;
   dniValidado = false;
   consultandoDni = false;
@@ -31,8 +29,6 @@ export class AgregarCliente {
   errorDni = false;
   errorCelular = false;
   errorCorreo = false;
-
-  // --- VALIDACIONES ---
 
   validarDni() {
     const dni = this.nuevoCliente.dni.replace(/\D/g, '');
@@ -50,7 +46,7 @@ export class AgregarCliente {
           this.nuevoCliente.apellido_materno = data.apellidoMaterno || '';
           this.dniValidado = true;
         } else { this.dniValidado = false; Swal.fire('Atención', 'No encontrado en RENIEC', 'info'); }
-        this.cdr.detectChanges(); // Forzamos actualización visual
+        this.cdr.detectChanges();
       },
       error: () => { this.consultandoDni = false; this.dniValidado = false; this.cdr.detectChanges(); }
     });
@@ -95,8 +91,6 @@ export class AgregarCliente {
     });
   }
 
-  // --- VEHÍCULOS ---
-
   agregarVehiculoLista() {
     if (!this.nuevoVehiculo.placa) return;
     this.vehiculos.push({ ...this.nuevoVehiculo });
@@ -109,25 +103,24 @@ export class AgregarCliente {
   eliminarVehiculo(veh: any) { this.vehiculos = this.vehiculos.filter(v => v.placa !== veh.placa); }
   validarCelular() { this.errorCelular = this.nuevoCliente.celular && !/^9\d{8}$/.test(this.nuevoCliente.celular); }
   
-  // --- GUARDADO FINAL ---
-
   guardarCliente() {
     if (!this.dniValidado || !this.correoValidado) {
         Swal.fire('Error', 'Debe validar DNI y Correo antes de continuar', 'warning');
         return;
     }
-    const payload = { ...this.nuevoCliente, vehiculos: this.vehiculos };
-    this.http.post(`${this.URL_API}/registrar`, payload).subscribe({
+    const payload = { 
+        nuevoCliente: this.nuevoCliente, 
+        vehiculos: this.vehiculos 
+    };
+    this.http.post(`${this.URL_API}/registrar`, payload, { responseType: 'text' }).subscribe({
       next: () => { 
         Swal.fire('Guardado', 'Cliente registrado exitosamente', 'success'); 
         this.cerrarModal(); 
       },
-      error: () => Swal.fire('Error', 'Error al registrar cliente', 'error')
+      error: (err) => Swal.fire('Error', err.error || 'Error al registrar cliente', 'error')
     });
   }
   
   cerrarModal() { this.router.navigate(['/sistema/cliente']); }
-  validarCorreo() { 
-    this.errorCorreo = this.nuevoCliente.correo && !this.esCorreoValido; 
-  }
+  validarCorreo() { this.errorCorreo = this.nuevoCliente.correo && !this.esCorreoValido; }
 }

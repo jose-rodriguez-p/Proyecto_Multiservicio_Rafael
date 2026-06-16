@@ -14,8 +14,10 @@ import Swal from 'sweetalert2';
 })
 export class AgregarProducto implements OnInit {
   private URL_API = 'http://localhost:8080/api/productos';
+  private URL_PROVEEDORES = 'http://localhost:8080/api/proveedores';
 
   categorias: any[] = [];
+  proveedores: any[] = [];
 
   // Errores en tiempo real
   errorCodigo = false;
@@ -34,7 +36,8 @@ export class AgregarProducto implements OnInit {
     precio_compra: null,
     precio_venta: null,
     stock_minimo: 5,
-    estado: 'Activo'
+    estado: 'Activo',
+    ruc_proveedor: ''
   };
 
   private cdr = inject(ChangeDetectorRef);
@@ -49,6 +52,15 @@ export class AgregarProducto implements OnInit {
         this.cdr.detectChanges();
       },
       error: (err) => console.error(err)
+    });
+
+    this.http.get<any>(`${this.URL_PROVEEDORES}/listar`).subscribe({
+      next: (data) => {
+        const proveedoresArray = Array.isArray(data) ? data : data.content || data.data || [];
+        this.proveedores = proveedoresArray.filter((p: any) => p.estado === 'Activo');
+        this.cdr.detectChanges();
+      },
+      error: (err) => console.error('Error al cargar proveedores:', err)
     });
   }
 

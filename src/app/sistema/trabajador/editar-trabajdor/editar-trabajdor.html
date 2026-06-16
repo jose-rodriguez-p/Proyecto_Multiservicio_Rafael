@@ -37,11 +37,15 @@
                     [(ngModel)]="trabajadorEditando.celular" name="cel_edit">
             </div>
             <div class="col-md-6">
+                <label class="form-label fw-bold small mb-2">Correo</label>
+                <input type="email" class="form-control form-control-sm"
+                    [(ngModel)]="trabajadorEditando.correo" name="correo_edit">
+            </div>
+            <div class="col-md-6">
                 <label class="form-label fw-bold small mb-2">Cargo</label>
                 <select class="form-select form-select-sm"
                     [(ngModel)]="trabajadorEditando.cargo"
-                    name="cargo_edit"
-                    (change)="onCargoChange()">
+                    name="cargo_edit">
                     <option *ngFor="let cargo of cargos" [value]="cargo.nombre">
                         {{ cargo.nombre }}
                     </option>
@@ -54,24 +58,6 @@
                     <option value="Activo">Activo</option>
                     <option value="Inactivo">Inactivo</option>
                 </select>
-            </div>
-
-            <div class="col-12 mt-4" *ngIf="cargoRequiereCredenciales()">
-                <div class="p-4 p-md-5 bg-light rounded">
-                    <h6 class="fw-bold text-danger mb-3">Credenciales de acceso</h6>
-                    <div class="row g-3">
-                        <div class="col-md-6">
-                            <label class="form-label fw-bold small mb-2">Usuario</label>
-                            <input class="form-control form-control-sm"
-                                [(ngModel)]="trabajadorEditando.usuario" name="usuario_edit">
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label fw-bold small mb-2">Contraseña</label>
-                            <input type="password" class="form-control form-control-sm"
-                                [(ngModel)]="trabajadorEditando.contrasena" name="contrasena_edit">
-                        </div>
-                    </div>
-                </div>
             </div>
         </div>
     </form>

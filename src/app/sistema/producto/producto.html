@@ -15,7 +15,7 @@
           <div class="input-group">
             <span class="input-group-text bg-white border-end-0"><i class="bi bi-search"></i></span>
             <input type="text" class="form-control border-start-0"
-              placeholder="Buscar por código o nombre..."
+              placeholder="Buscar por código, nombre o proveedor..."
               [(ngModel)]="filtroBusqueda">
           </div>
         </div>
@@ -26,8 +26,8 @@
         </div>
         <div class="col-12 col-lg-5 text-end">
           <div class="btn-group shadow-sm">
-            <button class="btn btn-outline-dark"><i class="bi bi-file-earmark-excel me-1"></i> Excel</button>
-            <button class="btn btn-outline-dark"><i class="bi bi-file-earmark-pdf me-1"></i> PDF</button>
+            <button class="btn btn-outline-dark btn-sm" (click)="exportarExcel()"><i class="bi bi-file-earmark-excel me-1"></i> Excel</button>
+            <button class="btn btn-outline-dark btn-sm" (click)="exportarPDF()"><i class="bi bi-file-earmark-pdf me-1"></i> PDF</button>
           </div>
         </div>
       </div>
@@ -42,6 +42,7 @@
             <th class="ps-4">Código</th>
             <th>Producto / Marca</th>
             <th>Categoría</th>
+            <th>Proveedor</th>
             <th class="text-center">Stock</th>
             <th class="text-center">Precio Venta</th>
             <th class="text-center">Estado</th>
@@ -56,6 +57,7 @@
               <div class="small text-muted">{{ prod.marca }}</div>
             </td>
             <td><span class="badge bg-light text-dark border">{{ prod.categoria }}</span></td>
+            <td><span class="badge bg-light text-dark border">{{ prod.nombre_proveedor || 'Sin proveedor' }}</span></td>
             <td class="text-center">
               <div class="fw-bold" [class.text-danger]="prod.stock <= prod.stock_minimo">
                 {{ prod.stock }} uds.
@@ -88,7 +90,7 @@
             </td>
           </tr>
           <tr *ngIf="productosFiltrados.length === 0">
-            <td colspan="7" class="text-center text-muted py-4">
+            <td colspan="8" class="text-center text-muted py-4">
               <i class="bi bi-inbox me-2"></i>No se encontraron productos.
             </td>
           </tr>

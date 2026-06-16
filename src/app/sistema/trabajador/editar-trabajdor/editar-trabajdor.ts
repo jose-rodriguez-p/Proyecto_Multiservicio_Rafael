@@ -13,12 +13,10 @@ import Swal from 'sweetalert2';
 })
 export class EditarTrabajdor implements OnInit {
   URL_API = 'http://localhost:8080/api/trabajadores';
-  URL_ROLES = 'http://localhost:8080/api/configuracion/roles/listar';
 
   trabajadorEditando: any = {};
   trabajadorOriginal: any = {};
   cargos: any[] = [];
-  roles: any[] = [];
 
   private cdr = inject(ChangeDetectorRef);
 
@@ -36,7 +34,6 @@ export class EditarTrabajdor implements OnInit {
     }
 
     this.cargarCargos();
-    this.cargarRoles();
   }
 
   cargarCargos() {
@@ -66,36 +63,6 @@ export class EditarTrabajdor implements OnInit {
     });
   }
 
-  cargarRoles() {
-    this.http.get<any[]>(this.URL_ROLES).subscribe({
-      next: (data) => {
-        this.roles = data || [];
-        this.cdr.detectChanges();
-      },
-      error: (err) => {
-        console.error(err);
-      },
-    });
-  }
-
-  cargoRequiereCredenciales(): boolean {
-    const cargoNombre = this.trabajadorEditando.cargo;
-
-    if (!cargoNombre) {
-      return false;
-    }
-
-    const nombreCargo = cargoNombre.toLowerCase();
-
-    if (nombreCargo === 'administrador' || nombreCargo === 'auditor') {
-      return true;
-    }
-
-    const rol = this.roles.find((r) => r.nombre?.toLowerCase() === nombreCargo);
-
-    return !!(rol && Array.isArray(rol.menus) && rol.menus.length > 0);
-  }
-
   hayCambios(): boolean {
     const camposAComparar = [
       'nombre',
@@ -114,21 +81,7 @@ export class EditarTrabajdor implements OnInit {
       }
     }
 
-    if (
-      this.trabajadorEditando.usuario !== this.trabajadorOriginal.usuario ||
-      this.trabajadorEditando.contrasena !== this.trabajadorOriginal.contrasena
-    ) {
-      return true;
-    }
-
     return false;
-  }
-
-  onCargoChange() {
-    if (!this.cargoRequiereCredenciales()) {
-      this.trabajadorEditando.usuario = '';
-      this.trabajadorEditando.contrasena = '';
-    }
   }
 
   cerrarModal() {
@@ -150,8 +103,6 @@ export class EditarTrabajdor implements OnInit {
       direccion: this.trabajadorEditando.direccion,
       cargo: this.trabajadorEditando.cargo,
       estado: this.trabajadorEditando.estado,
-      usuario: this.trabajadorEditando.usuario || null,
-      contrasena: this.trabajadorEditando.contrasena || null,
     };
     this.http
       .put(`${this.URL_API}/actualizar/${dni}`, payload, { responseType: 'text' })

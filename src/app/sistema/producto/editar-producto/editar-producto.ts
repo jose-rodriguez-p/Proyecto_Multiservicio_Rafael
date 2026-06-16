@@ -14,12 +14,14 @@ import Swal from 'sweetalert2';
 })
 export class EditarProducto implements OnInit {
   private URL_API = 'http://localhost:8080/api/productos';
+  private URL_PROVEEDORES = 'http://localhost:8080/api/proveedores';
 
   errorNombre = false;
   errorCantidad = false;
   errorPrecioVenta = false;
 
   productoEditando: any = {};
+  proveedores: any[] = [];
 
   private cdr = inject(ChangeDetectorRef);
   private http = inject(HttpClient);
@@ -38,6 +40,15 @@ export class EditarProducto implements OnInit {
       // Si no hay state (recarga), volver a la lista
       this.router.navigate(['/sistema/producto']);
     }
+
+    this.http.get<any>(`${this.URL_PROVEEDORES}/listar`).subscribe({
+      next: (data) => {
+        const proveedoresArray = Array.isArray(data) ? data : data.content || data.data || [];
+        this.proveedores = proveedoresArray.filter((p: any) => p.estado === 'Activo');
+        this.cdr.detectChanges();
+      },
+      error: (err) => console.error('Error al cargar proveedores:', err)
+    });
   }
 
   // ── Validaciones en tiempo real ──────────────────────────────────────────
@@ -77,6 +88,8 @@ export class EditarProducto implements OnInit {
         if (res === 'PRODUCTO_ACTUALIZADO') {
           Swal.fire({ icon: 'success', title: 'Producto actualizado', timer: 1800, showConfirmButton: false });
           this.router.navigate(['/sistema/producto']);
+        } else if (res === 'SIN_CAMBIOS') {
+          Swal.fire('Sin cambios', 'No se ha modificado ningún dato.', 'warning');
         } else {
           Swal.fire('Error', res, 'error');
         }

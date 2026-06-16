@@ -21,10 +21,10 @@ export class Cliente implements OnInit {
   private platformId = inject(PLATFORM_ID);
   private cdr = inject(ChangeDetectorRef);
   private router = inject(Router);
-  
+
   clienteEditando: any = {};
   nuevoVehiculo: any = { placa: '', marca: '', modelo: '' };
-  
+
   private URL_API = 'http://localhost:8080/api/clientes';
 
   constructor(private http: HttpClient) {
@@ -50,10 +50,38 @@ export class Cliente implements OnInit {
   cargarClientes() {
     this.http.get<any[]>(`${this.URL_API}/listar`).subscribe({
       next: (data) => {
-        this.clientes = data || [];
+        const agrupados: any = {};
+
+        (data || []).forEach((row: any) => {
+          if (!agrupados[row.dni]) {
+            agrupados[row.dni] = {
+              dni: row.dni,
+              nombre: row.nombre,
+              apellido_paterno: row.apellido_paterno,
+              apellido_materno: row.apellido_materno,
+              celular: row.celular,
+              estado: row.estado,
+              vehiculos: [],
+            };
+          }
+
+          if (row.placa) {
+            agrupados[row.dni].vehiculos.push({
+              placa: row.placa,
+              marca: row.marca,
+              modelo: row.modelo,
+            });
+          }
+        });
+
+        this.clientes = Object.values(agrupados);
+
         this.cdr.detectChanges();
       },
-      error: (err) => console.error('Error al cargar clientes:', err)
+
+      error: (err) => {
+        console.error('Error al cargar clientes:', err);
+      },
     });
   }
 
@@ -73,8 +101,10 @@ export class Cliente implements OnInit {
         return (
           (c.dni && this.normalizeString(String(c.dni).toLowerCase()).includes(qNorm)) ||
           (c.nombre && this.normalizeString(c.nombre.toLowerCase()).includes(qNorm)) ||
-          (c.apellido_paterno && this.normalizeString(c.apellido_paterno.toLowerCase()).includes(qNorm)) ||
-          (c.apellido_materno && this.normalizeString(c.apellido_materno.toLowerCase()).includes(qNorm)) ||
+          (c.apellido_paterno &&
+            this.normalizeString(c.apellido_paterno.toLowerCase()).includes(qNorm)) ||
+          (c.apellido_materno &&
+            this.normalizeString(c.apellido_materno.toLowerCase()).includes(qNorm)) ||
           (c.celular && this.normalizeString(c.celular.toLowerCase()).includes(qNorm))
         );
       });
@@ -146,11 +176,11 @@ export class Cliente implements OnInit {
       confirmButtonColor: '#ff3b30',
       cancelButtonColor: '#6c757d',
       confirmButtonText: 'Sí, eliminar',
-      cancelButtonText: 'Cancelar'
+      cancelButtonText: 'Cancelar',
     }).then((result: any) => {
       if (result.isConfirmed) {
         this.clienteEditando.vehiculos = this.clienteEditando.vehiculos.filter(
-          (v: any) => v.placa !== vehiculo.placa
+          (v: any) => v.placa !== vehiculo.placa,
         );
         Swal.fire('Eliminado', 'Vehículo eliminado', 'success');
       }
@@ -167,13 +197,13 @@ export class Cliente implements OnInit {
   eliminarCliente(dni: string) {
     Swal.fire({
       title: '¿Eliminar cliente?',
-      text: "Se eliminarán todos los registros asociados a este cliente.",
+      text: 'Se eliminarán todos los registros asociados a este cliente.',
       icon: 'warning',
       showCancelButton: true,
       confirmButtonColor: '#ff3b30',
       cancelButtonColor: '#6c757d',
       confirmButtonText: 'Sí, eliminar',
-      cancelButtonText: 'Cancelar'
+      cancelButtonText: 'Cancelar',
     }).then((result: any) => {
       if (result.isConfirmed) {
         console.log('Enviando eliminación al backend (DELETE /cliente/' + dni + ')');
@@ -192,9 +222,10 @@ export class Cliente implements OnInit {
       celular: c.celular || '',
       correo: c.correo || '',
       estado: c.estado,
-      vehiculos: c.vehiculos && c.vehiculos.length > 0 
-        ? c.vehiculos.map((v: any) => `${v.placa} - ${v.marca} ${v.modelo}`).join(', ')
-        : 'Sin vehículos'
+      vehiculos:
+        c.vehiculos && c.vehiculos.length > 0
+          ? c.vehiculos.map((v: any) => `${v.placa} - ${v.marca} ${v.modelo}`).join(', ')
+          : 'Sin vehículos',
     }));
 
     if (!payload || payload.length === 0) {
@@ -230,9 +261,10 @@ export class Cliente implements OnInit {
       celular: c.celular || '',
       correo: c.correo || '',
       estado: c.estado,
-      vehiculos: c.vehiculos && c.vehiculos.length > 0 
-        ? c.vehiculos.map((v: any) => `${v.placa} - ${v.marca} ${v.modelo}`).join(', ')
-        : 'Sin vehículos'
+      vehiculos:
+        c.vehiculos && c.vehiculos.length > 0
+          ? c.vehiculos.map((v: any) => `${v.placa} - ${v.marca} ${v.modelo}`).join(', ')
+          : 'Sin vehículos',
     }));
 
     if (!payload || payload.length === 0) {

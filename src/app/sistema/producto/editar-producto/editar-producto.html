@@ -44,6 +44,14 @@
     </div>
 
     <div class="col-md-6">
+      <label class="form-label fw-bold small mb-2">Proveedor</label>
+      <select class="form-select form-select-sm" [(ngModel)]="productoEditando.ruc_proveedor">
+        <option value="">Seleccione un proveedor</option>
+        <option *ngFor="let prov of proveedores" [value]="prov.ruc">{{ prov.nombre_empresa }} ({{ prov.ruc }})</option>
+      </select>
+    </div>
+
+    <div class="col-md-6">
       <label class="form-label fw-bold small mb-2">Stock Actual <span class="text-danger">*</span></label>
       <input type="number" min="0"
         class="form-control form-control-sm"

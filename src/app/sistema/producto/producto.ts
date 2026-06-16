@@ -63,7 +63,8 @@ export class Producto implements OnInit {
     return this.productos.filter((p: any) => {
       const matchBusqueda =
         p.nombre?.toLowerCase().includes(this.filtroBusqueda.toLowerCase()) ||
-        p.codigo?.toLowerCase().includes(this.filtroBusqueda.toLowerCase());
+        p.codigo?.toLowerCase().includes(this.filtroBusqueda.toLowerCase()) ||
+        p.nombre_proveedor?.toLowerCase().includes(this.filtroBusqueda.toLowerCase());
       const matchCategoria =
         this.categoriaSeleccionada === 'Todas' || p.categoria === this.categoriaSeleccionada;
       return matchBusqueda && matchCategoria;
@@ -101,6 +102,78 @@ export class Producto implements OnInit {
           error: () => Swal.fire('Error', 'No se pudo eliminar el producto.', 'error')
         });
       }
+    });
+  }
+
+  exportarExcel() {
+    const payload = this.productosFiltrados.map((p) => ({
+      codigo: p.codigo,
+      nombre: p.nombre,
+      marca: p.marca || '',
+      categoria: p.categoria,
+      stock: p.stock,
+      stock_minimo: p.stock_minimo,
+      precio_venta: p.precio_venta,
+      estado: p.estado
+    }));
+
+    if (!payload || payload.length === 0) {
+      Swal.fire('Atención', 'No hay registros en la tabla para exportar', 'info');
+      return;
+    }
+    this.http.post(`${this.URL_API}/export/excel`, payload, { responseType: 'blob' }).subscribe({
+      next: (blob: Blob) => {
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        const timestamp = new Date().getTime();
+        link.download = `Reporte_Productos_${timestamp}.xlsx`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        window.URL.revokeObjectURL(url);
+        Swal.fire('¡Éxito!', 'El reporte de Excel corporativo se ha descargado', 'success');
+      },
+      error: (err) => {
+        console.error('Error al exportar Excel:', err);
+        Swal.fire('Error', 'El servidor no pudo procesar la descarga de Excel', 'error');
+      },
+    });
+  }
+
+  exportarPDF() {
+    const payload = this.productosFiltrados.map((p) => ({
+      codigo: p.codigo,
+      nombre: p.nombre,
+      marca: p.marca || '',
+      categoria: p.categoria,
+      stock: p.stock,
+      stock_minimo: p.stock_minimo,
+      precio_venta: p.precio_venta,
+      estado: p.estado
+    }));
+
+    if (!payload || payload.length === 0) {
+      Swal.fire('Atención', 'No hay registros en la tabla para exportar', 'info');
+      return;
+    }
+    this.http.post(`${this.URL_API}/export/pdf`, payload, { responseType: 'blob' }).subscribe({
+      next: (blob: Blob) => {
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        const timestamp = new Date().getTime();
+        link.download = `Reporte_Productos_${timestamp}.pdf`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        window.URL.revokeObjectURL(url);
+        Swal.fire('¡Éxito!', 'El reporte PDF corporativo se ha descargado', 'success');
+      },
+      error: (err) => {
+        console.error('Error al exportar PDF:', err);
+        Swal.fire('Error', 'El servidor no pudo procesar la descarga del PDF', 'error');
+      },
     });
   }
 }

@@ -124,6 +124,8 @@ export class Proveedor implements OnInit {
       Swal.fire('Atención', 'No hay registros en la tabla para exportar', 'info');
       return;
     }
+    console.log('Enviando datos a:', `${this.URL_API}/export/excel`);
+    console.log('Payload:', payload);
     this.http.post(`${this.URL_API}/export/excel`, payload, { responseType: 'blob' }).subscribe({
       next: (blob: Blob) => {
         const url = window.URL.createObjectURL(blob);
@@ -139,7 +141,7 @@ export class Proveedor implements OnInit {
       },
       error: (err) => {
         console.error('Error al exportar Excel:', err);
-        Swal.fire('Error', 'El servidor no pudo procesar la descarga de Excel', 'error');
+        Swal.fire('Error', 'El servidor no pudo procesar la descarga de Excel. Verifica que el backend tenga el endpoint /export/excel para proveedores.', 'error');
       },
     });
   }
@@ -158,6 +160,8 @@ export class Proveedor implements OnInit {
       Swal.fire('Atención', 'No hay registros en la tabla para exportar', 'info');
       return;
     }
+    console.log('Enviando datos a:', `${this.URL_API}/export/pdf`);
+    console.log('Payload:', payload);
     this.http.post(`${this.URL_API}/export/pdf`, payload, { responseType: 'blob' }).subscribe({
       next: (blob: Blob) => {
         const url = window.URL.createObjectURL(blob);
@@ -173,7 +177,7 @@ export class Proveedor implements OnInit {
       },
       error: (err) => {
         console.error('Error al exportar PDF:', err);
-        Swal.fire('Error', 'El servidor no pudo procesar la descarga del PDF', 'error');
+        Swal.fire('Error', 'El servidor no pudo procesar la descarga del PDF. Verifica que el backend tenga el endpoint /export/pdf para proveedores.', 'error');
       },
     });
   }
