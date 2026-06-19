@@ -124,15 +124,27 @@ export class AgregarTrabajador implements OnInit {
               Swal.fire('DNI validado', 'Información obtenida de RENIEC', 'success');
             } else {
               this.limpiarDatosPersona();
-              Swal.fire('DNI no encontrado', 'No se encontró información en RENIEC. Puede ingresar los datos manualmente.', 'info');
+              this.permiteEdicionManual = true;
+              Swal.fire({
+                title: 'DNI no encontrado',
+                text: 'No se encontró información en RENIEC. Puede ingresar los datos manualmente.',
+                icon: 'info',
+                confirmButtonText: 'Ingresar datos manualmente'
+              });
             }
             this.cdr.detectChanges();
           },
           error: (err) => {
             this.consultandoDni = false;
             this.limpiarDatosPersona();
+            this.permiteEdicionManual = true;
             console.error('Error al buscar DNI en API externa:', err);
-            Swal.fire('Error de API', 'No se pudo conectar con RENIEC. Puede ingresar los datos manualmente.', 'warning');
+            Swal.fire({
+              title: 'Error de API',
+              text: 'No se pudo conectar con RENIEC. Puede ingresar los datos manualmente.',
+              icon: 'warning',
+              confirmButtonText: 'Ingresar datos manualmente'
+            });
             this.cdr.detectChanges();
           },
         });
@@ -143,6 +155,12 @@ export class AgregarTrabajador implements OnInit {
         this.cdr.detectChanges();
       },
     });
+  }
+
+  habilitarEdicionManual() {
+    this.permiteEdicionManual = true;
+    this.dniValidado = true; // Considerar como validado para permitir guardar
+    this.cdr.detectChanges();
   }
 
   limpiarDatosPersona() {
@@ -165,45 +183,6 @@ export class AgregarTrabajador implements OnInit {
 
   get correoValido(): boolean {
     return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(this.nuevoTrabajador.correo);
-  }
-
-  validarCorreoBackend() {
-    if (!this.correoValido || this.correoValidado) {
-      this.errorCorreo = true;
-      return;
-    }
-    this.validandoCorreo = true;
-    this.http
-      .post(
-        `${this.URL_API}/correo/enviar`,
-        { correo: this.nuevoTrabajador.correo, dni: this.nuevoTrabajador.numeroDocumento },
-        { responseType: 'text' },
-      )
-      .subscribe({
-        next: (res) => {
-          this.validandoCorreo = false;
-          if (res === 'CODIGO_ENVIADO') {
-            Swal.fire({
-              title: 'Validar correo',
-              input: 'text',
-              inputLabel: 'Ingrese código de 6 dígitos',
-              inputAttributes: { maxlength: '6' },
-              allowOutsideClick: false,
-              showCancelButton: true,
-            }).then((r) => {
-              if (r.isConfirmed && r.value) this.validarCodigo(r.value);
-            });
-          } else {
-            Swal.fire('Error', 'No se pudo enviar el correo', 'error');
-          }
-          this.cdr.detectChanges();
-        },
-        error: () => {
-          this.validandoCorreo = false;
-          Swal.fire('Error', 'No se pudo enviar el correo', 'error');
-          this.cdr.detectChanges();
-        },
-      });
   }
 
   validarCodigo(codigo: string) {
@@ -290,6 +269,24 @@ export class AgregarTrabajador implements OnInit {
   datosValidos(): boolean {
     const credencialesOk = !this.cargoRequiereCredenciales()
       || (this.nuevoTrabajador.usuario?.trim() && this.nuevoTrabajador.contrasena?.trim());
+    
+    // Si permite edición manual, solo validar que los campos estén llenos
+    if (this.permiteEdicionManual) {
+      return (
+        this.nuevoTrabajador.numeroDocumento?.trim() &&
+        this.nuevoTrabajador.nombre?.trim() &&
+        this.nuevoTrabajador.apellido_paterno?.trim() &&
+        this.nuevoTrabajador.apellido_materno?.trim() &&
+        this.nuevoTrabajador.celular?.trim() &&
+        this.nuevoTrabajador.correo?.trim() &&
+        this.nuevoTrabajador.direccion?.trim() &&
+        !this.errorCelular &&
+        !this.errorCorreo &&
+        credencialesOk
+      );
+    }
+    
+    // Si no permite edición manual, requiere validaciones de API
     return (
       this.dniValidado &&
       this.correoValidado &&
@@ -299,6 +296,51 @@ export class AgregarTrabajador implements OnInit {
       this.nuevoTrabajador.direccion?.trim() &&
       credencialesOk
     );
+  }
+
+  validarCorreoBackend() {
+    // Si está en modo edición manual, no requiere validación por código
+    if (this.permiteEdicionManual) {
+      this.correoValidado = true;
+      return;
+    }
+    
+    if (!this.correoValido || this.correoValidado) {
+      this.errorCorreo = true;
+      return;
+    }
+    this.validandoCorreo = true;
+    this.http
+      .post(
+        `${this.URL_API}/correo/enviar`,
+        { correo: this.nuevoTrabajador.correo, dni: this.nuevoTrabajador.numeroDocumento },
+        { responseType: 'text' },
+      )
+      .subscribe({
+        next: (res) => {
+          this.validandoCorreo = false;
+          if (res === 'CODIGO_ENVIADO') {
+            Swal.fire({
+              title: 'Validar correo',
+              input: 'text',
+              inputLabel: 'Ingrese código de 6 dígitos',
+              inputAttributes: { maxlength: '6' },
+              allowOutsideClick: false,
+              showCancelButton: true,
+            }).then((r) => {
+              if (r.isConfirmed && r.value) this.validarCodigo(r.value);
+            });
+          } else {
+            Swal.fire('Error', 'No se pudo enviar el correo', 'error');
+          }
+          this.cdr.detectChanges();
+        },
+        error: () => {
+          this.validandoCorreo = false;
+          Swal.fire('Error', 'No se pudo enviar el correo', 'error');
+          this.cdr.detectChanges();
+        },
+      });
   }
 
   guardarTrabajador() {

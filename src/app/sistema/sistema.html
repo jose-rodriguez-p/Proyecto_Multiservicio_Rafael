@@ -18,12 +18,12 @@
         <nav class="sidebar-nav">
 
             <div class="sidebar-section-label">Principal</div>
-            <a routerLink="/sistema/dashboard" class="sidebar-link" routerLinkActive="sidebar-link--active">
+            <a *ngIf="tieneAcceso('Dashboard')" routerLink="/sistema/dashboard" class="sidebar-link" routerLinkActive="sidebar-link--active">
                 <i class="bi bi-speedometer2"></i> Dashboard
             </a>
 
             <div class="sidebar-section-label">Operaciones</div>
-            <a class="sidebar-link sidebar-link--collapsible"
+            <a *ngIf="tieneAcceso('Servicios')" class="sidebar-link sidebar-link--collapsible"
                 data-bs-toggle="collapse"
                 href="#menuServicios"
                 aria-expanded="false">
@@ -31,33 +31,33 @@
                 <i class="bi bi-chevron-down sidebar-chevron ms-auto"></i>
             </a>
             <div class="collapse" id="menuServicios">
-                <a routerLink="/sistema/servicio/ventas" class="sidebar-link sidebar-link--sub" routerLinkActive="sidebar-link--active">
+                <a *ngIf="tieneAcceso('Venta')" routerLink="/sistema/servicio/ventas" class="sidebar-link sidebar-link--sub" routerLinkActive="sidebar-link--active">
                     Venta
                 </a>
-                <a routerLink="/sistema/servicio/mantenimiento" class="sidebar-link sidebar-link--sub" routerLinkActive="sidebar-link--active">
+                <a *ngIf="tieneAcceso('Mantenimiento')" routerLink="/sistema/servicio/mantenimiento" class="sidebar-link sidebar-link--sub" routerLinkActive="sidebar-link--active">
                     Mantenimiento
                 </a>
             </div>
-            <a routerLink="/sistema/reabastecimiento" class="sidebar-link" routerLinkActive="sidebar-link--active">
+            <a *ngIf="tieneAcceso('Reabastecimiento')" routerLink="/sistema/reabastecimiento" class="sidebar-link" routerLinkActive="sidebar-link--active">
                 <i class="bi bi-cart-plus"></i> Reabastecimiento
             </a>
 
             <div class="sidebar-section-label">Gestión</div>
-            <a routerLink="/sistema/producto" class="sidebar-link" routerLinkActive="sidebar-link--active">
+            <a *ngIf="tieneAcceso('Productos')" routerLink="/sistema/producto" class="sidebar-link" routerLinkActive="sidebar-link--active">
                 <i class="bi bi-box-seam"></i> Productos
             </a>
-            <a routerLink="/sistema/proveedor" class="sidebar-link" routerLinkActive="sidebar-link--active">
+            <a *ngIf="tieneAcceso('Proveedores')" routerLink="/sistema/proveedor" class="sidebar-link" routerLinkActive="sidebar-link--active">
                 <i class="bi bi-truck"></i> Proveedores
             </a>
-            <a routerLink="/sistema/cliente" class="sidebar-link" routerLinkActive="sidebar-link--active">
+            <a *ngIf="tieneAcceso('Clientes')" routerLink="/sistema/cliente" class="sidebar-link" routerLinkActive="sidebar-link--active">
                 <i class="bi bi-people"></i> Clientes
             </a>
-            <a routerLink="/sistema/trabajador" class="sidebar-link" routerLinkActive="sidebar-link--active">
+            <a *ngIf="tieneAcceso('Trabajadores')" routerLink="/sistema/trabajador" class="sidebar-link" routerLinkActive="sidebar-link--active">
                 <i class="bi bi-person-badge"></i> Trabajadores
             </a>
 
             <div class="sidebar-divider"></div>
-            <a routerLink="/sistema/configuracion" class="sidebar-link" routerLinkActive="sidebar-link--active">
+            <a *ngIf="tieneAcceso('Configuración') || tieneAcceso('configuraciones')" routerLink="/sistema/configuracion" class="sidebar-link" routerLinkActive="sidebar-link--active">
                 <i class="bi bi-gear"></i> Configuración
             </a>
 
@@ -74,28 +74,20 @@
         </div>
 
     </div>
-
-    <!-- CONTENIDO PRINCIPAL -->
     <div class="contenedor_informacion">
 
-        <!-- NAVBAR -->
         <nav class="top-navbar">
-            <!-- Botón hamburguesa móvil -->
             <button class="btn-hamburger d-lg-none"
                 data-bs-toggle="offcanvas"
                 data-bs-target="#menuMovil"
                 aria-label="Abrir menú">
                 <i class="bi bi-list"></i>
             </button>
-
-            <!-- Breadcrumb dinámico -->
             <div class="top-navbar-breadcrumb d-none d-lg-flex">
                 <span>Sistema</span>
                 <i class="bi bi-chevron-right"></i>
                 <span class="top-navbar-breadcrumb-current">{{ getNombreRuta() }}</span>
             </div>
-
-            <!-- Perfil -->
             <div class="top-navbar-profile ms-auto">
                 <div class="top-navbar-avatar">A</div>
                 <div class="d-none d-sm-block">
@@ -104,8 +96,6 @@
                 </div>
             </div>
         </nav>
-
-        <!-- Contenido de cada módulo -->
         <div class="modulo-contenido">
             <router-outlet></router-outlet>
         </div>
@@ -130,40 +120,40 @@
     <div class="offcanvas-body">
         <nav class="sidebar-nav">
             <div class="sidebar-section-label">Principal</div>
-            <a routerLink="/sistema/dashboard" data-bs-dismiss="offcanvas" class="sidebar-link" routerLinkActive="sidebar-link--active">
+            <a *ngIf="tieneAcceso('Dashboard')" routerLink="/sistema/dashboard" data-bs-dismiss="offcanvas" class="sidebar-link" routerLinkActive="sidebar-link--active">
                 <i class="bi bi-speedometer2"></i> Dashboard
             </a>
 
             <div class="sidebar-section-label">Operaciones</div>
-            <a class="sidebar-link sidebar-link--collapsible" data-bs-toggle="collapse" href="#menuServiciosMovil">
+            <a *ngIf="tieneAcceso('Servicios')" class="sidebar-link sidebar-link--collapsible" data-bs-toggle="collapse" href="#menuServiciosMovil">
                 <i class="bi bi-tools"></i> Servicios
                 <i class="bi bi-chevron-down sidebar-chevron ms-auto"></i>
             </a>
             <div class="collapse" id="menuServiciosMovil">
-                <a routerLink="/sistema/servicio/ventas" data-bs-dismiss="offcanvas" class="sidebar-link sidebar-link--sub" routerLinkActive="sidebar-link--active">Venta</a>
-                <a routerLink="/sistema/servicio/mantenimiento" data-bs-dismiss="offcanvas" class="sidebar-link sidebar-link--sub" routerLinkActive="sidebar-link--active">Mantenimiento</a>
+                <a *ngIf="tieneAcceso('Venta')" routerLink="/sistema/servicio/ventas" data-bs-dismiss="offcanvas" class="sidebar-link sidebar-link--sub" routerLinkActive="sidebar-link--active">Venta</a>
+                <a *ngIf="tieneAcceso('Mantenimiento')" routerLink="/sistema/servicio/mantenimiento" data-bs-dismiss="offcanvas" class="sidebar-link sidebar-link--sub" routerLinkActive="sidebar-link--active">Mantenimiento</a>
             </div>
 
-            <a routerLink="/sistema/producto" data-bs-dismiss="offcanvas" class="sidebar-link" routerLinkActive="sidebar-link--active">
+            <a *ngIf="tieneAcceso('Productos')" routerLink="/sistema/producto" data-bs-dismiss="offcanvas" class="sidebar-link" routerLinkActive="sidebar-link--active">
                 <i class="bi bi-box-seam"></i> Productos
             </a>
-            <a routerLink="/sistema/reabastecimiento" data-bs-dismiss="offcanvas" class="sidebar-link" routerLinkActive="sidebar-link--active">
+            <a *ngIf="tieneAcceso('Reabastecimiento')" routerLink="/sistema/reabastecimiento" data-bs-dismiss="offcanvas" class="sidebar-link" routerLinkActive="sidebar-link--active">
                 <i class="bi bi-cart-plus"></i> Reabastecimiento
             </a>
 
             <div class="sidebar-section-label">Gestión</div>
-            <a routerLink="/sistema/proveedor" data-bs-dismiss="offcanvas" class="sidebar-link" routerLinkActive="sidebar-link--active">
+            <a *ngIf="tieneAcceso('Proveedores')" routerLink="/sistema/proveedor" data-bs-dismiss="offcanvas" class="sidebar-link" routerLinkActive="sidebar-link--active">
                 <i class="bi bi-truck"></i> Proveedores
             </a>
-            <a routerLink="/sistema/cliente" data-bs-dismiss="offcanvas" class="sidebar-link" routerLinkActive="sidebar-link--active">
+            <a *ngIf="tieneAcceso('Clientes')" routerLink="/sistema/cliente" data-bs-dismiss="offcanvas" class="sidebar-link" routerLinkActive="sidebar-link--active">
                 <i class="bi bi-people"></i> Clientes
             </a>
-            <a routerLink="/sistema/trabajador" data-bs-dismiss="offcanvas" class="sidebar-link" routerLinkActive="sidebar-link--active">
+            <a *ngIf="tieneAcceso('Trabajadores')" routerLink="/sistema/trabajador" data-bs-dismiss="offcanvas" class="sidebar-link" routerLinkActive="sidebar-link--active">
                 <i class="bi bi-person-badge"></i> Trabajadores
             </a>
 
             <div class="sidebar-divider"></div>
-            <a routerLink="/sistema/configuracion" data-bs-dismiss="offcanvas" class="sidebar-link" routerLinkActive="sidebar-link--active">
+            <a *ngIf="tieneAcceso('Configuración')" routerLink="/sistema/configuracion" data-bs-dismiss="offcanvas" class="sidebar-link" routerLinkActive="sidebar-link--active">
                 <i class="bi bi-gear"></i> Configuración
             </a>
         </nav>

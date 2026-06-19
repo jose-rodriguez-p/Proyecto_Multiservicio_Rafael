@@ -15,7 +15,7 @@ import Swal from 'sweetalert2';
 export class Proveedor implements OnInit {
   mostrarModal = false;
   filtroBusqueda: string = '';
-  filtroEstado: string = 'Activo'; // NUEVO: Por defecto lista solo los Activos
+  filtroEstado: string = 'Activo';
   proveedores: any[] = [];
 
   private platformId = inject(PLATFORM_ID);
@@ -75,6 +75,10 @@ export class Proveedor implements OnInit {
 
       return coincideTexto && coincideEstado;
     });
+  }
+
+  aplicarFiltros() {
+    this.cdr.detectChanges();
   }
 
   abrirModal() {

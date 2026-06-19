@@ -33,25 +33,25 @@
             <div class="col-12">
                 <label class="form-label fw-bold small mb-2">Nombres</label>
                 <input type="text" class="form-control" [(ngModel)]="nuevoCliente.nombre" 
-                       name="nombre" [readonly]="dniValidado" [ngClass]="{'bg-light': dniValidado}" required>
+                       name="nombre" [readonly]="dniValidado" [ngClass]="{'bg-light': dniValidado, 'is-invalid': permiteEdicionManual && !nuevoCliente.nombre?.trim()}" required>
             </div>
 
             <div class="col-md-6">
                 <label class="form-label fw-bold small mb-2">Apellido Paterno</label>
                 <input type="text" class="form-control" [(ngModel)]="nuevoCliente.apellido_paterno" 
-                       name="apellido_paterno" [readonly]="dniValidado" [ngClass]="{'bg-light': dniValidado}" required>
+                       name="apellido_paterno" [readonly]="dniValidado" [ngClass]="{'bg-light': dniValidado, 'is-invalid': permiteEdicionManual && !nuevoCliente.apellido_paterno?.trim()}" required>
             </div>
             <div class="col-md-6">
                 <label class="form-label fw-bold small mb-2">Apellido Materno</label>
                 <input type="text" class="form-control" [(ngModel)]="nuevoCliente.apellido_materno" 
-                       name="apellido_materno" [readonly]="dniValidado" [ngClass]="{'bg-light': dniValidado}">
+                       name="apellido_materno" [readonly]="dniValidado" [ngClass]="{'bg-light': dniValidado, 'is-invalid': permiteEdicionManual && !nuevoCliente.apellido_materno?.trim()}" required>
             </div>
 
             <div class="col-md-6">
                 <label class="form-label fw-bold small mb-2">Celular</label>
                 <input type="text" maxlength="9" class="form-control"
                     [(ngModel)]="nuevoCliente.celular" (input)="validarCelular()" name="celular"
-                    placeholder="9XXXXXXXX" [ngClass]="{'is-invalid': errorCelular}">
+                    placeholder="9XXXXXXXX" [ngClass]="{'is-invalid': errorCelular || (permiteEdicionManual && !nuevoCliente.celular?.trim())}">
                 <div class="text-danger small mt-2" *ngIf="errorCelular">Debe comenzar con 9 y tener 9 dígitos.</div>
             </div>
 
@@ -60,8 +60,8 @@
                 <div class="input-group">
                     <input type="email" class="form-control" [(ngModel)]="nuevoCliente.correo" 
                            (input)="validarCorreo()" name="correo" placeholder="correo@dominio.com"
-                           [readonly]="correoValidado" [ngClass]="{'bg-light': correoValidado}">
-                    <button *ngIf="!correoValidado && !validandoCorreo" class="btn btn-outline-success" type="button" (click)="validarCorreoBackend()">
+                           [readonly]="correoValidado" [ngClass]="{'bg-light': correoValidado, 'is-invalid': errorCorreo}">
+                    <button *ngIf="!correoValidado && !validandoCorreo && !permiteEdicionManual" class="btn btn-outline-success" type="button" (click)="validarCorreoBackend()">
                         Validar
                     </button>
                     <span class="input-group-text" *ngIf="validandoCorreo">
@@ -103,7 +103,7 @@
 
 <div class="modal-footer border-0 p-4 p-md-5">
     <button class="btn btn-outline-secondary" (click)="cerrarModal()">Cancelar</button>
-    <button class="btn btn-danger" (click)="guardarCliente()" [disabled]="!dniValidado || !correoValidado">
+    <button class="btn btn-danger" (click)="guardarCliente()" [disabled]="!puedeGuardar">
         Guardar Cliente
     </button>
 </div>

@@ -29,6 +29,7 @@ export class AgregarCliente {
   errorDni = false;
   errorCelular = false;
   errorCorreo = false;
+  permiteEdicionManual = false;
 
   validarDni() {
     const dni = this.nuevoCliente.dni.replace(/\D/g, '');
@@ -45,16 +46,33 @@ export class AgregarCliente {
           this.nuevoCliente.apellido_paterno = data.apellidoPaterno || '';
           this.nuevoCliente.apellido_materno = data.apellidoMaterno || '';
           this.dniValidado = true;
-        } else { this.dniValidado = false; Swal.fire('Atención', 'No encontrado en RENIEC', 'info'); }
+          this.permiteEdicionManual = false;
+        } else { 
+          this.dniValidado = false;
+          this.permiteEdicionManual = true;
+          Swal.fire('Atención', 'No encontrado en RENIEC. Puede ingresar los datos manualmente.', 'info'); 
+        }
         this.cdr.detectChanges();
       },
-      error: () => { this.consultandoDni = false; this.dniValidado = false; this.cdr.detectChanges(); }
+      error: () => { 
+        this.consultandoDni = false; 
+        this.dniValidado = false;
+        this.permiteEdicionManual = true;
+        Swal.fire('Error de API', 'No se pudo conectar con RENIEC. Puede ingresar los datos manualmente.', 'warning');
+        this.cdr.detectChanges();
+      }
     });
   }
 
   get esCorreoValido(): boolean { return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(this.nuevoCliente.correo); }
   
   validarCorreoBackend() {
+    // Si está en modo edición manual, no requiere validación por código
+    if (this.permiteEdicionManual) {
+      this.correoValidado = true;
+      return;
+    }
+    
     if (!this.esCorreoValido) return;
     this.validandoCorreo = true;
     this.http.post(`${this.URL_API}/correo/enviar`, { correo: this.nuevoCliente.correo, dni: this.nuevoCliente.dni }, { responseType: 'text' }).subscribe({
@@ -102,20 +120,38 @@ export class AgregarCliente {
   cerrarModalVehiculo() { this.mostrarModalVehiculo = false; }
   eliminarVehiculo(veh: any) { this.vehiculos = this.vehiculos.filter(v => v.placa !== veh.placa); }
   validarCelular() { this.errorCelular = this.nuevoCliente.celular && !/^9\d{8}$/.test(this.nuevoCliente.celular); }
+
+  // Getter centralizado: usado en el HTML con [disabled]="!puedeGuardar"
+  get puedeGuardar(): boolean {
+    if (this.permiteEdicionManual) {
+      return !!(
+        this.nuevoCliente.dni?.trim() &&
+        this.nuevoCliente.nombre?.trim() &&
+        this.nuevoCliente.apellido_paterno?.trim() &&
+        this.nuevoCliente.apellido_materno?.trim() &&
+        this.nuevoCliente.celular?.trim() &&
+        this.nuevoCliente.correo?.trim() &&
+        !this.errorCelular &&
+        !this.errorCorreo
+      );
+    }
+    return this.dniValidado && this.correoValidado;
+  }
   
   guardarCliente() {
-    if (!this.dniValidado || !this.correoValidado) {
-        Swal.fire('Error', 'Debe validar DNI y Correo antes de continuar', 'warning');
-        return;
+    if (!this.puedeGuardar) {
+      Swal.fire('Error', 'Complete todos los campos correctamente', 'warning');
+      return;
     }
-    const payload = { 
-        nuevoCliente: this.nuevoCliente, 
-        vehiculos: this.vehiculos 
+    
+    const payload = {
+        cliente: this.nuevoCliente,
+        carros: this.vehiculos
     };
     this.http.post(`${this.URL_API}/registrar`, payload, { responseType: 'text' }).subscribe({
-      next: () => { 
-        Swal.fire('Guardado', 'Cliente registrado exitosamente', 'success'); 
-        this.cerrarModal(); 
+      next: () => {
+        Swal.fire('Guardado', 'Cliente registrado exitosamente', 'success');
+        this.cerrarModal();
       },
       error: (err) => Swal.fire('Error', err.error || 'Error al registrar cliente', 'error')
     });

@@ -50,31 +50,16 @@ export class Cliente implements OnInit {
   cargarClientes() {
     this.http.get<any[]>(`${this.URL_API}/listar`).subscribe({
       next: (data) => {
-        const agrupados: any = {};
-
-        (data || []).forEach((row: any) => {
-          if (!agrupados[row.dni]) {
-            agrupados[row.dni] = {
-              dni: row.dni,
-              nombre: row.nombre,
-              apellido_paterno: row.apellido_paterno,
-              apellido_materno: row.apellido_materno,
-              celular: row.celular,
-              estado: row.estado,
-              vehiculos: [],
-            };
-          }
-
-          if (row.placa) {
-            agrupados[row.dni].vehiculos.push({
-              placa: row.placa,
-              marca: row.marca,
-              modelo: row.modelo,
-            });
-          }
-        });
-
-        this.clientes = Object.values(agrupados);
+        this.clientes = (data || []).map((row: any) => ({
+          dni: row.dni,
+          nombre: row.nombre,
+          apellido_paterno: row.apellido_paterno,
+          apellido_materno: row.apellido_materno,
+          celular: row.celular,
+          correo: row.correo,
+          estado: row.estado,
+          vehiculos: row.carros || [],
+        }));
 
         this.cdr.detectChanges();
       },
@@ -93,19 +78,17 @@ export class Cliente implements OnInit {
       list = list.filter((c: any) => c.estado === this.filtroEstado);
     }
 
-    // Filtrar por búsqueda de texto
+    // Filtrar por búsqueda de texto (solo nombre)
     if (this.filtroBusqueda && this.filtroBusqueda.trim() !== '') {
       const q = this.filtroBusqueda.toLowerCase();
       const qNorm = this.normalizeString(q);
       list = list.filter((c: any) => {
         return (
-          (c.dni && this.normalizeString(String(c.dni).toLowerCase()).includes(qNorm)) ||
           (c.nombre && this.normalizeString(c.nombre.toLowerCase()).includes(qNorm)) ||
           (c.apellido_paterno &&
             this.normalizeString(c.apellido_paterno.toLowerCase()).includes(qNorm)) ||
           (c.apellido_materno &&
-            this.normalizeString(c.apellido_materno.toLowerCase()).includes(qNorm)) ||
-          (c.celular && this.normalizeString(c.celular.toLowerCase()).includes(qNorm))
+            this.normalizeString(c.apellido_materno.toLowerCase()).includes(qNorm))
         );
       });
     }

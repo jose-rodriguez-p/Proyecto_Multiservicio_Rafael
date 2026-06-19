@@ -1,16 +1,19 @@
 import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { RouterOutlet, RouterLinkWithHref, RouterLinkActive, Router, NavigationEnd } from '@angular/router';
+import { CommonModule } from '@angular/common';
 import { filter } from 'rxjs/operators';
 
 @Component({
   selector: 'app-sistema',
-  imports: [RouterOutlet, RouterLinkWithHref, RouterLinkActive],
+  imports: [CommonModule, RouterOutlet, RouterLinkWithHref, RouterLinkActive],
   templateUrl: './sistema.html',
   styleUrl: './sistema.css',
 })
 export class Sistema implements OnInit {
 
   nombreRutaActual = 'Panel';
+  menusAutorizados: string[] = [];
+  usuarioActual: any = null;
 
   private rutaNombres: { [key: string]: string } = {
     'dashboard':        'Dashboard',
@@ -32,16 +35,48 @@ export class Sistema implements OnInit {
   constructor(private router: Router, private cdr: ChangeDetectorRef) {}
 
   ngOnInit() {
-    // Actualizar al iniciar
+    this.cargarUsuario();
     this.actualizarNombre(this.router.url);
-
-    // Actualizar cada vez que cambia la ruta
     this.router.events
       .pipe(filter(event => event instanceof NavigationEnd))
       .subscribe((event: any) => {
         this.actualizarNombre(event.urlAfterRedirects || event.url);
         this.cdr.detectChanges();
       });
+  }
+
+  cargarUsuario() {
+    const userStr = localStorage.getItem('currentUser');
+    if (userStr) {
+      this.usuarioActual = JSON.parse(userStr);
+      this.menusAutorizados = this.usuarioActual.accesoMenu || [];
+      console.log('Usuario completo:', this.usuarioActual);
+      console.log('Menús autorizados:', this.menusAutorizados);
+    } else {
+      console.log('No se encontró usuario en localStorage');
+    }
+  }
+
+  tieneAcceso(menu: string): boolean {
+    console.log(`Verificando acceso a: "${menu}"`);
+    console.log(`Menús autorizados:`, this.menusAutorizados);
+    
+    // Si el menú está directamente en la lista autorizada (case-insensitive)
+    const found = this.menusAutorizados.some(m => m.toLowerCase() === menu.toLowerCase());
+    console.log(`Coincidencia directa: ${found}`);
+    
+    if (found) {
+      return true;
+    }
+  
+    if (menu === 'Venta' || menu === 'Mantenimiento') {
+      const hasServicios = this.menusAutorizados.some(m => m.toLowerCase() === 'servicios');
+      console.log(`Verificando submenú ${menu}, tiene Servicios: ${hasServicios}`);
+      return hasServicios;
+    }
+    
+    console.log(`Acceso denegado para: ${menu}`);
+    return false;
   }
 
   private actualizarNombre(url: string) {
