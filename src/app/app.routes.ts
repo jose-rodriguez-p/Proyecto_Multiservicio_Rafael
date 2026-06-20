@@ -13,8 +13,10 @@ import { EditarProducto } from './sistema/producto/editar-producto/editar-produc
 import { Configuracion } from './sistema/configuracion/configuracion';
 import { Servicio } from './sistema/servicio/servicio';
 import { Mantenimiento } from './sistema/servicio/mantenimiento/mantenimiento';
-import { Venta } from './sistema/servicio/venta/crear-venta/crear-venta';
-import { VentasIndex } from './sistema/servicio/venta/ventas-index/ventas-index';
+import { CrearMantenimiento } from './sistema/servicio/mantenimiento/crear-mantenimiento/crear-mantenimiento';
+import { MantenimientoIndex } from './sistema/servicio/mantenimiento/mantenimiento-index/mantenimiento-index';
+import { VentasIndex } from './sistema/servicio/ventas/ventas-index/ventas-index';
+import { CrearVenta } from './sistema/servicio/ventas/crear-venta/crear-venta';
 import { Reabastecimiento } from './sistema/reabastecimiento/reabastecimiento';
 import { authGuard } from './auth.guard';
 import { Rol } from './sistema/configuracion/rol/rol';
@@ -25,6 +27,7 @@ import { AgregarProveedor } from './sistema/proveedor/agregar-proveedor/agregar-
 import { ActualizarContrasena } from './sistema/configuracion/actualizar-contrasena/actualizar-contrasena';
 import { AgregarCliente } from './sistema/cliente/agregar-cliente/agregar-cliente';
 import { EditarCliente } from './sistema/cliente/editar-cliente/editar-cliente';
+
 
 export const routes: Routes = [
   {
@@ -74,8 +77,8 @@ export const routes: Routes = [
         path: 'servicio',
         component: Servicio,
         children: [
-          { path: 'venta', component: Venta },
-          { path: 'ventas-index', component: VentasIndex },
+          { path: 'ventas', component: VentasIndex },
+          { path: 'crearVenta', component: CrearVenta},
           { path: 'mantenimiento', component: Mantenimiento },
         ],
       },

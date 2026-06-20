@@ -1,5 +1,5 @@
-/* ── Dropdown de repuestos ─────────────────────────────────────────────────── */
-.dropdown-repuesto {
+/* ── Dropdown de repuestos (por fila) ──────────────────────────────────────── */
+.dropdown-producto {
   position: absolute;
   top: 100%;
   left: 0;
@@ -7,27 +7,51 @@
   background: #fff;
   border: 1px solid #dee2e6;
   border-radius: 6px;
-  max-height: 220px;
+  max-height: 260px;
   overflow-y: auto;
-  min-width: 300px;
+  min-width: 320px;
+  margin-top: 2px;
 }
 
-.dropdown-item-rep {
+.dropdown-producto-item {
   padding: 8px 12px;
   cursor: pointer;
   border-bottom: 1px solid #f0f0f0;
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 4px;
 }
 
-.dropdown-item-rep:hover {
+.dropdown-producto-item:hover {
   background-color: #fff5f5;
 }
 
-.dropdown-item-rep:last-child {
+.dropdown-producto-item:last-child {
   border-bottom: none;
+}
+
+.dropdown-producto-empty {
+  padding: 10px 12px;
+  color: #6c757d;
+  font-size: 0.8rem;
+  text-align: center;
+}
+
+/* ── Lista de clientes en panel ────────────────────────────────────────────── */
+.lista-clientes {
+  max-height: 380px;
+  overflow-y: auto;
+}
+
+.lista-cliente-item {
+  padding: 10px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  border: 1px solid #f0f0f0;
+  margin-bottom: 6px;
+  transition: background 0.15s;
+}
+
+.lista-cliente-item:hover {
+  background-color: #fff5f5;
+  border-color: #f5c6cb;
 }
 
 /* ── Panel lateral cliente ─────────────────────────────────────────────────── */
@@ -58,6 +82,7 @@
   background: #f8f9fa;
   position: sticky;
   top: 0;
+  z-index: 10;
 }
 
 /* ── Tabla detalle ─────────────────────────────────────────────────────────── */
