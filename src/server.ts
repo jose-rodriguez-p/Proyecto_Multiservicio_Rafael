@@ -10,6 +10,7 @@ import { join } from 'node:path';
 const browserDistFolder = join(import.meta.dirname, '../browser');
 
 const app = express();
+app.set('trust proxy', true);
 const angularApp = new AngularNodeAppEngine();
 
 /**
@@ -39,6 +40,14 @@ app.use(
  * Handle all other requests by rendering the Angular application.
  */
 app.use((req, res, next) => {
+  if (!process.env['API_URL']) {
+    const host = req.get('host') || '';
+    if (host.includes('localhost') || host.includes('127.0.0.1')) {
+      process.env['API_URL'] = 'http://localhost:8080';
+    } else {
+      process.env['API_URL'] = `${req.protocol}://${host}`;
+    }
+  }
   angularApp
     .handle(req)
     .then((response) =>
