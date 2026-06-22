@@ -15,9 +15,9 @@ const getApiBaseUrl = (): string => {
     if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
       return 'http://localhost:8080';
     }
-    // En producción, usamos el origen actual (el dominio de la web).
-    // Con Nginx/Dokploy, las llamadas relativas a /api se redirigirán automáticamente al backend.
-    return window.location.origin;
+    
+    // EN PRODUCCIÓN: Apunta directamente a tu nueva URL de Render
+    return 'https://backend-inventario-qy76.onrender.com';
   }
 
   // Fallback por defecto si no se detecta el entorno
