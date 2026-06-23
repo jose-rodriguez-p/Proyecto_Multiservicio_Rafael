@@ -52,6 +52,12 @@
                 <div class="text-danger small mt-1" *ngIf="errorCorreo">Correo inválido</div>
                 <div class="text-success small mt-1" *ngIf="correoValidado">Correo validado</div>
             </div>
+            <div class="col-12">
+                <label class="form-label fw-bold small mb-2">Dirección</label>
+                <input type="text" class="form-control form-control-sm"
+                    [(ngModel)]="trabajadorEditando.direccion"
+                    name="direccion_edit" required>
+            </div>
             <div class="col-md-6">
                 <label class="form-label fw-bold small mb-2">Cargo</label>
                 <select class="form-select form-select-sm"
