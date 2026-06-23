@@ -1,55 +1,103 @@
-<div class="bg-white rounded-3 overflow-hidden shadow-lg w-100">
-  <div class="modal-header bg-danger text-white border-0">
-    <h4 class="fw-bold mb-0">
-      <i class="bi bi-plus-circle me-2"></i> Nuevo Rol
-    </h4>
+<div class="bg-white rounded-3 overflow-hidden">
+
+  <div class="modal-header border-0 px-4 pt-4 pb-3" style="background: linear-gradient(135deg, #b91c1c 0%, #991b1b 100%);">
+    <div class="d-flex align-items-center gap-3">
+      <div style="width:40px;height:40px;background:rgba(255,255,255,0.2);border-radius:10px;display:flex;align-items:center;justify-content:center;">
+        <i class="bi bi-shield-plus text-white fs-5"></i>
+      </div>
+      <div>
+        <h5 class="fw-bold mb-0 text-white">Nuevo Rol</h5>
+        <small class="text-white" style="opacity:0.8;">Complete los datos del nuevo rol</small>
+      </div>
+    </div>
   </div>
+
   <div class="modal-body p-4">
-    <div class="row g-4">
+    <div class="row g-3">
 
       <div class="col-md-6">
-        <label class="form-label fw-semibold text-dark">Nombre del Rol</label>
-        <input 
-          class="form-control" 
-          placeholder="Ej. Administrador" 
+        <label class="form-label fw-semibold text-secondary small">
+          <i class="bi bi-shield-lock me-1 text-danger"></i> Nombre del Rol
+        </label>
+        <input
+          class="form-control"
+          placeholder="Ej. Administrador"
           [(ngModel)]="newRole.nombre" />
       </div>
 
       <div class="col-md-6">
-        <label class="form-label fw-semibold text-dark">Estado</label>
+        <label class="form-label fw-semibold text-secondary small">
+          <i class="bi bi-toggle-on me-1 text-danger"></i> Estado
+        </label>
         <select class="form-select" [(ngModel)]="newRole.activo">
           <option [ngValue]="true">Activo</option>
           <option [ngValue]="false">Inactivo</option>
         </select>
       </div>
 
-      <div class="col-12 mt-4">
-        <h5 class="fw-semibold text-dark border-bottom pb-2">Menús asignados</h5>
-      </div>
-
-      <div *ngFor="let menu of availableMenus" class="col-md-6">
-        <div class="form-check">
-          <input 
-            type="checkbox" 
-            class="form-check-input" 
-            [checked]="newRole.menus.includes(menu)" 
-            (change)="toggleMenu(menu)" />
-          <label class="form-check-label text-dark fw-medium">
-            {{ menu }}
-          </label>
+      <div class="col-12 mt-2">
+        <div class="d-flex align-items-center gap-2 mb-3">
+          <i class="bi bi-list-check text-danger fs-5"></i>
+          <span class="fw-semibold text-secondary">Menús asignados</span>
+        </div>
+        <div class="row g-2">
+          <div *ngFor="let menu of availableMenus" class="col-md-6">
+            <div
+              class="menu-check-card"
+              [class.selected]="newRole.menus.includes(menu)"
+              (click)="toggleMenu(menu)">
+              <input
+                type="checkbox"
+                class="form-check-input"
+                [checked]="newRole.menus.includes(menu)"
+                (change)="toggleMenu(menu)"
+                (click)="$event.stopPropagation()" />
+              <span class="ms-2 fw-medium">{{ menu }}</span>
+              <i class="bi ms-auto"
+                [class.bi-check-circle-fill]="newRole.menus.includes(menu)"
+                [class.text-success]="newRole.menus.includes(menu)"
+                [class.bi-circle]="!newRole.menus.includes(menu)"
+                [class.text-muted]="!newRole.menus.includes(menu)"></i>
+            </div>
+          </div>
         </div>
       </div>
 
     </div>
   </div>
 
-  <div class="modal-footer border-0 bg-light p-3">
-    <button type="button" class="btn btn-outline-secondary" (click)="cancelar()">
+  <div class="modal-footer border-0 bg-light px-4 py-3">
+    <button type="button" class="btn btn-light border fw-medium px-4" (click)="cancelar()">
       Cancelar
     </button>
-    <button type="button" class="btn btn-dangerpx px-4" (click)="guardarRol()">
-      Guardar Rol
+    <button type="button" class="btn btn-danger fw-medium px-4" (click)="guardarRol()">
+      <i class="bi bi-save me-2"></i> Guardar Rol
     </button>
   </div>
 
 </div>
+
+<style>
+.menu-check-card {
+  display: flex;
+  align-items: center;
+  padding: 0.55rem 0.85rem;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  transition: border-color 0.15s, background 0.15s;
+  user-select: none;
+  background: #fff;
+}
+
+.menu-check-card:hover {
+  border-color: #fca5a5;
+  background: #fff5f5;
+}
+
+.menu-check-card.selected {
+  border-color: #16a34a;
+  background: #f0fdf4;
+}
+</style>
