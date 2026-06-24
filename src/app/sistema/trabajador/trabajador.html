@@ -42,6 +42,7 @@
                         <th>Apellido Materno</th>
                         <th>Cargo</th>
                         <th>Contacto</th>
+                        <th>Dirección</th>
                         <th class="text-center">Estado</th>
                         <th class="text-center">fecha registro</th>
                         <th class="text-center">Acciones</th>
@@ -59,6 +60,9 @@
                         <td>
                             <div class="small"><i class="bi bi-telephone me-1"></i>{{ trab.celular }}</div>
                             <div class="small text-muted"><i class="bi bi-envelope me-1"></i>{{ trab.correo }}</div>
+                        </td>
+                        <td>
+                            <div class="small">{{ trab.direccion || '-' }}</div>
                         </td>
                         <td class="text-center">
                             <span class="badge" [class.bg-success]="trab.estado === 'Activo'" [class.bg-secondary]="trab.estado !== 'Activo'">

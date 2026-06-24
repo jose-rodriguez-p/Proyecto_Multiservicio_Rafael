@@ -1,6 +1,6 @@
-import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef, inject, PLATFORM_ID } from '@angular/core';
 import { RouterOutlet, RouterLinkWithHref, RouterLinkActive, Router, NavigationEnd } from '@angular/router';
-import { CommonModule } from '@angular/common';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { filter } from 'rxjs/operators';
 
 @Component({
@@ -10,10 +10,10 @@ import { filter } from 'rxjs/operators';
   styleUrl: './sistema.css',
 })
 export class Sistema implements OnInit {
-
   nombreRutaActual = 'Panel';
   menusAutorizados: string[] = [];
   usuarioActual: any = null;
+  private platformId = inject(PLATFORM_ID);
 
   private rutaNombres: { [key: string]: string } = {
     'dashboard':        'Dashboard',
@@ -46,36 +46,26 @@ export class Sistema implements OnInit {
   }
 
   cargarUsuario() {
+    if (!isPlatformBrowser(this.platformId)) {
+      return;
+    }
+    
     const userStr = localStorage.getItem('currentUser');
     if (userStr) {
       this.usuarioActual = JSON.parse(userStr);
-      this.menusAutorizados = this.usuarioActual.accesoMenu || [];
-      console.log('Usuario completo:', this.usuarioActual);
-      console.log('Menús autorizados:', this.menusAutorizados);
-    } else {
-      console.log('No se encontró usuario en localStorage');
+      this.menusAutorizados = this.usuarioActual.menus || this.usuarioActual.accesoMenu || [];
     }
   }
 
   tieneAcceso(menu: string): boolean {
-    console.log(`Verificando acceso a: "${menu}"`);
-    console.log(`Menús autorizados:`, this.menusAutorizados);
-    
-    // Si el menú está directamente en la lista autorizada (case-insensitive)
-    const found = this.menusAutorizados.some(m => m.toLowerCase() === menu.toLowerCase());
-    console.log(`Coincidencia directa: ${found}`);
-    
-    if (found) {
+    if (this.menusAutorizados.some(m => m.toLowerCase() === menu.toLowerCase())) {
       return true;
     }
-  
+    
     if (menu === 'Venta' || menu === 'Mantenimiento') {
-      const hasServicios = this.menusAutorizados.some(m => m.toLowerCase() === 'servicios');
-      console.log(`Verificando submenú ${menu}, tiene Servicios: ${hasServicios}`);
-      return hasServicios;
+      return this.menusAutorizados.some(m => m.toLowerCase() === 'servicios');
     }
     
-    console.log(`Acceso denegado para: ${menu}`);
     return false;
   }
 
@@ -90,7 +80,9 @@ export class Sistema implements OnInit {
   }
 
   cerrarSesion() {
-    localStorage.removeItem('currentUser');
+    if (isPlatformBrowser(this.platformId)) {
+      localStorage.removeItem('currentUser');
+    }
     this.router.navigate(['/login']);
   }
 }

@@ -124,7 +124,10 @@ export class Trabajador implements OnInit {
   cargarTrabajadores() {
     this.http.get<any[]>(`${this.URL_API}/listar`).subscribe({
       next: (data) => {
-        this.trabajadores = data || [];
+        this.trabajadores = (data || []).map((t: any) => ({
+          ...t,
+          direccion: t.direccion || '-'
+        }));
         this.cdr.detectChanges();
       },
       error: (err) => console.error('Error al cargar trabajadores:', err),
