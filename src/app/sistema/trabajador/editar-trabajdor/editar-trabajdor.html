@@ -96,7 +96,7 @@
                             [(ngModel)]="dir.nombre" name="dir_nombre"
                             maxlength="120"
                             (input)="dirTocado = true"
-                            [ngClass]="{'is-invalid': dirTocado && !dir.nombre?.trim()}">
+                            [ngClass]="{'is-invalid': dirTocado && !dir.nombre.trim()}">
                     </div>
 
                     <!-- Número / Piso -->
@@ -107,7 +107,7 @@
                             [(ngModel)]="dir.numero" name="dir_numero"
                             maxlength="30"
                             (input)="dirTocado = true"
-                            [ngClass]="{'is-invalid': dirTocado && !dir.numero?.trim() && dir.nombre?.trim()}">
+                            [ngClass]="{'is-invalid': dirTocado && !dir.numero.trim() && dir.nombre.trim()}">
                     </div>
 
                 </div>
@@ -119,7 +119,7 @@
                     <span class="text-muted">Se guardará como:</span>
                     <strong>{{ direccionCompleta }}</strong>
                 </div>
-                <div class="text-danger small mt-1" *ngIf="dirTocado && !direccionValida && dir.nombre?.trim()">
+                <div class="text-danger small mt-1" *ngIf="dirTocado && !direccionValida && dir.nombre.trim()">
                     Complete el número o piso.
                 </div>
             </div>
@@ -133,7 +133,6 @@
                     <option value="Activo">Activo</option>
                     <option value="Inactivo">Inactivo</option>
                 </select>
-                <br>
             </div>
 
             <!-- ── CAMBIO DE CONTRASEÑA ──────────────────────────────────────── -->
