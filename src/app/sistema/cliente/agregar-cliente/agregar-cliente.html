@@ -115,10 +115,45 @@
                 <h5 class="modal-title">Agregar Vehículo</h5>
                 <button type="button" class="btn-close btn-close-white" (click)="cerrarModalVehiculo()"></button>
             </div>
-            <div class="modal-body">
-                <input class="form-control mb-2" [(ngModel)]="nuevoVehiculo.placa" placeholder="Placa">
-                <input class="form-control mb-2" [(ngModel)]="nuevoVehiculo.marca" placeholder="Marca">
-                <input class="form-control mb-2" [(ngModel)]="nuevoVehiculo.modelo" placeholder="Modelo">
+
+            <div class="modal-body p-3">
+
+            <div class="mb-3">
+                <label class="form-label fw-semibold small">Placa <span class="text-danger">*</span></label>
+                <input class="form-control text-uppercase"
+                    [(ngModel)]="nuevoVehiculo.placa"
+                    (input)="formatearPlaca()"
+                    placeholder="Ej: ABC-123"
+                    maxlength="8"
+                    [ngClass]="{'is-invalid': errorPlaca}" />
+                <div class="invalid-feedback">Formato inválido. Usa ABC-123 o AB-1234.</div>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label fw-semibold small">Marca <span class="text-danger">*</span></label>
+                <select class="form-select" [(ngModel)]="nuevoVehiculo.marca" (change)="onMarcaChange()">
+                    <option value="">— Selecciona una marca —</option>
+                    <option *ngFor="let m of marcas" [value]="m">{{ m }}</option>
+                </select>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label fw-semibold small">Modelo <span class="text-danger">*</span></label>
+                <select class="form-select" [(ngModel)]="nuevoVehiculo.modelo"
+                    (change)="onModeloChange()"
+                    [disabled]="!nuevoVehiculo.marca">
+                    <option value="">{{ nuevoVehiculo.marca ? '— Selecciona un modelo —' : '— Primero elige una marca —' }}</option>
+                    <option *ngFor="let mod of modelosFiltrados" [value]="mod">{{ mod }}</option>
+                </select>
+            </div>
+
+            <div class="mb-1">
+                <label class="form-label fw-semibold small">Año <span class="text-danger">*</span></label>
+                <select class="form-select" [(ngModel)]="nuevoVehiculo.anio"
+                    [disabled]="!nuevoVehiculo.modelo">
+                    <option value="">{{ nuevoVehiculo.modelo ? '— Selecciona el año —' : '— Primero elige un modelo —' }}</option>
+                    <option *ngFor="let a of anios" [value]="a">{{ a }}</option>
+                </select>
             </div>
             <div class="modal-footer">
                 <button class="btn btn-secondary" (click)="cerrarModalVehiculo()">Cancelar</button>
