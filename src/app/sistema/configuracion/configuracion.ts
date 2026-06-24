@@ -27,27 +27,6 @@ document.body.style.overflow = anyOpen ? 'hidden' : '';
   }
 
   // Métodos para manejar los formularios mediante SweetAlert2 (Modales dinámicos)
-  
-  abrirRecuperarContrasena() {
-    Swal.fire({
-      title: 'Recuperar Contraseña',
-      html: `
-        <input type="text" id="user_rec" class="swal2-input" placeholder="Usuario">
-        <p class="small text-muted mt-2">Se enviará un código al número registrado.</p>
-      `,
-      confirmButtonText: 'Siguiente',
-      showCancelButton: true,
-      preConfirm: () => {
-        const user = (Swal.getPopup()?.querySelector('#user_rec') as HTMLInputElement).value;
-        if (!user) Swal.showValidationMessage('Ingresa el usuario');
-        return { user };
-      }
-    }).then((result: any) => {
-      if (result.isConfirmed) {
-        Swal.fire('Éxito', 'Código enviado correctamente', 'success');
-      }
-    });
-  }
 
   abrirRoles() {
     this.router.navigate(['/sistema/configuracion/rol']);
