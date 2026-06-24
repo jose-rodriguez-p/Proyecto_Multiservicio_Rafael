@@ -59,7 +59,7 @@
                             <div *ngIf="cliente.vehiculos && cliente.vehiculos.length > 0">
                                 <div *ngFor="let veh of cliente.vehiculos" class="small mb-1">
                                     <span class="badge bg-light text-dark border">{{ veh.placa }}</span>
-                                    <span class="text-muted">{{ veh.marca }} {{ veh.modelo }}</span>
+                                    <span class="text-muted"> {{ veh.marca }} {{ veh.modelo }}</span>
                                 </div>
                             </div>
                             <div *ngIf="!cliente.vehiculos || cliente.vehiculos.length === 0" class="text-muted small">
@@ -76,9 +76,6 @@
                                 <button class="btn btn-sm btn-outline-dark" (click)="abrirModalEdit(cliente)">
                                     <i class="bi bi-pencil"></i>
                                 </button>
-                                <!-- <button class="btn btn-sm btn-outline-danger" (click)="eliminarCliente(cliente.dni)">
-                                    <i class="bi bi-trash"></i>
-                                </button> -->
                             </div>
                         </td>
                     </tr>
@@ -140,7 +137,7 @@
                             <label class="form-label fw-bold small mb-2">Correo</label>
                             <input type="email" class="form-control form-control-sm" [(ngModel)]="clienteEditando.correo" name="correo">
                         </div>
-                        
+
                         <!-- Sección de Vehículos -->
                         <div class="col-12 mt-4">
                             <div class="p-4 p-md-5 bg-light rounded">
@@ -150,13 +147,12 @@
                                         <i class="bi bi-plus-circle me-1"></i> Agregar Vehículo
                                     </button>
                                 </div>
-                                
                                 <div *ngIf="clienteEditando.vehiculos && clienteEditando.vehiculos.length > 0">
                                     <div *ngFor="let veh of clienteEditando.vehiculos" class="card mb-2">
                                         <div class="card-body p-3 d-flex justify-content-between align-items-center">
                                             <div>
                                                 <div class="fw-bold">{{ veh.placa }}</div>
-                                                <div class="small text-muted">{{ veh.marca }} {{ veh.modelo }}</div>
+                                                <div class="small text-muted">{{ veh.marca }} {{ veh.modelo }} {{ veh.anio }} · {{ veh.combustible }}</div>
                                             </div>
                                             <button type="button" class="btn btn-sm btn-outline-danger" (click)="eliminarVehiculo(veh)">
                                                 <i class="bi bi-trash"></i>
@@ -182,36 +178,59 @@
 <div *ngIf="mostrarModalEdit" class="modal-backdrop fade show"></div>
 
 <!-- Modal para Agregar Vehículo -->
-<div class="modal fade" [class.show]="mostrarModalVehiculo" [style.display]="mostrarModalVehiculo ? 'block' : 'none'" tabindex="-1" role="dialog">
+<div class="modal fade" [class.show]="mostrarModalVehiculo" [style.display]="mostrarModalVehiculo ? 'block' : 'none'" tabindex="-1" role="dialog" style="z-index: 1060;">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content border-0 shadow-lg">
-            <div class="modal-header bg-danger text-white border-0 py-3 py-md-4">
+            <div class="modal-header bg-danger text-white border-0 py-3">
                 <h5 class="modal-title fw-bold"><i class="bi bi-car-front me-2"></i> Agregar Vehículo</h5>
                 <button type="button" class="btn-close btn-close-white" (click)="cerrarModalVehiculo()"></button>
             </div>
-            <div class="modal-body p-4 p-md-5">
-                <form #vehiculoForm="ngForm">
-                    <div class="row g-3 g-md-4">
-                        <div class="col-12">
-                            <label class="form-label fw-bold small mb-2">Placa</label>
-                            <input type="text" class="form-control form-control-sm" [(ngModel)]="nuevoVehiculo.placa" name="placa" required placeholder="ABC-1234">
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label fw-bold small mb-2">Marca</label>
-                            <input type="text" class="form-control form-control-sm" [(ngModel)]="nuevoVehiculo.marca" name="marca" required placeholder="Toyota, Nissan, etc.">
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label fw-bold small mb-2">Modelo</label>
-                            <input type="text" class="form-control form-control-sm" [(ngModel)]="nuevoVehiculo.modelo" name="modelo" required placeholder="Corolla, Sentra, etc.">
-                        </div>
-                    </div>
-                </form>
+            <div class="modal-body p-4">
+                <div class="mb-3">
+                    <label class="form-label fw-bold small mb-2">Placa <span class="text-danger">*</span></label>
+                    <input type="text" class="form-control text-uppercase"
+                        [(ngModel)]="nuevoVehiculo.placa"
+                        (input)="formatearPlaca()"
+                        placeholder="Ej: M4F-520"
+                        maxlength="7"
+                        [ngClass]="{'is-invalid': errorPlaca}" />
+                    <div class="invalid-feedback">Formato inválido. Usa 3 caracteres + guión + 3 dígitos (Ej: M4F-520).</div>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label fw-bold small mb-2">Marca <span class="text-danger">*</span></label>
+                    <select class="form-select" [(ngModel)]="nuevoVehiculo.marca" (change)="onMarcaChange()">
+                        <option value="">— Selecciona una marca —</option>
+                        <option *ngFor="let m of marcas" [value]="m">{{ m }}</option>
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label fw-bold small mb-2">Modelo <span class="text-danger">*</span></label>
+                    <select class="form-select" [(ngModel)]="nuevoVehiculo.modelo"
+                        (change)="onModeloChange()" [disabled]="!nuevoVehiculo.marca">
+                        <option value="">{{ nuevoVehiculo.marca ? '— Selecciona un modelo —' : '— Primero elige una marca —' }}</option>
+                        <option *ngFor="let mod of modelosFiltrados" [value]="mod">{{ mod }}</option>
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label fw-bold small mb-2">Año <span class="text-danger">*</span></label>
+                    <select class="form-select" [(ngModel)]="nuevoVehiculo.anio" [disabled]="!nuevoVehiculo.modelo">
+                        <option value="">{{ nuevoVehiculo.modelo ? '— Selecciona el año —' : '— Primero elige un modelo —' }}</option>
+                        <option *ngFor="let a of anios" [value]="a">{{ a }}</option>
+                    </select>
+                </div>
+                <div class="mb-1">
+                    <label class="form-label fw-bold small mb-2">Combustible <span class="text-danger">*</span></label>
+                    <select class="form-select" [(ngModel)]="nuevoVehiculo.combustible">
+                        <option value="">— Selecciona el tipo —</option>
+                        <option *ngFor="let c of combustibles" [value]="c">{{ c }}</option>
+                    </select>
+                </div>
             </div>
-            <div class="modal-footer border-0 p-4 p-md-5">
+            <div class="modal-footer border-0 p-4">
                 <button type="button" class="btn btn-outline-secondary px-4" (click)="cerrarModalVehiculo()">Cancelar</button>
                 <button type="button" class="btn btn-danger px-4" (click)="guardarVehiculo()">Agregar Vehículo</button>
             </div>
         </div>
     </div>
 </div>
-<div *ngIf="mostrarModalVehiculo" class="modal-backdrop fade show"></div>
+<div *ngIf="mostrarModalVehiculo" class="modal-backdrop fade show" style="z-index: 1055;"></div>

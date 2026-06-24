@@ -126,7 +126,7 @@
                     placeholder="Ej: ABC-123"
                     maxlength="8"
                     [ngClass]="{'is-invalid': errorPlaca}" />
-                <div class="invalid-feedback">Formato inválido. Usa ABC-123 o AB-1234.</div>
+                <div class="invalid-feedback">Formato inválido. Vehículos mayores: M4F-520 · Vehículos menores: AB-1234.</div>
             </div>
 
             <div class="mb-3">
@@ -146,13 +146,19 @@
                     <option *ngFor="let mod of modelosFiltrados" [value]="mod">{{ mod }}</option>
                 </select>
             </div>
-
             <div class="mb-1">
                 <label class="form-label fw-semibold small">Año <span class="text-danger">*</span></label>
                 <select class="form-select" [(ngModel)]="nuevoVehiculo.anio"
                     [disabled]="!nuevoVehiculo.modelo">
                     <option value="">{{ nuevoVehiculo.modelo ? '— Selecciona el año —' : '— Primero elige un modelo —' }}</option>
                     <option *ngFor="let a of anios" [value]="a">{{ a }}</option>
+                </select>
+            </div>
+            <div class="mb-1">
+                <label class="form-label fw-semibold small">Combustible <span class="text-danger">*</span></label>
+                <select class="form-select" [(ngModel)]="nuevoVehiculo.combustible">
+                    <option value="">— Selecciona el tipo —</option>
+                    <option *ngFor="let c of combustibles" [value]="c">{{ c }}</option>
                 </select>
             </div>
             <div class="modal-footer">

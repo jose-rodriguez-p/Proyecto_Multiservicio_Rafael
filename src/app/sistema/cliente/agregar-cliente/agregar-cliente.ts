@@ -20,7 +20,7 @@ export class AgregarCliente {
 
   nuevoCliente: any = { dni: '', nombre: '', apellido_paterno: '', apellido_materno: '', celular: '', correo: '', estado: 'Activo' };
   vehiculos: any[] = [];
-  nuevoVehiculo: any = { placa: '', marca: '', modelo: '' };
+  nuevoVehiculo: any = { placa: '', marca: '', modelo: '', anio: '', combustible: '' };
   
   mostrarModalVehiculo = false;
   dniValidado = false;
@@ -68,6 +68,8 @@ export class AgregarCliente {
     'GAC':           ['Empow', 'GN8', 'GS3', 'GS4', 'GS5', 'GS8', 'M6'],
   };
 
+  readonly combustibles = ['Gasolina', 'Diésel', 'GNV', 'GLP', 'Híbrido', 'Eléctrico'];
+
   get marcas(): string[] {
     return Object.keys(this.catalogoMarcas).sort();
   }
@@ -95,12 +97,24 @@ export class AgregarCliente {
   }
 
   formatearPlaca() {
-    let v = this.nuevoVehiculo.placa.toUpperCase().replace(/[^A-Z0-9]/g, '');
-    if (v.length > 3) v = v.slice(0, 3) + '-' + v.slice(3, 7);
-    this.nuevoVehiculo.placa = v;
-    const valido = /^[A-Z]{3}-\d{3}$/.test(v) || /^[A-Z]{2}-\d{4}$/.test(v);
-    this.errorPlaca = v.replace('-', '').length >= 5 && !valido;
+  let v = this.nuevoVehiculo.placa.toUpperCase().replace(/[^A-Z0-9-]/g, '');
+  if (!v.includes('-')) {
+    if (/^[A-Z]{2}\d/.test(v) && v.length > 2) {
+      v = v.slice(0, 2) + '-' + v.slice(2, 6);
+    } else if (v.length > 3) {
+      v = v.slice(0, 3) + '-' + v.slice(3, 6);
+    }
   }
+  const partes = v.split('-');
+  if (partes.length === 2) {
+    v = partes[0].slice(0, 3) + '-' + partes[1].slice(0, 4);
+  }
+  this.nuevoVehiculo.placa = v;
+  const mayorValido = /^[A-Z0-9]{3}-\d{3}$/.test(v); // M4F-520
+  const menorValido = /^[A-Z]{2}-\d{4}$/.test(v);     // AB-1234
+  const limpio = v.replace('-', '');
+  this.errorPlaca = limpio.length >= 4 && !mayorValido && !menorValido;
+}
 
 
 
@@ -183,10 +197,10 @@ export class AgregarCliente {
   }
 
   agregarVehiculoLista() {
-    if (!this.nuevoVehiculo.placa) return;
-    this.vehiculos.push({ ...this.nuevoVehiculo });
-    this.nuevoVehiculo = { placa: '', marca: '', modelo: '' };
-    this.mostrarModalVehiculo = false;
+  if (!this.nuevoVehiculo.placa || !this.nuevoVehiculo.marca || !this.nuevoVehiculo.modelo || !this.nuevoVehiculo.anio || !this.nuevoVehiculo.combustible || this.errorPlaca) return;
+  this.vehiculos.push({ ...this.nuevoVehiculo });
+  this.nuevoVehiculo = { placa: '', marca: '', modelo: '', anio: '', combustible: '' };
+  this.mostrarModalVehiculo = false;
   }
 
   abrirModalVehiculo() { this.mostrarModalVehiculo = true; }
