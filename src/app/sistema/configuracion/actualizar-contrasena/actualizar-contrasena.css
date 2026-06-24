@@ -1,26 +1,20 @@
-
 .contenedor-centrado {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    min-height: 80vh; 
-    width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding: 0;
+  min-height: unset;
 }
 
-.card {
-    width: 100%;
-    max-width: 450px; 
-    border-radius: 12px;
-    overflow: hidden; 
+.fortaleza-barra {
+  height: 6px;
+  background: #e9ecef;
+  border-radius: 3px;
+  overflow: hidden;
 }
 
-.form-control {
-    padding: 0.7rem;
-    border: 1px solid #dee2e6;
-    border-radius: 6px;
-}
-
-.btn-danger {
-    background-color: #dc3545;
-    border: none;
+.fortaleza-progreso {
+  height: 100%;
+  border-radius: 3px;
+  transition: width 0.3s ease, background-color 0.3s ease;
 }

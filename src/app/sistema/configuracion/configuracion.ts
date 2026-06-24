@@ -13,12 +13,16 @@ import Swal from 'sweetalert2';
 })
 export class Configuracion {
   showRolOverlay = false;
+  showCambiarContrasenaOverlay = false;
 
   constructor(public router: Router) {
     this.router.events.pipe(
       filter((event): event is NavigationEnd => event instanceof NavigationEnd)
     ).subscribe((event) => {
+      const anyOpen = this.showRolOverlay || this.showCambiarContrasenaOverlay;
+document.body.style.overflow = anyOpen ? 'hidden' : '';
       this.showRolOverlay = event.urlAfterRedirects.includes('/sistema/configuracion/rol');
+      this.showCambiarContrasenaOverlay = event.urlAfterRedirects.includes('/sistema/configuracion/actualizar-contrasena');
     });
   }
 
@@ -47,6 +51,10 @@ export class Configuracion {
 
   abrirRoles() {
     this.router.navigate(['/sistema/configuracion/rol']);
+  }
+
+  abrirCambiarContrasena() {
+    this.router.navigate(['/sistema/configuracion/actualizar-contrasena']);
   }
 
   abrirCategoriasProductos() {
