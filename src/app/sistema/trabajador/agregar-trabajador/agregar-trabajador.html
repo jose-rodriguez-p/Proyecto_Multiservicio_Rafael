@@ -10,6 +10,7 @@
     <form #trabajadorForm="ngForm">
         <div class="row g-3 g-md-4">
 
+            <!-- Tipo Documento -->
             <div class="col-md-6">
                 <label class="form-label fw-bold small mb-2">Tipo Documento</label>
                 <select class="form-select" [(ngModel)]="nuevoTrabajador.id_documento" name="id_documento">
@@ -17,6 +18,7 @@
                 </select>
             </div>
 
+            <!-- Número Documento -->
             <div class="col-md-6">
                 <label class="form-label fw-bold small mb-2">Número Documento</label>
                 <div class="input-group">
@@ -33,18 +35,22 @@
                 <div class="text-success small mt-2" *ngIf="dniValidado">Documento validado.</div>
             </div>
 
+            <!-- Nombres -->
             <div class="col-md-4">
                 <label class="form-label fw-bold small mb-2">Nombres</label>
                 <div class="input-group">
                     <input type="text" class="form-control" [(ngModel)]="nuevoTrabajador.nombre"
                         name="nombre" [readonly]="dniValidado && !permiteEdicionManual"
                         [ngClass]="{'bg-light': dniValidado && !permiteEdicionManual}" required>
-                    <button *ngIf="dniValidado && !permiteEdicionManual" class="btn btn-outline-warning" type="button" (click)="desbloquearCampos()" title="Desbloquear para edición manual">
+                    <button *ngIf="dniValidado && !permiteEdicionManual"
+                        class="btn btn-outline-warning" type="button"
+                        (click)="desbloquearCampos()" title="Desbloquear para edición manual">
                         <i class="bi bi-unlock"></i>
                     </button>
                 </div>
             </div>
 
+            <!-- Apellido Paterno -->
             <div class="col-md-4">
                 <label class="form-label fw-bold small mb-2">Apellido Paterno</label>
                 <div class="input-group">
@@ -54,6 +60,7 @@
                 </div>
             </div>
 
+            <!-- Apellido Materno -->
             <div class="col-md-4">
                 <label class="form-label fw-bold small mb-2">Apellido Materno</label>
                 <div class="input-group">
@@ -63,6 +70,7 @@
                 </div>
             </div>
 
+            <!-- Celular -->
             <div class="col-md-6">
                 <label class="form-label fw-bold small mb-2">Celular</label>
                 <input type="text" maxlength="9" class="form-control"
@@ -73,6 +81,7 @@
                 <div class="text-danger small mt-2" *ngIf="errorCelular">Debe comenzar con 9 y tener 9 dígitos.</div>
             </div>
 
+            <!-- Correo -->
             <div class="col-md-6">
                 <label class="form-label fw-bold small mb-2">Correo Electrónico</label>
                 <div class="input-group">
@@ -100,12 +109,61 @@
                 <div class="text-success small mt-2" *ngIf="correoValidado">Correo validado correctamente.</div>
             </div>
 
+            <!-- ── DIRECCIÓN ESTRUCTURADA ──────────────────────────────────── -->
             <div class="col-12">
-                <label class="form-label fw-bold small mb-2">Dirección</label>
-                <input type="text" class="form-control" [(ngModel)]="nuevoTrabajador.direccion"
-                    name="direccion" placeholder="Dirección del trabajador" required>
-            </div>
+                <label class="form-label fw-bold small mb-2">
+                    <i class="bi bi-geo-alt me-1 text-secondary"></i>Dirección
+                </label>
+                <div class="row g-2">
 
+                    <!-- Tipo de vía -->
+                    <div class="col-md-3">
+                        <label class="form-text text-muted mb-1 d-block">Tipo de vía</label>
+                        <select class="form-select form-select-sm"
+                            [(ngModel)]="dir.tipo" name="dir_tipo">
+                            <option *ngFor="let t of tiposVia" [value]="t">{{ t }}</option>
+                        </select>
+                    </div>
+
+                    <!-- Nombre de vía -->
+                    <div class="col-md-6">
+                        <label class="form-text text-muted mb-1 d-block">Nombre de vía</label>
+                        <input type="text" class="form-control form-control-sm"
+                            placeholder="Ej: Los Pinos, Benavides, Las Flores..."
+                            [(ngModel)]="dir.nombre" name="dir_nombre"
+                            maxlength="120"
+                            (input)="dirTocado = true"
+                            [ngClass]="{'is-invalid': dirTocado && !dir.nombre.trim()}">
+                    </div>
+
+                    <!-- Número / Piso -->
+                    <div class="col-md-3">
+                        <label class="form-text text-muted mb-1 d-block">N° / Piso / Int.</label>
+                        <input type="text" class="form-control form-control-sm"
+                            placeholder="Ej: 245, Piso 3, Int. 4B"
+                            [(ngModel)]="dir.numero" name="dir_numero"
+                            maxlength="30"
+                            (input)="dirTocado = true"
+                            [ngClass]="{'is-invalid': dirTocado && !dir.numero.trim() && dir.nombre.trim()}">
+                    </div>
+
+                </div>
+
+                <!-- Vista previa -->
+                <div class="mt-2 px-2 py-1 rounded bg-light border d-flex align-items-center gap-2"
+                    style="font-size:0.80rem;" *ngIf="direccionCompleta">
+                    <i class="bi bi-map text-secondary"></i>
+                    <span class="text-muted">Se guardará como:</span>
+                    <strong>{{ direccionCompleta }}</strong>
+                </div>
+                <div class="text-danger small mt-1"
+                    *ngIf="dirTocado && !direccionValida && dir.nombre.trim()">
+                    Complete el número o piso.
+                </div>
+            </div>
+            <!-- ── FIN DIRECCIÓN ───────────────────────────────────────────── -->
+
+            <!-- Cargo -->
             <div class="col-md-6">
                 <label class="form-label fw-bold small mb-2">Cargo</label>
                 <select class="form-select" [(ngModel)]="nuevoTrabajador.id_cargo" name="id_cargo"
@@ -114,6 +172,7 @@
                 </select>
             </div>
 
+            <!-- Estado -->
             <div class="col-md-6">
                 <label class="form-label fw-bold small mb-2">Estado</label>
                 <select class="form-select" [(ngModel)]="nuevoTrabajador.estado" name="estado">
@@ -122,6 +181,7 @@
                 </select>
             </div>
 
+            <!-- Credenciales -->
             <div class="col-12 mt-4" *ngIf="cargoRequiereCredenciales()">
                 <div class="p-4 p-md-5 bg-light rounded">
                     <h6 class="fw-bold text-danger mb-3">Credenciales de acceso</h6>

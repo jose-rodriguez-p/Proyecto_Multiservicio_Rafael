@@ -30,6 +30,11 @@ export class AgregarTrabajador implements OnInit {
   errorCorreo = false;
   permiteEdicionManual = false;
 
+  // Dirección estructurada
+  readonly tiposVia = ['Calle', 'Avenida', 'Urbanización', 'Edificio', 'Jirón', 'Pasaje', 'Prolongación'];
+  dir = { tipo: 'Calle', nombre: '', numero: '' };
+  dirTocado = false;
+
   private cdr = inject(ChangeDetectorRef);
 
   nuevoTrabajador: any = {
@@ -40,23 +45,32 @@ export class AgregarTrabajador implements OnInit {
     apellido_materno: '',
     celular: '',
     correo: '',
-    direccion: '',
     id_cargo: null,
     estado: 'Activo',
     usuario: '',
     contrasena: '',
   };
 
-  constructor(
-    private http: HttpClient,
-    private router: Router,
-  ) {}
+  constructor(private http: HttpClient, private router: Router) {}
 
   ngOnInit() {
     this.cargarDocumentos();
     this.cargarCargos();
     this.cargarRoles();
   }
+
+  // ── DIRECCIÓN ────────────────────────────────────────────────────────────────
+
+  get direccionCompleta(): string {
+    const partes = [this.dir.tipo, this.dir.nombre, this.dir.numero].filter(p => p?.trim());
+    return partes.join(' ').trim();
+  }
+
+  get direccionValida(): boolean {
+    return !!(this.dir.tipo && this.dir.nombre.trim() && this.dir.numero.trim());
+  }
+
+  // ── CARGOS / ROLES / DOCUMENTOS ──────────────────────────────────────────────
 
   cargarDocumentos() {
     this.http.get<any[]>(`${this.URL_API}/documentos`).subscribe({
@@ -85,12 +99,11 @@ export class AgregarTrabajador implements OnInit {
 
   cargarRoles() {
     this.http.get<any[]>(this.URL_ROLES).subscribe({
-      next: (r) => {
-        this.roles = r || [];
-        this.cdr.detectChanges();
-      },
+      next: (r) => { this.roles = r || []; this.cdr.detectChanges(); },
     });
   }
+
+  // ── DNI ──────────────────────────────────────────────────────────────────────
 
   validarDni() {
     const dni = this.nuevoTrabajador.numeroDocumento.replace(/\D/g, '');
@@ -98,12 +111,8 @@ export class AgregarTrabajador implements OnInit {
     this.errorDni = !/^\d{8}$/.test(dni);
     this.dniValidado = false;
 
-    if (this.errorDni) {
-      this.limpiarDatosPersona();
-      return;
-    }
+    if (this.errorDni) { this.limpiarDatosPersona(); return; }
 
-    // Si el cargo requiere credenciales, actualizar usuario con el nuevo DNI
     if (this.cargoRequiereCredenciales()) {
       this.nuevoTrabajador.usuario = dni;
     }
@@ -118,7 +127,6 @@ export class AgregarTrabajador implements OnInit {
           this.cdr.detectChanges();
           return;
         }
-        // Si no existe en la base de datos, buscar en la API externa
         this.http.get<any>(`${this.URL_API}/buscar-dni/${dni}`).subscribe({
           next: (data) => {
             this.consultandoDni = false;
@@ -165,7 +173,7 @@ export class AgregarTrabajador implements OnInit {
 
   habilitarEdicionManual() {
     this.permiteEdicionManual = true;
-    this.dniValidado = true; // Considerar como validado para permitir guardar
+    this.dniValidado = true;
     this.cdr.detectChanges();
   }
 
@@ -175,6 +183,8 @@ export class AgregarTrabajador implements OnInit {
     this.nuevoTrabajador.apellido_paterno = '';
     this.nuevoTrabajador.apellido_materno = '';
   }
+
+  // ── CELULAR / CORREO ─────────────────────────────────────────────────────────
 
   validarCelular() {
     const celular = this.nuevoTrabajador.celular.replace(/\D/g, '');
@@ -193,11 +203,9 @@ export class AgregarTrabajador implements OnInit {
 
   validarCodigo(codigo: string) {
     this.http
-      .post(
-        `${this.URL_API}/correo/validar`,
+      .post(`${this.URL_API}/correo/validar`,
         { dni: this.nuevoTrabajador.numeroDocumento, codigo },
-        { responseType: 'text' },
-      )
+        { responseType: 'text' })
       .subscribe({
         next: (respuesta) => {
           if (respuesta === 'CODIGO_VALIDO') {
@@ -215,9 +223,7 @@ export class AgregarTrabajador implements OnInit {
               showCancelButton: true,
               confirmButtonText: 'Reintentar',
               cancelButtonText: 'Cancelar'
-            }).then((r) => {
-              if (r.isConfirmed && r.value) this.validarCodigo(r.value);
-            });
+            }).then((r) => { if (r.isConfirmed && r.value) this.validarCodigo(r.value); });
           }
           this.cdr.detectChanges();
         },
@@ -233,24 +239,62 @@ export class AgregarTrabajador implements OnInit {
             showCancelButton: true,
             confirmButtonText: 'Reintentar',
             cancelButtonText: 'Cancelar'
-          }).then((r) => {
-            if (r.isConfirmed && r.value) this.validarCodigo(r.value);
-          });
+          }).then((r) => { if (r.isConfirmed && r.value) this.validarCodigo(r.value); });
         },
       });
   }
+
+  validarCorreoBackend() {
+    if (this.permiteEdicionManual) { this.correoValidado = true; return; }
+    if (!this.correoValido || this.correoValidado) { this.errorCorreo = true; return; }
+    this.validandoCorreo = true;
+    this.http
+      .post(`${this.URL_API}/correo/enviar`,
+        { correo: this.nuevoTrabajador.correo, dni: this.nuevoTrabajador.numeroDocumento },
+        { responseType: 'text' })
+      .subscribe({
+        next: (res) => {
+          this.validandoCorreo = false;
+          if (res === 'CODIGO_ENVIADO') {
+            Swal.fire({
+              title: 'Validar correo',
+              input: 'text',
+              inputLabel: 'Ingrese código de 6 dígitos',
+              inputAttributes: { maxlength: '6' },
+              allowOutsideClick: false,
+              showCancelButton: true,
+            }).then((r) => { if (r.isConfirmed && r.value) this.validarCodigo(r.value); });
+          } else {
+            Swal.fire('Error', 'No se pudo enviar el correo', 'error');
+          }
+          this.cdr.detectChanges();
+        },
+        error: () => {
+          this.validandoCorreo = false;
+          Swal.fire('Error', 'No se pudo enviar el correo', 'error');
+          this.cdr.detectChanges();
+        },
+      });
+  }
+
+  // ── CARGO ────────────────────────────────────────────────────────────────────
 
   cargoRequiereCredenciales(): boolean {
     const cargo = this.cargos.find((c) => c.id === this.nuevoTrabajador.id_cargo);
     if (!cargo) return false;
     const nombreCargo = cargo.nombre?.toLowerCase() || '';
-    // Verificar si el cargo es Administrador o Auditor directamente
-    if (nombreCargo === 'administrador' || nombreCargo === 'auditor') {
-      return true;
-    }
-    // También verificar si el rol tiene menús asignados
+    if (nombreCargo === 'administrador' || nombreCargo === 'auditor') return true;
     const rol = this.roles.find((r) => r.nombre?.toLowerCase() === nombreCargo);
     return !!(rol && Array.isArray(rol.menus) && rol.menus.length > 0);
+  }
+
+  onCargoChange() {
+    if (this.cargoRequiereCredenciales()) {
+      this.nuevoTrabajador.usuario = this.nuevoTrabajador.numeroDocumento || '';
+    } else {
+      this.nuevoTrabajador.usuario = '';
+      this.nuevoTrabajador.contrasena = '';
+    }
   }
 
   obtenerNombreDocumento(): string {
@@ -267,91 +311,52 @@ export class AgregarTrabajador implements OnInit {
     try {
       const user = JSON.parse(localStorage.getItem('currentUser') || '{}');
       return user.username || '';
-    } catch {
-      return '';
-    }
+    } catch { return ''; }
   }
+
+  // ── VALIDACIÓN GLOBAL ────────────────────────────────────────────────────────
 
   datosValidos(): boolean {
     const credencialesOk = !this.cargoRequiereCredenciales()
       || (this.nuevoTrabajador.usuario?.trim() && this.nuevoTrabajador.contrasena?.trim());
-    
-    // Si permite edición manual, solo validar que los campos estén llenos
+
     if (this.permiteEdicionManual) {
-      return (
+      return !!(
         this.nuevoTrabajador.numeroDocumento?.trim() &&
         this.nuevoTrabajador.nombre?.trim() &&
         this.nuevoTrabajador.apellido_paterno?.trim() &&
         this.nuevoTrabajador.apellido_materno?.trim() &&
         this.nuevoTrabajador.celular?.trim() &&
         this.nuevoTrabajador.correo?.trim() &&
-        this.nuevoTrabajador.direccion?.trim() &&
+        this.direccionValida &&
         !this.errorCelular &&
         !this.errorCorreo &&
         credencialesOk
       );
     }
-    
-    // Si no permite edición manual, requiere validaciones de API
-    return (
+
+    return !!(
       this.dniValidado &&
       this.correoValidado &&
       !this.errorCelular &&
       this.nuevoTrabajador.nombre &&
       this.nuevoTrabajador.celular &&
-      this.nuevoTrabajador.direccion?.trim() &&
+      this.direccionValida &&
       credencialesOk
     );
   }
 
-  validarCorreoBackend() {
-    // Si está en modo edición manual, no requiere validación por código
-    if (this.permiteEdicionManual) {
-      this.correoValidado = true;
-      return;
-    }
-    
-    if (!this.correoValido || this.correoValidado) {
-      this.errorCorreo = true;
-      return;
-    }
-    this.validandoCorreo = true;
-    this.http
-      .post(
-        `${this.URL_API}/correo/enviar`,
-        { correo: this.nuevoTrabajador.correo, dni: this.nuevoTrabajador.numeroDocumento },
-        { responseType: 'text' },
-      )
-      .subscribe({
-        next: (res) => {
-          this.validandoCorreo = false;
-          if (res === 'CODIGO_ENVIADO') {
-            Swal.fire({
-              title: 'Validar correo',
-              input: 'text',
-              inputLabel: 'Ingrese código de 6 dígitos',
-              inputAttributes: { maxlength: '6' },
-              allowOutsideClick: false,
-              showCancelButton: true,
-            }).then((r) => {
-              if (r.isConfirmed && r.value) this.validarCodigo(r.value);
-            });
-          } else {
-            Swal.fire('Error', 'No se pudo enviar el correo', 'error');
-          }
-          this.cdr.detectChanges();
-        },
-        error: () => {
-          this.validandoCorreo = false;
-          Swal.fire('Error', 'No se pudo enviar el correo', 'error');
-          this.cdr.detectChanges();
-        },
-      });
-  }
+  // ── GUARDAR ──────────────────────────────────────────────────────────────────
 
   guardarTrabajador() {
+    this.dirTocado = true; // mostrar errores de dirección si intenta guardar sin completar
+
     if (!this.datosValidos()) {
-      Swal.fire('Formulario incompleto', 'Revise todos los campos', 'warning');
+      if (!this.direccionValida) {
+        Swal.fire('Dirección incompleta', 'Complete el tipo de vía, nombre y número.', 'warning');
+      } else {
+        Swal.fire('Formulario incompleto', 'Revise todos los campos', 'warning');
+      }
       return;
     }
 
@@ -362,7 +367,7 @@ export class AgregarTrabajador implements OnInit {
       apellido_materno: this.nuevoTrabajador.apellido_materno,
       celular: this.nuevoTrabajador.celular,
       correo: this.nuevoTrabajador.correo,
-      direccion: this.nuevoTrabajador.direccion,
+      direccion: this.direccionCompleta,
       nombre_documento: this.obtenerNombreDocumento(),
       nombre_cargo: this.obtenerNombreCargo(),
       estado: this.nuevoTrabajador.estado,
@@ -400,21 +405,11 @@ export class AgregarTrabajador implements OnInit {
     this.dniValidado = false;
     Swal.fire({
       title: 'Campos desbloqueados',
-      text: 'Ahora puede editar los datos manualmente. Si cambia el DNI, se volverá a validar automáticamente.',
+      text: 'Ahora puede editar los datos manualmente.',
       icon: 'info',
       timer: 3000,
       showConfirmButton: false,
     });
-  }
-
-  onCargoChange() {
-    if (this.cargoRequiereCredenciales()) {
-      // Autocompletar usuario con el DNI
-      this.nuevoTrabajador.usuario = this.nuevoTrabajador.numeroDocumento || '';
-    } else {
-      this.nuevoTrabajador.usuario = '';
-      this.nuevoTrabajador.contrasena = '';
-    }
   }
 
   cerrarModal() {
