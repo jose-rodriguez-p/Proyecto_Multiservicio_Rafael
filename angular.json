@@ -51,7 +51,8 @@
                   "maximumError": "512kB"
                 }
               ],
-              "outputHashing": "all"
+              "outputHashing": "all",
+              "outputMode": "static"
             },
             "development": {
               "optimization": false,
