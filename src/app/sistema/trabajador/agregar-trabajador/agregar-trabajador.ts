@@ -103,6 +103,11 @@ export class AgregarTrabajador implements OnInit {
       return;
     }
 
+    // Si el cargo requiere credenciales, actualizar usuario con el nuevo DNI
+    if (this.cargoRequiereCredenciales()) {
+      this.nuevoTrabajador.usuario = dni;
+    }
+
     this.consultandoDni = true;
     this.http.get<{ existe: boolean }>(`${this.URL_API}/validar-dni/${dni}`).subscribe({
       next: (res) => {
@@ -403,7 +408,10 @@ export class AgregarTrabajador implements OnInit {
   }
 
   onCargoChange() {
-    if (!this.cargoRequiereCredenciales()) {
+    if (this.cargoRequiereCredenciales()) {
+      // Autocompletar usuario con el DNI
+      this.nuevoTrabajador.usuario = this.nuevoTrabajador.numeroDocumento || '';
+    } else {
       this.nuevoTrabajador.usuario = '';
       this.nuevoTrabajador.contrasena = '';
     }
