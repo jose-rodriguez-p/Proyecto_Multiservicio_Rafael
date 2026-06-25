@@ -13,7 +13,7 @@ import { EditarProducto } from './sistema/producto/editar-producto/editar-produc
 import { Configuracion } from './sistema/configuracion/configuracion';
 import { Servicio } from './sistema/servicio/servicio';
 import { Mantenimiento } from './sistema/servicio/mantenimiento/mantenimiento';
-import { CrearMantenimiento } from './sistema/servicio/mantenimiento/crear-mantenimiento/crear-mantenimiento';
+import { CrearMantenimiento } from './sistema/servicio/mantenimiento/crear-mantenimiento/crear-mantenimiento'; 
 import { MantenimientoIndex } from './sistema/servicio/mantenimiento/mantenimiento-index/mantenimiento-index';
 import { VentasIndex } from './sistema/servicio/ventas/ventas-index/ventas-index';
 import { CrearVenta } from './sistema/servicio/ventas/crear-venta/crear-venta';
@@ -22,6 +22,9 @@ import { authGuard } from './auth.guard';
 import { Rol } from './sistema/configuracion/rol/rol';
 import { AgregarRol } from './sistema/configuracion/rol/agregar-rol/agregar-rol';
 import { EditarRol } from './sistema/configuracion/rol/editar-rol/editar-rol';
+import { Categorias } from './sistema/configuracion/categorias/categorias'; // Importación de Categorias
+import { AgregarCategorias } from './sistema/configuracion/categorias/agregar-categorias/agregar-categorias';
+import { EditarCategorias } from './sistema/configuracion/categorias/editar-categorias/editar-categorias';
 import { EditarProveedor } from './sistema/proveedor/editar-proveedor/editar-proveedor';
 import { AgregarProveedor } from './sistema/proveedor/agregar-proveedor/agregar-proveedor';
 import { ActualizarContrasena } from './sistema/configuracion/actualizar-contrasena/actualizar-contrasena';
@@ -94,9 +97,14 @@ export const routes: Routes = [
               { path: 'editar-rol/:id', component: EditarRol },
             ],
           },
+          { path: 'actualizar-contrasena', component: ActualizarContrasena },
           {
-            path: 'actualizar-contrasena',
-            component: ActualizarContrasena,
+            path: 'categorias',
+            component: Categorias,
+            children: [
+              { path: 'agregar-categorias', component: AgregarCategorias },
+              { path: 'editar-categorias/:id', component: EditarCategorias },
+            ]
           },
         ],
       },
