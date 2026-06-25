@@ -26,18 +26,11 @@ export class EditarTrabajdor implements OnInit {
   correoValidado = false;
   errorCorreo = false;
 
-  // Contraseña
-  editarContrasena = false;
-  nuevaContrasena = '';
-  confirmarContrasena = '';
-  mostrarContrasena = false;
-  mostrarConfirmar = false;
-  errorContrasena = '';
+  // Contraseña (solo reset)
 
   // Dirección estructurada
   readonly tiposVia = ['Calle', 'Avenida', 'Urbanización', 'Edificio', 'Jirón', 'Pasaje', 'Prolongación'];
   dir = { tipo: 'Calle', nombre: '', numero: '' };
-  // Solo mostrar errores de dirección después de que el usuario interactúe
   dirTocado = false;
 
   private cdr = inject(ChangeDetectorRef);
@@ -55,14 +48,9 @@ export class EditarTrabajdor implements OnInit {
     this.cargarRoles();
   }
 
-  // ── DIRECCIÓN ────────────────────────────────────────────────────────────────
+  // ── CONTRASEÑA: RESET ────────────────────────────────────────────────────────
 
-  /**
-   * Intenta descomponer una dirección guardada como string
-   * "Avenida Los Pinos 123" → { tipo:'Avenida', nombre:'Los Pinos', numero:'123' }
-   */
   parsearDireccion(raw: string) {
-    // Ignorar valores vacíos, guiones o placeholders sin datos reales
     if (!raw || raw.trim() === '-' || raw.trim() === '') return;
     const tipo = this.tiposVia.find(t => raw.toLowerCase().startsWith(t.toLowerCase()));
     if (tipo) {
@@ -78,7 +66,6 @@ export class EditarTrabajdor implements OnInit {
     }
   }
 
-  /** Construye el string final que se envía al backend */
   get direccionCompleta(): string {
     const partes = [this.dir.tipo, this.dir.nombre, this.dir.numero].filter(p => p?.trim());
     return partes.join(' ').trim();
@@ -121,7 +108,6 @@ export class EditarTrabajdor implements OnInit {
       if (this.trabajadorEditando[c] !== this.trabajadorOriginal[c]) return true;
     }
     if (this.direccionCompleta !== (this.trabajadorOriginal.direccion || '').trim()) return true;
-    if (this.editarContrasena && this.nuevaContrasena.trim()) return true;
     return false;
   }
 
@@ -144,44 +130,31 @@ export class EditarTrabajdor implements OnInit {
 
   // ── CONTRASEÑA ───────────────────────────────────────────────────────────────
 
-  toggleEditarContrasena() {
-    this.editarContrasena = !this.editarContrasena;
-    if (!this.editarContrasena) {
-      this.nuevaContrasena = '';
-      this.confirmarContrasena = '';
-      this.errorContrasena = '';
-    }
-  }
+  // ── CONTRASEÑA: RESET ────────────────────────────────────────────────────────
 
-  validarContrasena() {
-    if (!this.nuevaContrasena) { this.errorContrasena = ''; return; }
-    if (this.nuevaContrasena.length < 8) { this.errorContrasena = 'Mínimo 8 caracteres.'; return; }
-    if (!/[A-Z]/.test(this.nuevaContrasena)) { this.errorContrasena = 'Debe tener al menos una mayúscula.'; return; }
-    if (!/[0-9]/.test(this.nuevaContrasena)) { this.errorContrasena = 'Debe tener al menos un número.'; return; }
-    if (this.confirmarContrasena && this.nuevaContrasena !== this.confirmarContrasena) {
-      this.errorContrasena = 'Las contraseñas no coinciden.'; return;
-    }
-    this.errorContrasena = '';
-  }
-
-  get contrasenaValida(): boolean {
-    return (
-      this.nuevaContrasena.length >= 8 &&
-      /[A-Z]/.test(this.nuevaContrasena) &&
-      /[0-9]/.test(this.nuevaContrasena) &&
-      this.nuevaContrasena === this.confirmarContrasena
-    );
-  }
-
-  get fuerzaContrasena(): { label: string; color: string } {
-    const p = this.nuevaContrasena;
-    if (!p || p.length < 8) return { label: 'Débil', color: '#dc3545' };
-    const tieneUpper = /[A-Z]/.test(p);
-    const tieneNum = /[0-9]/.test(p);
-    const tieneEsp = /[^a-zA-Z0-9]/.test(p);
-    if (tieneUpper && tieneNum && tieneEsp && p.length >= 12) return { label: 'Fuerte', color: '#198754' };
-    if (tieneUpper && tieneNum) return { label: 'Aceptable', color: '#ffc107' };
-    return { label: 'Regular', color: '#fd7e14' };
+  resetearContrasena() {
+    const dni = this.trabajadorEditando.numeroDocumento;
+    const nombre = `${this.trabajadorEditando.nombre} ${this.trabajadorEditando.apellido_paterno}`;
+    Swal.fire({
+      title: '¿Restablecer contraseña?',
+      html: `¿Está seguro que desea restablecer la contraseña de <strong>${nombre}</strong>
+             a su número de DNI por defecto (<strong>${dni}</strong>)?`,
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#dc3545',
+      cancelButtonColor: '#6c757d',
+      confirmButtonText: 'Continuar',
+      cancelButtonText: 'Cancelar',
+    }).then((result) => {
+      if (result.isConfirmed) {
+        this.http
+          .put(`${this.URL_API}/reset-contrasena/${dni}`, { accion: 'reset' }, { responseType: 'text' })
+          .subscribe({
+            next: () => Swal.fire('Contraseña restablecida', `La contraseña fue restablecida al DNI: <strong>${dni}</strong>`, 'success'),
+            error: (err) => Swal.fire('Error', err.error || 'No se pudo restablecer la contraseña.', 'error'),
+          });
+      }
+    });
   }
 
   // ── GUARDAR ──────────────────────────────────────────────────────────────────
@@ -195,7 +168,7 @@ export class EditarTrabajdor implements OnInit {
       Swal.fire('Sin cambios', 'No se ha modificado ningún dato.', 'warning');
       return;
     }
-    this.dirTocado = true; // mostrar errores de dirección si intenta guardar
+    this.dirTocado = true;
     if (!this.direccionValida) {
       Swal.fire('Dirección incompleta', 'Complete el tipo de vía, nombre y número.', 'warning');
       return;
@@ -203,16 +176,6 @@ export class EditarTrabajdor implements OnInit {
     if (this.editarCorreo && this.errorCorreo) {
       Swal.fire('Error', 'El correo no es válido.', 'error');
       return;
-    }
-    if (this.editarContrasena) {
-      if (!this.nuevaContrasena.trim()) {
-        Swal.fire('Error', 'Ingrese la nueva contraseña.', 'error');
-        return;
-      }
-      if (!this.contrasenaValida) {
-        Swal.fire('Error', this.errorContrasena || 'La contraseña no cumple los requisitos.', 'error');
-        return;
-      }
     }
 
     const payload: any = {
@@ -226,15 +189,13 @@ export class EditarTrabajdor implements OnInit {
       estado: this.trabajadorEditando.estado,
     };
 
-    if (this.editarContrasena && this.nuevaContrasena.trim()) {
-      payload.contrasena = this.nuevaContrasena;
-    }
-
-    this.http.put(`${this.URL_API}/actualizar/${this.trabajadorEditando.numeroDocumento}`, payload, { responseType: 'text' })
+    this.http
+      .put(`${this.URL_API}/actualizar/${this.trabajadorEditando.numeroDocumento}`, payload, { responseType: 'text' })
       .subscribe({
-        next: () => Swal.fire('Actualizado', 'Datos actualizados con éxito.', 'success').then(() =>
-          this.router.navigate(['/sistema/trabajador'])
-        ),
+        next: () =>
+          Swal.fire('Actualizado', 'Datos actualizados con éxito.', 'success').then(() =>
+            this.router.navigate(['/sistema/trabajador'])
+          ),
         error: (err) => Swal.fire('Error', err.error || 'No se pudo actualizar.', 'error'),
       });
   }

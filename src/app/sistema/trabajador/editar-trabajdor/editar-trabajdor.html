@@ -112,7 +112,7 @@
 
                 </div>
 
-                <!-- Vista previa de cómo quedará guardado -->
+                <!-- Vista previa -->
                 <div class="mt-2 px-2 py-1 rounded bg-light border d-flex align-items-center gap-2"
                     style="font-size:0.80rem;" *ngIf="direccionCompleta">
                     <i class="bi bi-map text-secondary"></i>
@@ -136,87 +136,19 @@
                 <br>
             </div>
 
-            <!-- ── CAMBIO DE CONTRASEÑA ──────────────────────────────────────── -->
+            <!-- ── RESETEAR CONTRASEÑA ────────────────────────────────────────── -->
             <div class="col-12 mt-1">
-                <div class="d-flex align-items-center gap-2 mb-3">
+                <div class="d-flex align-items-center gap-2">
                     <hr class="flex-grow-1 m-0">
-                    <button type="button" class="btn btn-sm px-3"
-                        [ngClass]="editarContrasena ? 'btn-outline-danger' : 'btn-outline-secondary'"
-                        (click)="toggleEditarContrasena()">
-                        <i class="bi me-1" [ngClass]="editarContrasena ? 'bi-x-circle' : 'bi-key'"></i>
-                        {{ editarContrasena ? 'Cancelar cambio' : 'Cambiar contraseña' }}
+                    <button type="button" class="btn btn-sm btn-outline-warning px-3"
+                        (click)="resetearContrasena()">
+                        <i class="bi bi-arrow-counterclockwise me-1"></i>
+                        Resetear contraseña
                     </button>
                     <hr class="flex-grow-1 m-0">
                 </div>
-
-                <div *ngIf="editarContrasena" class="row g-3">
-                    <div class="col-12">
-                        <div class="alert alert-info py-2 px-3 mb-0" style="font-size:0.80rem;">
-                            <i class="bi bi-info-circle me-1"></i>
-                            Mínimo <strong>8 caracteres</strong>, al menos una <strong>mayúscula</strong> y un <strong>número</strong>.
-                        </div>
-                    </div>
-
-                    <!-- Nueva contraseña -->
-                    <div class="col-md-6">
-                        <label class="form-label fw-bold small mb-2">Nueva contraseña</label>
-                        <div class="input-group input-group-sm">
-                            <input [type]="mostrarContrasena ? 'text' : 'password'"
-                                class="form-control form-control-sm"
-                                [(ngModel)]="nuevaContrasena" name="nueva_contrasena"
-                                (input)="validarContrasena()"
-                                [ngClass]="{'is-invalid': errorContrasena && nuevaContrasena, 'is-valid': contrasenaValida}"
-                                placeholder="Nueva contraseña" autocomplete="new-password">
-                            <button class="btn btn-outline-secondary" type="button"
-                                (click)="mostrarContrasena = !mostrarContrasena">
-                                <i class="bi" [ngClass]="mostrarContrasena ? 'bi-eye-slash' : 'bi-eye'"></i>
-                            </button>
-                        </div>
-                        <div class="text-danger small mt-1" *ngIf="errorContrasena && nuevaContrasena && !contrasenaValida">
-                            {{ errorContrasena }}
-                        </div>
-                    </div>
-
-                    <!-- Confirmar contraseña -->
-                    <div class="col-md-6">
-                        <label class="form-label fw-bold small mb-2">Confirmar contraseña</label>
-                        <div class="input-group input-group-sm">
-                            <input [type]="mostrarConfirmar ? 'text' : 'password'"
-                                class="form-control form-control-sm"
-                                [(ngModel)]="confirmarContrasena" name="confirmar_contrasena"
-                                (input)="validarContrasena()"
-                                [ngClass]="{
-                                    'is-invalid': confirmarContrasena && nuevaContrasena !== confirmarContrasena,
-                                    'is-valid': confirmarContrasena && contrasenaValida
-                                }"
-                                placeholder="Repita la contraseña" autocomplete="new-password">
-                            <button class="btn btn-outline-secondary" type="button"
-                                (click)="mostrarConfirmar = !mostrarConfirmar">
-                                <i class="bi" [ngClass]="mostrarConfirmar ? 'bi-eye-slash' : 'bi-eye'"></i>
-                            </button>
-                        </div>
-                        <div class="text-danger small mt-1"
-                            *ngIf="confirmarContrasena && nuevaContrasena !== confirmarContrasena">
-                            Las contraseñas no coinciden.
-                        </div>
-                        <div class="text-success small mt-1" *ngIf="contrasenaValida">
-                            <i class="bi bi-check-circle me-1"></i>Las contraseñas coinciden.
-                        </div>
-                    </div>
-
-                    <!-- Barra de fuerza -->
-                    <div class="col-12" *ngIf="nuevaContrasena">
-                        <div class="d-flex align-items-center gap-2">
-                            <div class="flex-grow-1 rounded" style="height:4px;"
-                                [ngStyle]="{'background': fuerzaContrasena.color}"></div>
-                            <span class="small fw-semibold" [ngStyle]="{'color': fuerzaContrasena.color}">
-                                {{ fuerzaContrasena.label }}
-                            </span>
-                        </div>
-                    </div>
-                </div>
             </div>
-            <!-- ── FIN CONTRASEÑA ─────────────────────────────────────────────── -->
+            <!-- ── FIN RESETEAR CONTRASEÑA ────────────────────────────────────── -->
 
         </div>
     </form>
