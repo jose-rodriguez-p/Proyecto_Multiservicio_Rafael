@@ -11,7 +11,7 @@
 
             <!-- DNI (solo lectura) -->
             <div class="col-md-6">
-                <label class="form-label fw-bold small mb-2">DNI / RUC</label>
+                <label class="form-label fw-bold small mb-2">DNI / Usuario</label>
                 <input type="text" class="form-control form-control-sm bg-light"
                     [(ngModel)]="trabajadorEditando.numeroDocumento" name="dni_edit" readonly>
             </div>
@@ -137,7 +137,7 @@
             </div>
 
             <!-- ── RESETEAR CONTRASEÑA ────────────────────────────────────────── -->
-            <div class="col-12 mt-1">
+            <div class="col-12 mt-1" *ngIf="cargoRequiereContrasena()">
                 <div class="d-flex align-items-center gap-2">
                     <hr class="flex-grow-1 m-0">
                     <button type="button" class="btn btn-sm btn-outline-warning px-3"

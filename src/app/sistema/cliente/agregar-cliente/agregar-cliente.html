@@ -84,7 +84,7 @@
                             <div class="card-body p-3 d-flex justify-content-between align-items-center">
                                 <div>
                                     <div class="fw-bold">{{ veh.placa }}</div>
-                                    <div class="small text-muted">{{ veh.marca }} {{ veh.modelo }}</div>
+                                    <div class="small text-muted">{{ veh.marca }} {{ veh.modelo }} - {{ veh.anio }}</div>
                                 </div>
                                 <button type="button" class="btn btn-sm btn-outline-danger" (click)="eliminarVehiculo(veh)">
                                     <i class="bi bi-trash"></i>
@@ -152,13 +152,6 @@
                     [disabled]="!nuevoVehiculo.modelo">
                     <option value="">{{ nuevoVehiculo.modelo ? '— Selecciona el año —' : '— Primero elige un modelo —' }}</option>
                     <option *ngFor="let a of anios" [value]="a">{{ a }}</option>
-                </select>
-            </div>
-            <div class="mb-1">
-                <label class="form-label fw-semibold small">Combustible <span class="text-danger">*</span></label>
-                <select class="form-select" [(ngModel)]="nuevoVehiculo.combustible">
-                    <option value="">— Selecciona el tipo —</option>
-                    <option *ngFor="let c of combustibles" [value]="c">{{ c }}</option>
                 </select>
             </div>
             <div class="modal-footer">

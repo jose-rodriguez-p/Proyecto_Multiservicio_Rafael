@@ -132,13 +132,23 @@ export class EditarTrabajdor implements OnInit {
 
   // ── CONTRASEÑA: RESET ────────────────────────────────────────────────────────
 
+  cargoRequiereContrasena(): boolean {
+    const nombreCargo = this.trabajadorEditando.cargo?.toLowerCase() || '';
+    if (nombreCargo === 'administrador' || nombreCargo === 'auditor') return true;
+    const rol = this.roles.find((r) => r.nombre?.toLowerCase() === nombreCargo);
+    return !!(rol && Array.isArray(rol.menus) && rol.menus.length > 0);
+  }
+
   resetearContrasena() {
-    const dni = this.trabajadorEditando.numeroDocumento;
+    const username = this.trabajadorEditando.numeroDocumento;
     const nombre = `${this.trabajadorEditando.nombre} ${this.trabajadorEditando.apellido_paterno}`;
+    if (!username) {
+      Swal.fire('Error', 'El trabajador no tiene documento asignado', 'error');
+      return;
+    }
     Swal.fire({
       title: '¿Restablecer contraseña?',
-      html: `¿Está seguro que desea restablecer la contraseña de <strong>${nombre}</strong>
-             a su número de DNI por defecto (<strong>${dni}</strong>)?`,
+      html: `¿Está seguro que desea restablecer la contraseña de <strong>${nombre}</strong>?`,
       icon: 'warning',
       showCancelButton: true,
       confirmButtonColor: '#dc3545',
@@ -148,9 +158,15 @@ export class EditarTrabajdor implements OnInit {
     }).then((result) => {
       if (result.isConfirmed) {
         this.http
-          .put(`${this.URL_API}/reset-contrasena/${dni}`, { accion: 'reset' }, { responseType: 'text' })
+          .post(`${API_BASE_URL}/api/auth/resetear-password`, { username: username }, { responseType: 'text' })
           .subscribe({
-            next: () => Swal.fire('Contraseña restablecida', `La contraseña fue restablecida al DNI: <strong>${dni}</strong>`, 'success'),
+            next: (res) => {
+              if (res === 'PASSWORD_RESETEADA') {
+                Swal.fire('Contraseña restablecida', 'La contraseña ha sido restablecida exitosamente', 'success');
+              } else {
+                Swal.fire('Error', 'No se pudo restablecer la contraseña', 'error');
+              }
+            },
             error: (err) => Swal.fire('Error', err.error || 'No se pudo restablecer la contraseña.', 'error'),
           });
       }

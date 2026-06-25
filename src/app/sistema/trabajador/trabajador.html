@@ -15,13 +15,20 @@
                         <input type="text" class="form-control border-start-0" placeholder="Buscar trabajador por nombre o DNI..." [(ngModel)]="filtroBusqueda" name="filtroBusqueda" (input)="aplicarFiltros()">
                     </div>
                 </div>
-                <div class="col-12 col-md-6 col-lg-3">
+                <div class="col-12 col-md-3 col-lg-2">
                     <select class="form-select" [(ngModel)]="cargoSeleccionado" name="cargoSeleccionado" (change)="onCargoChange()">
                         <option value="">Todos los cargos</option>
                         <option *ngFor="let cargo of cargos" [value]="cargo.nombre">{{ cargo.nombre }}</option>
                     </select>
                 </div>
-                <div class="col-12 col-lg-5 text-end">
+                <div class="col-12 col-md-3 col-lg-2">
+                    <select class="form-select" [(ngModel)]="estadoSeleccionado" name="estadoSeleccionado">
+                        <option value="Activo">Activo</option>
+                        <option value="Inactivo">Inactivo</option>
+                        <option value="Todos">Todos</option>
+                    </select>
+                </div>
+                <div class="col-12 col-lg-4 text-end">
                     <div class="btn-group shadow-sm">
                         <button class="btn btn-outline-dark btn-sm" (click)="exportarExcel()"><i class="bi bi-file-earmark-excel me-1"></i> Excel</button>
                         <button class="btn btn-outline-dark btn-sm" (click)="exportarPDF()"><i class="bi bi-file-earmark-pdf me-1"></i> PDF</button>

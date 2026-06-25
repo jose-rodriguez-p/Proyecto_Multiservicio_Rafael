@@ -20,7 +20,7 @@ export class AgregarCliente {
 
   nuevoCliente: any = { dni: '', nombre: '', apellido_paterno: '', apellido_materno: '', celular: '', correo: '', estado: 'Activo' };
   vehiculos: any[] = [];
-  nuevoVehiculo: any = { placa: '', marca: '', modelo: '', anio: '', combustible: '' };
+  nuevoVehiculo: any = { placa: '', marca: '', modelo: '', anio: '' };
   
   mostrarModalVehiculo = false;
   dniValidado = false;
@@ -68,7 +68,6 @@ export class AgregarCliente {
     'GAC':           ['Empow', 'GN8', 'GS3', 'GS4', 'GS5', 'GS8', 'M6'],
   };
 
-  readonly combustibles = ['Gasolina', 'Diésel', 'GNV', 'GLP', 'Híbrido', 'Eléctrico'];
 
   get marcas(): string[] {
     return Object.keys(this.catalogoMarcas).sort();
@@ -177,7 +176,19 @@ export class AgregarCliente {
   }
 
   private mostrarPromptCodigo() {
-    Swal.fire({ title: 'Validar Correo', input: 'text', inputAttributes: { maxlength: '6' }, showCancelButton: true, confirmButtonText: 'Validar' }).then((r) => {
+    Swal.fire({
+      title: 'Validar Correo',
+      input: 'text',
+      inputAttributes: { maxlength: '6' },
+      showCancelButton: true,
+      confirmButtonText: 'Validar',
+      inputValidator: (value) => {
+        if (!value || value.length !== 6) {
+          return 'El código debe tener 6 dígitos';
+        }
+        return null;
+      }
+    }).then((r) => {
       if (r.isConfirmed && r.value) this.verificarCodigo(r.value);
     });
   }
@@ -185,21 +196,38 @@ export class AgregarCliente {
   private verificarCodigo(codigo: string) {
     this.http.post(`${this.URL_API}/correo/validar`, { dni: this.nuevoCliente.dni, codigo }, { responseType: 'text' }).subscribe({
       next: (res) => {
-        if (res === 'CODIGO_VALIDO') { 
-            this.correoValidado = true; 
-            Swal.fire('Correcto', 'Correo verificado', 'success'); 
-        } else { 
-            Swal.fire('Error', 'Código incorrecto', 'error'); 
+        if (res === 'CODIGO_VALIDO') {
+            this.correoValidado = true;
+            Swal.fire('Correcto', 'Correo verificado', 'success');
+        } else {
+            Swal.fire({
+              title: 'Código incorrecto',
+              text: 'El código ingresado no es válido. Por favor, intenta nuevamente.',
+              icon: 'error',
+              confirmButtonText: 'Reintentar'
+            }).then(() => {
+              this.mostrarPromptCodigo();
+            });
         }
         this.cdr.detectChanges();
+      },
+      error: () => {
+        Swal.fire({
+          title: 'Error',
+          text: 'Hubo un error al validar el código. Por favor, intenta nuevamente.',
+          icon: 'error',
+          confirmButtonText: 'Reintentar'
+        }).then(() => {
+          this.mostrarPromptCodigo();
+        });
       }
     });
   }
 
   agregarVehiculoLista() {
-  if (!this.nuevoVehiculo.placa || !this.nuevoVehiculo.marca || !this.nuevoVehiculo.modelo || !this.nuevoVehiculo.anio || !this.nuevoVehiculo.combustible || this.errorPlaca) return;
+  if (!this.nuevoVehiculo.placa || !this.nuevoVehiculo.marca || !this.nuevoVehiculo.modelo || !this.nuevoVehiculo.anio || this.errorPlaca) return;
   this.vehiculos.push({ ...this.nuevoVehiculo });
-  this.nuevoVehiculo = { placa: '', marca: '', modelo: '', anio: '', combustible: '' };
+  this.nuevoVehiculo = { placa: '', marca: '', modelo: '', anio: '' };
   this.mostrarModalVehiculo = false;
   }
 
@@ -225,15 +253,29 @@ export class AgregarCliente {
     return this.dniValidado && this.correoValidado;
   }
   
+  obtenerUsuarioLogueado(): string {
+    try {
+      const user = JSON.parse(localStorage.getItem('currentUser') || '{}');
+      return user.username || '';
+    } catch { return ''; }
+  }
+
   guardarCliente() {
     if (!this.puedeGuardar) {
       Swal.fire('Error', 'Complete todos los campos correctamente', 'warning');
       return;
     }
-    
+
     const payload = {
-        cliente: this.nuevoCliente,
-        carros: this.vehiculos
+      dni: this.nuevoCliente.dni,
+      nombre: this.nuevoCliente.nombre,
+      apellido_paterno: this.nuevoCliente.apellido_paterno,
+      apellido_materno: this.nuevoCliente.apellido_materno,
+      celular: this.nuevoCliente.celular,
+      correo: this.nuevoCliente.correo,
+      estado: this.nuevoCliente.estado,
+      usuario_logueado: this.obtenerUsuarioLogueado(),
+      carros_json: this.vehiculos
     };
     this.http.post(`${this.URL_API}/registrar`, payload, { responseType: 'text' }).subscribe({
       next: () => {

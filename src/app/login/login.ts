@@ -63,9 +63,9 @@ export class Login {
 
   validarUsuarioParaRecuperacion() {
     // Validar usuario en el backend profesional
-    this.http.get(`${this.URL_AUTH}/validar-usuario/${this.txtusuario}`, { responseType: 'text' }).subscribe({
-      next: (resp) => {
-        if (resp === 'USUARIO_EXISTE') {
+    this.http.get(`${this.URL_AUTH}/validar-usuario/${this.txtusuario}`).subscribe({
+      next: (resp: any) => {
+        if (resp.status === 'USUARIO_EXISTE') {
           this.enviarCodigo();
         }
       },
@@ -80,13 +80,13 @@ export class Login {
   }
 
   enviarCodigo() {
-    this.http.post(`${this.URL_AUTH}/enviar-codigo`, { username: this.txtusuario }, { responseType: 'text' }).subscribe({
-      next: (resp) => {
-        if (resp === 'ERROR') {
+    this.http.post(`${this.URL_AUTH}/enviar-codigo`, { username: this.txtusuario }).subscribe({
+      next: (resp: any) => {
+        if (resp.status === 'ERROR') {
           Swal.fire('Error', 'No se pudo enviar el código de verificación', 'error');
           return;
         }
-        if (resp === 'CODIGO_ENVIADO') {
+        if (resp.status === 'CODIGO_ENVIADO') {
           this.olvide_contrasena = true;
           this.login_validacion = false;
           this.codigoEnviado = true;
@@ -114,12 +114,12 @@ export class Login {
   }
 
   validarCodigo() {
-    this.http.post(`${this.URL_AUTH}/validar-codigo`, { 
-      username: this.txtusuario, 
-      codigo: this.codigoVerificacion 
-    }, { responseType: 'text' }).subscribe({
-      next: (resp) => {
-        if (resp === 'CODIGO_VALIDO') {
+    this.http.post(`${this.URL_AUTH}/validar-codigo`, {
+      username: this.txtusuario,
+      codigo: this.codigoVerificacion
+    }).subscribe({
+      next: (resp: any) => {
+        if (resp.status === 'CODIGO_VALIDO') {
           this.usuarioValidado = true;
           this.inputBloqueados = false;
           Swal.fire('Validado', 'Código correcto. Ya puedes cambiar tu contraseña.', 'success');
@@ -144,13 +144,13 @@ export class Login {
     this.http.post(`${this.URL_AUTH}/actualizar-password`, {
       username: this.txtusuario,
       newPassword: this.txtcontrasena
-    }, { responseType: 'text' }).subscribe({
-      next: (resp) => {
-        if (resp === 'ERROR') {
+    }).subscribe({
+      next: (resp: any) => {
+        if (resp.status === 'ERROR') {
           Swal.fire('Error', 'No se pudo actualizar la contraseña. Valida el código primero.', 'error');
           return;
         }
-        if (resp === 'PASSWORD_ACTUALIZADA') {
+        if (resp.status === 'PASSWORD_ACTUALIZADA') {
           Swal.fire({
             title: '¡Contraseña actualizada!',
             text: 'Ya puedes iniciar sesión con tu nueva clave.',
@@ -179,17 +179,32 @@ export class Login {
     }
 
     const credentials = { username: this.txtusuario, password: this.txtcontrasena };
-    
+
     this.http.post(`${this.URL_AUTH}/login`, credentials).subscribe({
       next: (user: any) => {
         if (!user || !user.username) {
           Swal.fire('Error', 'Usuario o contraseña incorrectos', 'error');
           return;
         }
+
         localStorage.setItem('currentUser', JSON.stringify(user));
         this.txtusuario = '';
         this.txtcontrasena = '';
-        this.router.navigate(['/sistema']);
+
+        // Validar si usuario y contraseña son iguales (contraseña por defecto)
+        if (credentials.username === credentials.password) {
+          Swal.fire({
+            title: '¡Alerta de Seguridad!',
+            text: 'Estás usando tu contraseña por defecto. Por seguridad, debes cambiarla antes de continuar.',
+            icon: 'warning',
+            confirmButtonColor: '#dc3545',
+            confirmButtonText: 'Cambiar contraseña'
+          }).then(() => {
+            this.router.navigate(['/sistema/configuracion']);
+          });
+        } else {
+          this.router.navigate(['/sistema']);
+        }
       },
       error: () => {
         Swal.fire('Error', 'Usuario o contraseña incorrectos', 'error');

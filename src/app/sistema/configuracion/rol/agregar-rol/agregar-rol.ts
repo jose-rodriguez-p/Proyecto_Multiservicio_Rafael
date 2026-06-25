@@ -24,8 +24,6 @@ export class AgregarRol implements OnInit {
   private platformId = inject(PLATFORM_ID);
   private cdr = inject(ChangeDetectorRef);
 
-  // CORRECCIÓN: La ruta debe coincidir con el @RequestMapping("/api/configuracion")
-  // y el @PostMapping("/roles/crear") de tu controlador Java.
   private URL_BASE = `${API_BASE_URL}/api/configuracion`;
   private URL_MENUS = `${API_BASE_URL}/api/menus/lista-menus`;
 

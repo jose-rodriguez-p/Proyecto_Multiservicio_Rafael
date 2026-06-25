@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
 import Swal from 'sweetalert2';
+import { API_BASE_URL } from '@config';
 
 @Component({
   selector: 'app-actualizar-contrasena',
@@ -16,13 +17,17 @@ export class ActualizarContrasena {
   private http   = inject(HttpClient);
   private router = inject(Router);
   private cdr    = inject(ChangeDetectorRef);
-
-  private URL_API = 'http://localhost:8080/api/auth';
+  private URL_API = `${API_BASE_URL}/api/configuracion`;
 
   contrasenaActual    = '';
   nuevaContrasena     = '';
   confirmarContrasena = '';
   actualizando        = false;
+
+  // Controladores de estado en tiempo real
+  contrasenaActualValida = false;  // Desbloquea los campos nuevos
+  validandoEnServidor    = false;  // Muestra spinner de carga asíncrona
+  private timeoutValidacion: any;
 
   // Visibilidad de campos
   verActual    = false;
@@ -32,24 +37,57 @@ export class ActualizarContrasena {
   // Errores en tiempo real
   errorActual     = false;
   errorNueva      = false;
-  errorConfirmar  = false;
   errorCoincide   = false;
 
-
-
-  // ── Validaciones en tiempo real ──────────────────────────────────────────
+  // ── Validación asíncrona de contraseña actual ─────────────────────────────
   validarActual() {
     this.errorActual = !this.contrasenaActual.trim();
+    
+    if (this.errorActual) {
+      this.contrasenaActualValida = false;
+      return;
+    }
+
+    // Espera a que el usuario deje de teclear por 600ms antes de consultar a Spring
+    clearTimeout(this.timeoutValidacion);
+    this.timeoutValidacion = setTimeout(() => {
+      this.verificarPasswordActualServer();
+    }, 600);
   }
 
+  verificarPasswordActualServer() {
+    if (!this.contrasenaActual.trim()) return;
+
+    this.validandoEnServidor = true;
+    const payload = {
+      username: this.obtenerUsuario(),
+      contrasenaActual: this.contrasenaActual
+    };
+
+    this.http.post<boolean>(`${this.URL_API}/validar-password-actual`, payload).subscribe({
+      next: (esValida) => {
+        this.contrasenaActualValida = esValida;
+        this.errorActual = !esValida; 
+        this.validandoEnServidor = false;
+        this.cdr.detectChanges();
+      },
+      error: () => {
+        this.contrasenaActualValida = false;
+        this.errorActual = true;
+        this.validandoEnServidor = false;
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
+  // ── Validaciones tradicionales de los nuevos campos ───────────────────────
   validarNueva() {
     this.errorNueva = this.nuevaContrasena.length > 0 && this.nuevaContrasena.length < 8;
     if (this.confirmarContrasena) this.validarConfirmar();
   }
 
   validarConfirmar() {
-    this.errorCoincide  = !!this.confirmarContrasena && this.confirmarContrasena !== this.nuevaContrasena;
-    this.errorConfirmar = !this.confirmarContrasena.trim() && false; // solo si se toca
+    this.errorCoincide = !!this.confirmarContrasena && this.confirmarContrasena !== this.nuevaContrasena;
   }
 
   // ── Fortaleza de contraseña ──────────────────────────────────────────────
@@ -72,7 +110,7 @@ export class ActualizarContrasena {
   }
 
   get formularioValido(): boolean {
-    return !!this.contrasenaActual.trim() &&
+    return this.contrasenaActualValida &&
            this.nuevaContrasena.length >= 8 &&
            this.confirmarContrasena === this.nuevaContrasena &&
            !this.errorActual && !this.errorNueva && !this.errorCoincide;
@@ -85,17 +123,14 @@ export class ActualizarContrasena {
   }
 
   actualizarContrasena() {
-    this.validarActual();
-    this.validarNueva();
-    this.validarConfirmar();
     if (!this.formularioValido) return;
 
     this.actualizando = true;
 
+    // Solo viaja UNA contraseña (la nueva) hacia el endpoint definitivo
     const payload = {
-      username:        this.obtenerUsuario(),
-      contrasenaActual: this.contrasenaActual,
-      newPassword:     this.nuevaContrasena,
+      username:    this.obtenerUsuario(),
+      newPassword: this.nuevaContrasena,
     };
 
     this.http.post(`${this.URL_API}/actualizar-password`, payload, { responseType: 'text' }).subscribe({
@@ -115,13 +150,23 @@ export class ActualizarContrasena {
       },
       error: (err) => {
         this.actualizando = false;
-        Swal.fire('Error', err?.error || 'Contraseña actual incorrecta.', 'error');
+        Swal.fire('Error', err?.error || 'No se pudo procesar la solicitud.', 'error');
         this.cdr.detectChanges();
       },
     });
   }
 
   cerrar() {
-    this.router.navigate(['/sistema/configuracion']);
+    this.router.navigate(['/sistema/configuracion']).then(() => {
+      // Forzar limpieza de estado
+      this.contrasenaActual = '';
+      this.nuevaContrasena = '';
+      this.confirmarContrasena = '';
+      this.contrasenaActualValida = false;
+      this.errorActual = false;
+      this.errorNueva = false;
+      this.errorCoincide = false;
+      this.cdr.detectChanges();
+    });
   }
 }

@@ -18,6 +18,7 @@ export class Trabajador implements OnInit {
   mostrarCamposUsuario = false;
   filtroBusqueda: string = '';
   cargoSeleccionado: string = '';
+  estadoSeleccionado: string = 'Activo';
   trabajadores: any[] = [];
   documentos: any[] = [];
   cargos: any[] = [];
@@ -183,6 +184,11 @@ export class Trabajador implements OnInit {
 
   get filteredList() {
     let list = this.trabajadores.slice();
+
+    // Filtrar por estado
+    if (this.estadoSeleccionado && this.estadoSeleccionado !== 'Todos') {
+      list = list.filter((t: any) => t.estado === this.estadoSeleccionado);
+    }
 
     // Filtrar por cargo - comparar por nombre del cargo
     if (this.cargoSeleccionado && this.cargoSeleccionado !== '') {

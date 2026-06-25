@@ -14,7 +14,7 @@ import Swal from 'sweetalert2';
 })
 export class EditarCliente implements OnInit {
   clienteEditando: any = {};
-  nuevoVehiculo: any = { placa: '', marca: '', modelo: '' };
+  nuevoVehiculo: any = { placa: '', marca: '', modelo: '', anio: '' };
   mostrarModalVehiculo = false;
 
   // Variables de validación
@@ -66,7 +66,8 @@ export class EditarCliente implements OnInit {
 
   validarPlaca() {
     const placa = this.nuevoVehiculo.placa;
-    this.errorPlaca = !/^[A-Z]{3}-\d{4}$/.test(placa.toUpperCase());
+    // Permite formatos comunes de placas como ABC-123 o ABC-1234
+    this.errorPlaca = !/^[A-Z0-9]{3}-\d{3,4}$/.test(placa.toUpperCase());
   }
 
   clienteValido(): boolean {
@@ -82,7 +83,8 @@ export class EditarCliente implements OnInit {
   }
 
   abrirModalVehiculo() {
-    this.nuevoVehiculo = { placa: '', marca: '', modelo: '' };
+    // Inicialización limpia sin rastros de combustible
+    this.nuevoVehiculo = { placa: '', marca: '', modelo: '', anio: '' };
     this.errorPlaca = false;
     this.mostrarModalVehiculo = true;
   }
@@ -92,7 +94,7 @@ export class EditarCliente implements OnInit {
   }
 
   guardarVehiculo() {
-    if (!this.nuevoVehiculo.placa || !this.nuevoVehiculo.marca || !this.nuevoVehiculo.modelo) {
+    if (!this.nuevoVehiculo.placa || !this.nuevoVehiculo.marca || !this.nuevoVehiculo.modelo || !this.nuevoVehiculo.anio) {
       Swal.fire('Error', 'Complete todos los campos del vehículo', 'error');
       return;
     }
@@ -106,9 +108,10 @@ export class EditarCliente implements OnInit {
       this.clienteEditando.vehiculos = [];
     }
 
+    // Guardamos los datos limpios en la lista local de la edición
     this.clienteEditando.vehiculos.push({ ...this.nuevoVehiculo });
     this.cerrarModalVehiculo();
-    Swal.fire('Agregado', 'Vehículo agregado correctamente', 'success');
+    Swal.fire('Agregado', 'Vehículo añadido correctamente', 'success');
   }
 
   eliminarVehiculo(vehiculo: any) {
@@ -131,6 +134,13 @@ export class EditarCliente implements OnInit {
     });
   }
 
+  obtenerUsuarioLogueado(): string {
+    try {
+      const user = JSON.parse(localStorage.getItem('currentUser') || '{}');
+      return user.username || '';
+    } catch { return ''; }
+  }
+
   guardarCambios() {
     if (!this.clienteValido()) {
       Swal.fire('Error', 'Complete los campos obligatorios correctamente', 'error');
@@ -138,7 +148,15 @@ export class EditarCliente implements OnInit {
     }
 
     const payload = {
-      ...this.clienteEditando
+      dni: this.clienteEditando.dni,
+      nombre: this.clienteEditando.nombre,
+      apellido_paterno: this.clienteEditando.apellido_paterno,
+      apellido_materno: this.clienteEditando.apellido_materno,
+      celular: this.clienteEditando.celular,
+      correo: this.clienteEditando.correo,
+      estado: this.clienteEditando.estado,
+      usuario_logueado: this.obtenerUsuarioLogueado(),
+      carros_json: this.clienteEditando.vehiculos || []
     };
 
     console.log('Enviando actualización de cliente al backend:', payload);
