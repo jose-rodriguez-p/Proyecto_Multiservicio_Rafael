@@ -28,8 +28,11 @@
             <!-- Nombres -->
             <div class="col-md-4">
                 <label class="form-label fw-bold small mb-2">Nombres</label>
-                <input type="text" class="form-control form-control-sm"
-                    [(ngModel)]="trabajadorEditando.nombre" name="nombre_edit" required>
+                <input type="text" pattern="[A-Za-z\s]+" class="form-control form-control-sm"
+                    [(ngModel)]="trabajadorEditando.nombre" name="nombre_edit" required
+                    [ngClass]="{'is-invalid': trabajadorEditForm.submitted && !trabajadorEditando.nombre.trim()}"
+                    (input)="trabajadorEditForm.form.controls['nombre_edit'].setValue(trabajadorEditando.nombre.trim())"
+                    >
             </div>
 
             <!-- Apellido Paterno -->
