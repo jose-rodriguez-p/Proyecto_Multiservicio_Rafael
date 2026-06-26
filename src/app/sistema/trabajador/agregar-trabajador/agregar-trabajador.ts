@@ -62,9 +62,11 @@ export class AgregarTrabajador implements OnInit {
   // ── DIRECCIÓN ────────────────────────────────────────────────────────────────
 
   get direccionCompleta(): string {
+
     const partes = [this.dir.tipo, this.dir.nombre, this.dir.numero].filter(p => p?.trim());
     return partes.join(' ').trim();
   }
+  
 
   get direccionValida(): boolean {
     return !!(this.dir.tipo && this.dir.nombre.trim() && this.dir.numero.trim());
