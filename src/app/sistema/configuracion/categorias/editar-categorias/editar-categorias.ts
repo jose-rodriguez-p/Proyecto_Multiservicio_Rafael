@@ -1,9 +1,9 @@
 import { API_BASE_URL } from '@config';
-import { Component, OnInit, inject, PLATFORM_ID } from '@angular/core';
+import { Component, OnInit, inject, PLATFORM_ID, ChangeDetectorRef } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import Swal from 'sweetalert2';
 
 @Component({
@@ -14,16 +14,21 @@ import Swal from 'sweetalert2';
   styleUrl: './editar-categorias.css',
 })
 export class EditarCategorias implements OnInit {
+
   private router = inject(Router);
   private route = inject(ActivatedRoute);
   private http = inject(HttpClient);
   private platformId = inject(PLATFORM_ID);
-  private URL = `${API_BASE_URL}/api/productos/categorias`;
+  private cdr = inject(ChangeDetectorRef);
 
   nombre = '';
   nombreOriginal = '';
+  estado = 'Activo';
+  estadoOriginal = 'Activo';
+
   error = false;
   mensajeError = '';
+
   categoriasExistentes: string[] = [];
   categoriaId: any = null;
 
@@ -35,56 +40,87 @@ export class EditarCategorias implements OnInit {
   }
 
   cargarDatos() {
-    // Simulación — reemplazar por llamada real:
-    // this.http.get<any>(`${this.URL}/${this.categoriaId}`).subscribe(...)
-    const simulados: any = {
-      '1': 'Lubricantes', '2': 'Frenos', '3': 'Filtros',
-      '4': 'Llantas',     '5': 'Baterías'
-    };
-    this.categoriasExistentes = Object.values(simulados);
-    this.nombreOriginal = simulados[this.categoriaId] ?? '';
-    this.nombre = this.nombreOriginal;
+    this.http.get<any[]>(`${API_BASE_URL}/api/configuracion/listar-categorias`)
+      .subscribe({
+        next: (data) => {
+
+          const list = data || [];
+
+          this.categoriasExistentes = list.map(c => c.nombre);
+
+          const cat = list.find(c =>
+            c.nombre.toLowerCase() === this.categoriaId?.toLowerCase()
+          );
+
+          if (cat) {
+            this.nombre = cat.nombre;
+            this.nombreOriginal = cat.nombre;
+            this.estado = cat.estado;
+            this.estadoOriginal = cat.estado;
+          }
+
+          this.cdr.detectChanges();
+        }
+      });
   }
 
   validar() {
     const v = this.nombre.trim();
+
     if (!v) {
       this.error = true;
-      this.mensajeError = 'El nombre no puede estar vacío.';
+      this.mensajeError = 'Nombre vacío';
       return;
     }
-    if (v.toLowerCase() === this.nombreOriginal.toLowerCase()) {
-      this.error = true;
-      this.mensajeError = 'El nombre es igual al actual.';
-      return;
-    }
-    const existe = this.categoriasExistentes.some(
-      c => c.toLowerCase() === v.toLowerCase()
-    );
-    if (existe) {
-      this.error = true;
-      this.mensajeError = 'Ya existe una categoría con ese nombre.';
-      return;
-    }
+
     this.error = false;
-    this.mensajeError = '';
   }
 
+  // 🔥 AQUÍ ESTÁ LA CLAVE
   guardar() {
-    this.validar();
-    if (this.error || !this.nombre.trim()) return;
 
-    // Simulación — reemplazar por:
-    // this.http.put(`${this.URL}/${this.categoriaId}`, { nombre: this.nombre.trim() }, { responseType: 'text' }).subscribe(...)
-    Swal.fire({
-      icon: 'success',
-      title: '¡Categoría actualizada!',
-      text: `"${this.nombre.trim()}" fue guardada correctamente.`,
-      confirmButtonColor: '#b91c1c',
-      confirmButtonText: 'Aceptar',
-    }).then(() => this.cerrar());
+    const params = new HttpParams()
+      .set('nombreCategoria', this.nombreOriginal)
+      .set('nuevoEstado', this.estado);
+
+    this.http.put(
+      `${API_BASE_URL}/api/configuracion/categorias/estado`,
+      {}, // body vacío obligatorio
+      {
+        params,
+        responseType: 'text' // 🔥 CLAVE PARA EVITAR ERROR DE PARSEO
+      }
+    ).subscribe({
+
+      next: (res) => {
+        console.log('RESPUESTA:', res);
+
+        Swal.fire({
+          icon: 'success',
+          title: 'Actualizado',
+          text: 'Categoría actualizada correctamente'
+        }).then(() => {
+          this.cerrar();
+        });
+      },
+
+      error: (err) => {
+        console.log('ERROR REAL:', err);
+
+        Swal.fire(
+          'Error',
+          err.error || 'No se pudo actualizar',
+          'error'
+        );
+      }
+    });
   }
 
-  cancelar() { this.cerrar(); }
-  cerrar() { this.router.navigate(['/sistema/configuracion/categorias']); }
+  cancelar() {
+    this.cerrar();
+  }
+
+  cerrar() {
+    this.router.navigate(['/sistema/configuracion/categorias']);
+  }
 }

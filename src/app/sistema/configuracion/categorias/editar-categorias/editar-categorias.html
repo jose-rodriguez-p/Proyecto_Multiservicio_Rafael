@@ -16,20 +16,26 @@
             <label class="form-label fw-semibold small">
                 <i class="bi bi-tag me-1 text-danger"></i> Nombre <span class="text-danger">*</span>
             </label>
-            <input type="text" class="form-control"
+            <input type="text" class="form-control bg-light"
                 [(ngModel)]="nombre"
-                (input)="validar()"
-                placeholder="Nuevo nombre..."
-                [ngClass]="{'is-invalid': error, 'is-valid': nombre.trim() && !error}" />
-            <div class="invalid-feedback">{{ mensajeError }}</div>
-            <div class="valid-feedback">Nombre disponible.</div>
+                readonly
+                placeholder="Nombre de la categoría..." />
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label fw-semibold small">
+                <i class="bi bi-toggle-on me-1 text-danger"></i> Estado
+            </label>
+            <select class="form-select form-select-sm" [(ngModel)]="estado" (change)="validar()">
+                <option value="Activo">Activo</option>
+                <option value="Inactivo">Inactivo</option>
+            </select>
         </div>
     </div>
 
     <div class="modal-footer border-0 bg-light px-4 py-3">
         <button class="btn btn-light border fw-medium px-4" (click)="cancelar()">Cancelar</button>
-        <button class="btn btn-danger fw-medium px-4" (click)="guardar()"
-            [disabled]="!nombre.trim() || error">
+        <button class="btn btn-danger fw-medium px-4" (click)="guardar()">
             <i class="bi bi-save me-2"></i> Guardar Cambios
         </button>
     </div>

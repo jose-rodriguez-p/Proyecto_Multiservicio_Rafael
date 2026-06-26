@@ -24,7 +24,7 @@ export class Cliente implements OnInit {
   private router = inject(Router);
 
   clienteEditando: any = {};
-  nuevoVehiculo: any = { placa: '', marca: '', modelo: '', anio: '', combustible: '' };
+  nuevoVehiculo: any = { placa: '', marca: '', modelo: '', anio: '' };
   errorPlaca = false;
 
   private URL_API = `${API_BASE_URL}/api/clientes`;
@@ -64,8 +64,6 @@ export class Cliente implements OnInit {
     'GAC':           ['Empow', 'GN8', 'GS3', 'GS4', 'GS5', 'GS8', 'M6'],
   };
 
-  readonly combustibles = ['Gasolina', 'Diésel', 'GNV', 'GLP', 'Híbrido', 'Eléctrico'];
-
   get marcas(): string[] { return Object.keys(this.catalogoMarcas).sort(); }
 
   get modelosFiltrados(): string[] {
@@ -98,12 +96,14 @@ export class Cliente implements OnInit {
     this.router.events.subscribe((ev: any) => {
       const url = this.router.url || '';
       const isModalRoute = url.includes('/sistema/cliente/agregar-cliente');
-      if (isModalRoute) {
-        this.mostrarModal = true;
+      const isEditRoute = url.includes('/sistema/cliente/editar-cliente');
+      
+      if (isModalRoute || isEditRoute) {
+        if (isModalRoute) this.mostrarModal = true;
       } else {
         const wasOpen = this.mostrarModal;
         this.mostrarModal = false;
-        if (wasOpen) this.cargarClientes();
+        if (wasOpen || isEditRoute) this.cargarClientes();
       }
     });
   }
@@ -175,7 +175,7 @@ export class Cliente implements OnInit {
   cerrarModalEdit() { this.mostrarModalEdit = false; }
 
   abrirModalVehiculo() {
-    this.nuevoVehiculo = { placa: '', marca: '', modelo: '', anio: '', combustible: '' };
+    this.nuevoVehiculo = { placa: '', marca: '', modelo: '', anio: '' };
     this.errorPlaca = false;
     this.mostrarModalVehiculo = true;
   }
@@ -183,7 +183,7 @@ export class Cliente implements OnInit {
   cerrarModalVehiculo() { this.mostrarModalVehiculo = false; }
 
   guardarVehiculo() {
-    if (!this.nuevoVehiculo.placa || !this.nuevoVehiculo.marca || !this.nuevoVehiculo.modelo || !this.nuevoVehiculo.anio || !this.nuevoVehiculo.combustible || this.errorPlaca) {
+    if (!this.nuevoVehiculo.placa || !this.nuevoVehiculo.marca || !this.nuevoVehiculo.modelo || !this.nuevoVehiculo.anio || this.errorPlaca) {
       Swal.fire('Error', 'Complete todos los campos del vehículo', 'error');
       return;
     }
@@ -205,9 +205,11 @@ export class Cliente implements OnInit {
       cancelButtonText: 'Cancelar',
     }).then((result: any) => {
       if (result.isConfirmed) {
-        this.clienteEditando.vehiculos = this.clienteEditando.vehiculos.filter(
+        const listaFiltrada = this.clienteEditando.vehiculos.filter(
           (v: any) => v.placa !== vehiculo.placa,
         );
+        this.clienteEditando.vehiculos = [...listaFiltrada];
+        this.cdr.detectChanges();
         Swal.fire('Eliminado', 'Vehículo eliminado', 'success');
       }
     });
@@ -215,15 +217,49 @@ export class Cliente implements OnInit {
 
   guardarCambios() {
     console.log('Enviando actualización de cliente al backend:', this.clienteEditando);
-    Swal.fire('Actualizado', 'Los datos del cliente han sido modificados', 'success');
-    this.cerrarModalEdit();
-    this.cargarClientes();
+
+    const payload = {
+      cliente: {
+        dni: this.clienteEditando.dni,
+        nombre: this.clienteEditando.nombre,
+        apellido_paterno: this.clienteEditando.apellido_paterno,
+        apellido_materno: this.clienteEditando.apellido_materno || '',
+        celular: this.clienteEditando.celular,
+        correo: this.clienteEditando.correo || '',
+        estado: this.clienteEditando.estado
+      },
+      carros: this.clienteEditando.vehiculos.map((v: any) => ({
+        placa: v.placa,
+        marca: v.marca,
+        modelo: v.modelo,
+        anio: String(v.anio)
+      }))
+    };
+
+    this.http.put<any>(`${this.URL_API}/actualizar`, payload).subscribe({
+      next: (res) => {
+        console.log('Respuesta del backend:', res);
+        if (res && res.status === 'editado') {
+          Swal.fire('Actualizado', 'Los datos del cliente han sido modificados', 'success');
+          this.cerrarModalEdit();
+          this.cargarClientes();
+        } else {
+          const mensajeErr = res?.status || 'No se pudo actualizar el cliente';
+          Swal.fire('Error', mensajeErr, 'error');
+        }
+      },
+      error: (err) => {
+        console.error('ERROR:', err);
+        const detalleError = err.error?.status || 'No se pudo actualizar el cliente';
+        Swal.fire('Error', detalleError, 'error');
+      }
+    });
   }
 
   eliminarCliente(dni: string) {
     Swal.fire({
       title: '¿Eliminar cliente?',
-      text: 'Se eliminarán todos los registros asociados a este cliente.',
+      text: 'Se cambiará el estado a Inactivo. Se eliminarán todos los registros asociados a este cliente.',
       icon: 'warning',
       showCancelButton: true,
       confirmButtonColor: '#ff3b30',
@@ -232,9 +268,47 @@ export class Cliente implements OnInit {
       cancelButtonText: 'Cancelar',
     }).then((result: any) => {
       if (result.isConfirmed) {
-        console.log('Enviando eliminación al backend (DELETE /cliente/' + dni + ')');
-        Swal.fire('Eliminado', 'El cliente ha sido retirado del sistema', 'success');
-        this.cargarClientes();
+        const cliente = this.clientes.find((c: any) => c.dni === dni);
+        if (!cliente) {
+          Swal.fire('Error', 'Cliente no encontrado', 'error');
+          return;
+        }
+
+        const payload = {
+          cliente: {
+            dni: cliente.dni,
+            nombre: cliente.nombre,
+            apellido_paterno: cliente.apellido_paterno,
+            apellido_materno: cliente.apellido_materno || '',
+            celular: cliente.celular,
+            correo: cliente.correo || '',
+            estado: 'Inactivo'
+          },
+          carros: cliente.vehiculos.map((v: any) => ({
+            placa: v.placa,
+            marca: v.marca,
+            modelo: v.modelo,
+            anio: String(v.anio)
+          }))
+        };
+
+        this.http.put<any>(`${this.URL_API}/actualizar`, payload).subscribe({
+          next: (res) => {
+            console.log('Respuesta del backend:', res);
+            if (res && res.status === 'editado') {
+              Swal.fire('Eliminado', 'El cliente ha sido retirado del sistema', 'success');
+              this.cargarClientes();
+            } else {
+              const mensajeErr = res?.status || 'No se pudo eliminar el cliente';
+              Swal.fire('Error', mensajeErr, 'error');
+            }
+          },
+          error: (err) => {
+            console.error('ERROR:', err);
+            const detalleError = err.error?.status || 'No se pudo eliminar el cliente';
+            Swal.fire('Error', detalleError, 'error');
+          }
+        });
       }
     });
   }

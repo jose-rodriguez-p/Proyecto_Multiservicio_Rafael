@@ -267,15 +267,17 @@ export class AgregarCliente {
     }
 
     const payload = {
-      dni: this.nuevoCliente.dni,
-      nombre: this.nuevoCliente.nombre,
-      apellido_paterno: this.nuevoCliente.apellido_paterno,
-      apellido_materno: this.nuevoCliente.apellido_materno,
-      celular: this.nuevoCliente.celular,
-      correo: this.nuevoCliente.correo,
-      estado: this.nuevoCliente.estado,
-      usuario_logueado: this.obtenerUsuarioLogueado(),
-      carros_json: this.vehiculos
+      cliente: {
+        dni: this.nuevoCliente.dni,
+        nombre: this.nuevoCliente.nombre,
+        apellido_paterno: this.nuevoCliente.apellido_paterno,
+        apellido_materno: this.nuevoCliente.apellido_materno,
+        celular: this.nuevoCliente.celular,
+        correo: this.nuevoCliente.correo,
+        estado: this.nuevoCliente.estado,
+        usuario_logueado: this.obtenerUsuarioLogueado()
+      },
+      vehiculos: this.vehiculos
     };
     this.http.post(`${this.URL_API}/registrar`, payload, { responseType: 'text' }).subscribe({
       next: () => {

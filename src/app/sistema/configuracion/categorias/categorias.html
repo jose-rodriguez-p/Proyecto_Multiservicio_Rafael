@@ -15,12 +15,22 @@
     </button>
   </div>
 
-  <!-- Buscador -->
-  <div class="input-group" style="max-width:320px;">
-    <span class="input-group-text bg-white border-end-0 text-muted"><i class="bi bi-search"></i></span>
-    <input type="text" class="form-control border-start-0 ps-0"
-      placeholder="Buscar categoría..."
-      [(ngModel)]="filtro" />
+  <!-- Buscador y Filtro -->
+  <div class="d-flex flex-wrap gap-2 align-items-center mb-1">
+    <div class="input-group" style="max-width:320px;">
+      <span class="input-group-text bg-white border-end-0 text-muted"><i class="bi bi-search"></i></span>
+      <input type="text" class="form-control border-start-0 ps-0"
+        placeholder="Buscar categoría..."
+        [(ngModel)]="filtro" />
+    </div>
+
+    <div style="width:150px;">
+      <select class="form-select" [(ngModel)]="estadoFiltro">
+        <option value="Todos">Todos</option>
+        <option value="Activos">Activos</option>
+        <option value="Inactivos">Inactivos</option>
+      </select>
+    </div>
   </div>
 
   <!-- Lista -->
@@ -30,7 +40,10 @@
         <i class="bi bi-tag-fill"></i>
       </div>
       <span class="cat-item-nombre">{{ cat.nombre }}</span>
-      <button class="cat-btn-editar" (click)="router.navigate(['/sistema/configuracion/categorias/editar-categorias', cat.id])">
+      <span class="badge me-3" [ngClass]="cat.estado === 'Activo' ? 'bg-success-subtle text-success border border-success-subtle' : 'bg-secondary-subtle text-secondary border border-secondary-subtle'">
+        {{ cat.estado }}
+      </span>
+      <button class="cat-btn-editar" (click)="abrirModalEdit(cat)">
         <i class="bi bi-pencil-fill"></i> Editar
       </button>
     </div>

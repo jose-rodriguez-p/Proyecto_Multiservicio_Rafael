@@ -1,40 +1,57 @@
 <div class="contenedor-centrado">
   <div class="card shadow border-0" style="max-width: 480px; width: 100%;">
 
-    <div class="card-header bg-danger text-white border-0 py-3 px-4 d-flex justify-content-between align-items-center">
+    <div
+      class="card-header bg-danger text-white border-0 py-3 px-4 d-flex justify-content-between align-items-center">
       <div>
-        <h5 class="mb-0 fw-bold"><i class="bi bi-shield-lock-fill me-2"></i>Cambiar Contraseña</h5>
-        <div class="small opacity-75 mt-1">Usuario: <strong>{{ obtenerUsuario() }}</strong></div>
+        <h5 class="mb-0 fw-bold">
+          <i class="bi bi-shield-lock-fill me-2"></i>Cambiar Contraseña
+        </h5>
+        <div class="small opacity-75 mt-1">
+          Usuario: <strong>{{ obtenerUsuario() }}</strong>
+        </div>
       </div>
-      <button type="button" class="btn-close btn-close-white" (click)="cerrar()"></button>
+      <button type="button" class="btn-close btn-close-white"
+        (click)="cerrar()"></button>
     </div>
 
     <div class="card-body p-4">
 
+      <!-- CONTRASEÑA ACTUAL -->
       <div class="mb-3">
-        <label class="form-label fw-semibold small">Contraseña actual <span class="text-danger">*</span></label>
+        <label class="form-label fw-semibold small">Contraseña actual *</label>
+
         <div class="input-group">
           <input
             [type]="verActual ? 'text' : 'password'"
             class="form-control"
-            [ngClass]="{'is-invalid': errorActual && contrasenaActual.length > 0, 'is-valid': contrasenaActualValida}"
+            [ngClass]="{
+              'is-invalid': errorActual && contrasenaActual.length > 0,
+              'is-valid': contrasenaActualValida
+            }"
             [(ngModel)]="contrasenaActual"
             (input)="validarActual()"
             placeholder="Tu contraseña actual">
-          
+
           <span class="input-group-text bg-white" *ngIf="validandoEnServidor">
-            <span class="spinner-border spinner-border-sm text-secondary"></span>
+            <span
+              class="spinner-border spinner-border-sm text-secondary"></span>
           </span>
 
-          <button class="btn btn-outline-secondary" type="button" (click)="verActual = !verActual">
-            <i class="bi" [class.bi-eye]="!verActual" [class.bi-eye-slash]="verActual"></i>
+          <button class="btn btn-outline-secondary" type="button"
+            (click)="verActual = !verActual">
+            <i class="bi" [class.bi-eye]="!verActual"
+              [class.bi-eye-slash]="verActual"></i>
           </button>
         </div>
-        <div class="text-danger small mt-1" *ngIf="errorActual && !contrasenaActualValida && contrasenaActual.length > 0">
+
+        <div class="text-danger small mt-1"
+          *ngIf="errorActual && contrasenaActual.length > 0">
           La contraseña introducida es incorrecta.
         </div>
+
         <div class="text-success small mt-1" *ngIf="contrasenaActualValida">
-          <i class="bi bi-check-circle-fill me-1"></i>Contraseña verficada. Ya puedes ingresar la nueva.
+          <i class="bi bi-check-circle-fill me-1"></i>Contraseña verificada.
         </div>
       </div>
 
@@ -43,92 +60,77 @@
       <fieldset [disabled]="!contrasenaActualValida">
 
         <div class="mb-2">
-          <label class="form-label fw-semibold small">Nueva contraseña <span class="text-danger">*</span></label>
+          <label class="form-label fw-semibold small">Nueva contraseña *</label>
+
           <div class="input-group">
             <input
               [type]="verNueva ? 'text' : 'password'"
               class="form-control"
-              [ngClass]="{'is-invalid': errorNueva, 'is-valid': nuevaContrasena.length >= 8}"
+              [ngClass]="{
+                'is-invalid': errorNueva || errorIgualActual,
+                'is-valid': nuevaContrasena.length >= 8 && !errorIgualActual
+              }"
               [(ngModel)]="nuevaContrasena"
               (input)="validarNueva()"
               placeholder="Mínimo 8 caracteres">
-            <button class="btn btn-outline-secondary" type="button" (click)="verNueva = !verNueva">
-              <i class="bi" [class.bi-eye]="!verNueva" [class.bi-eye-slash]="verNueva"></i>
+
+            <button class="btn btn-outline-secondary" type="button"
+              (click)="verNueva = !verNueva">
+              <i class="bi" [class.bi-eye]="!verNueva"
+                [class.bi-eye-slash]="verNueva"></i>
             </button>
           </div>
+
           <div class="text-danger small mt-1" *ngIf="errorNueva">
-            La contraseña debe tener al menos 8 caracteres.
+            Mínimo 8 caracteres.
+          </div>
+
+          <div class="text-danger small mt-1" *ngIf="errorIgualActual">
+            La nueva contraseña no puede ser igual a la actual.
           </div>
         </div>
-
-        <div *ngIf="nuevaContrasena.length > 0" class="mb-3">
-          <div class="fortaleza-barra mb-1">
-            <div
-              class="fortaleza-progreso"
-              [style.width.%]="fortaleza.nivel * 20"
-              [style.background-color]="fortaleza.color">
-            </div>
-          </div>
-          <div class="small fw-semibold" [style.color]="fortaleza.color">
-            {{ fortaleza.label }}
-          </div>
-          <div class="text-muted" style="font-size: 0.7rem; margin-top: 2px;">
-            Usa mayúsculas, números y símbolos para una contraseña más segura.
-          </div>
-        </div>
-
         <div class="mb-4">
-          <label class="form-label fw-semibold small">Confirmar nueva contraseña <span class="text-danger">*</span></label>
+          <label class="form-label fw-semibold small">Confirmar nueva contraseña
+            *</label>
+
           <div class="input-group">
             <input
               [type]="verConfirmar ? 'text' : 'password'"
               class="form-control"
-              [ngClass]="{'is-invalid': errorCoincide, 'is-valid': confirmarContrasena && !errorCoincide}"
+              [ngClass]="{
+                'is-invalid': errorCoincide,
+                'is-valid': confirmarContrasena && !errorCoincide
+              }"
               [(ngModel)]="confirmarContrasena"
               (input)="validarConfirmar()"
               placeholder="Repite la nueva contraseña">
-            <button class="btn btn-outline-secondary" type="button" (click)="verConfirmar = !verConfirmar">
-              <i class="bi" [class.bi-eye]="!verConfirmar" [class.bi-eye-slash]="verConfirmar"></i>
+
+            <button class="btn btn-outline-secondary" type="button"
+              (click)="verConfirmar = !verConfirmar">
+              <i class="bi" [class.bi-eye]="!verConfirmar"
+                [class.bi-eye-slash]="verConfirmar"></i>
             </button>
           </div>
+
           <div class="text-danger small mt-1" *ngIf="errorCoincide">
             Las contraseñas no coinciden.
-          </div>
-          <div class="text-success small mt-1" *ngIf="confirmarContrasena && !errorCoincide && confirmarContrasena === nuevaContrasena">
-            <i class="bi bi-check-circle me-1"></i>Las contraseñas coinciden.
           </div>
         </div>
 
       </fieldset>
 
+      <!-- BOTÓN -->
       <button
         class="btn btn-danger w-100 py-2 fw-bold"
         (click)="actualizarContrasena()"
         [disabled]="actualizando || !formularioValido">
-        <span *ngIf="actualizando" class="spinner-border spinner-border-sm me-2"></span>
+
+        <span *ngIf="actualizando"
+          class="spinner-border spinner-border-sm me-2"></span>
         <i *ngIf="!actualizando" class="bi bi-shield-check me-2"></i>
+
         {{ actualizando ? 'Actualizando...' : 'Actualizar Contraseña' }}
       </button>
-
-      <div class="mt-3 p-3 bg-light rounded border" style="font-size: 0.75rem;">
-        <div class="fw-semibold text-secondary mb-1"><i class="bi bi-info-circle me-1"></i>Requisitos:</div>
-        <div [class.text-success]="nuevaContrasena.length >= 8" [class.text-muted]="nuevaContrasena.length < 8">
-          <i class="bi me-1" [class.bi-check-circle-fill]="nuevaContrasena.length >= 8" [class.bi-circle]="nuevaContrasena.length < 8"></i>
-          Mínimo 8 caracteres
-        </div>
-        <div [class.text-success]="/[A-Z]/.test(nuevaContrasena)" [class.text-muted]="!/[A-Z]/.test(nuevaContrasena)">
-          <i class="bi me-1" [class.bi-check-circle-fill]="/[A-Z]/.test(nuevaContrasena)" [class.bi-circle]="!/[A-Z]/.test(nuevaContrasena)"></i>
-          Al menos una mayúscula
-        </div>
-        <div [class.text-success]="/[0-9]/.test(nuevaContrasena)" [class.text-muted]="!/[0-9]/.test(nuevaContrasena)">
-          <i class="bi me-1" [class.bi-check-circle-fill]="/[0-9]/.test(nuevaContrasena)" [class.bi-circle]="!/[0-9]/.test(nuevaContrasena)"></i>
-          Al menos un número
-        </div>
-        <div [class.text-success]="/[^A-Za-z0-9]/.test(nuevaContrasena)" [class.text-muted]="!/[^A-Za-z0-9]/.test(nuevaContrasena)">
-          <i class="bi me-1" [class.bi-check-circle-fill]="/[^A-Za-z0-9]/.test(nuevaContrasena)" [class.bi-circle]="!/[^A-Za-z0-9]/.test(nuevaContrasena)"></i>
-          Al menos un símbolo (recomendado)
-        </div>
-      </div>
 
     </div>
   </div>
