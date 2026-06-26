@@ -20,10 +20,10 @@ export class AgregarProducto implements OnInit {
   categorias: any[] = [];
   proveedores: any[] = [];
 
-  // Errores en tiempo real
   errorCodigo = false;
   errorNombre = false;
   errorCantidad = false;
+  errorStockMinimo = false;
   errorPrecioCompra = false;
   errorPrecioVenta = false;
   errorPrecioVentaMenor = false;
@@ -57,55 +57,65 @@ export class AgregarProducto implements OnInit {
 
     this.http.get<any>(`${this.URL_PROVEEDORES}/listar`).subscribe({
       next: (data) => {
-        const proveedoresArray = Array.isArray(data) ? data : data.content || data.data || [];
-        this.proveedores = proveedoresArray.filter((p: any) => p.estado === 'Activo');
+        const arr = Array.isArray(data) ? data : data.content || data.data || [];
+        this.proveedores = arr.filter((p: any) => p.estado === 'Activo');
         this.cdr.detectChanges();
       },
       error: (err) => console.error('Error al cargar proveedores:', err)
     });
   }
 
-  // ── Validaciones en tiempo real ──────────────────────────────────────────
   validarCodigo() {
-    this.errorCodigo = !this.nuevoProducto.codigo?.trim() ||
-      !/^[A-Za-z0-9\-]{2,20}$/.test(this.nuevoProducto.codigo.trim());
+    const v = this.nuevoProducto.codigo?.trim();
+    this.errorCodigo = !v || !/^[A-Za-z]{2,5}-\d{2,5}$/.test(v);
   }
 
   validarNombre() {
-    this.errorNombre = !this.nuevoProducto.nombre?.trim() ||
-      this.nuevoProducto.nombre.trim().length < 2;
+    const v = this.nuevoProducto.nombre?.trim();
+    this.errorNombre = !v || v.length < 2 || v.length > 100;
   }
 
   validarCantidad() {
+    const v = Number(this.nuevoProducto.cantidad);
     this.errorCantidad = this.nuevoProducto.cantidad === null ||
-      this.nuevoProducto.cantidad < 0;
+      v < 0 || v > 999 || !Number.isInteger(v);
+    this.validarStockMinimo();
+  }
+
+  validarStockMinimo() {
+    const sm = Number(this.nuevoProducto.stock_minimo);
+    const cant = Number(this.nuevoProducto.cantidad);
+    this.errorStockMinimo = sm < 0 || sm > 999 || (!isNaN(cant) && sm > cant);
   }
 
   validarPrecioCompra() {
-    this.errorPrecioCompra = this.nuevoProducto.precio_compra === null ||
-      this.nuevoProducto.precio_compra < 0;
+    const v = Number(this.nuevoProducto.precio_compra);
+    this.errorPrecioCompra = !v || v <= 0 || v > 9999.99;
     this.validarPrecioVenta();
   }
 
   validarPrecioVenta() {
-    this.errorPrecioVenta = !this.nuevoProducto.precio_venta ||
-      this.nuevoProducto.precio_venta <= 0;
+    const v = Number(this.nuevoProducto.precio_venta);
+    this.errorPrecioVenta = !v || v <= 0 || v > 9999.99;
     this.errorPrecioVentaMenor =
       !this.errorPrecioVenta &&
       this.nuevoProducto.precio_compra > 0 &&
-      Number(this.nuevoProducto.precio_venta) <= Number(this.nuevoProducto.precio_compra);
+      v <= Number(this.nuevoProducto.precio_compra);
   }
 
   datosValidos(): boolean {
     return !this.errorCodigo && !this.errorNombre &&
-           !this.errorCantidad && !this.errorPrecioCompra &&
-           !this.errorPrecioVenta && !this.errorPrecioVentaMenor &&
+           !this.errorCantidad && !this.errorStockMinimo &&
+           !this.errorPrecioCompra && !this.errorPrecioVenta &&
+           !this.errorPrecioVentaMenor &&
            !!this.nuevoProducto.codigo?.trim() &&
-           !!this.nuevoProducto.nombre?.trim();
+           !!this.nuevoProducto.nombre?.trim() &&
+           this.nuevoProducto.cantidad !== null &&
+           this.nuevoProducto.precio_compra !== null &&
+           this.nuevoProducto.precio_venta !== null;
   }
 
   guardarProducto() {
-    // Dispara todas las validaciones antes de intentar guardar
     this.validarCodigo();
     this.validarNombre();
     this.validarCantidad();

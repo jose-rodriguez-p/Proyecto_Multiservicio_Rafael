@@ -8,102 +8,125 @@
 <div class="modal-body p-4 p-md-5">
   <div class="row g-3 g-md-4">
 
+    <!-- Código -->
     <div class="col-md-6">
-      <label class="form-label fw-bold small mb-2">Código <span class="text-danger">*</span></label>
+      <label class="form-label fw-bold small mb-2">
+        Código <span class="text-danger">*</span>
+      </label>
       <input type="text"
         class="form-control form-control-sm"
         [(ngModel)]="nuevoProducto.codigo"
         (input)="validarCodigo()"
         [ngClass]="{'is-invalid': errorCodigo, 'is-valid': !errorCodigo && nuevoProducto.codigo?.trim()}"
         placeholder="Ej: ACE-001"
-        maxlength="20">
-      <div class="text-danger small mt-2" *ngIf="errorCodigo">
-        El código debe tener entre 2 y 20 caracteres alfanuméricos.
-      </div>
+        maxlength="15">
+      <div class="invalid-feedback">Formato inválido. Usa letras, guión y números. Ej: ACE-001</div>
     </div>
 
+    <!-- Nombre -->
     <div class="col-md-6">
-      <label class="form-label fw-bold small mb-2">Nombre <span class="text-danger">*</span></label>
+      <label class="form-label fw-bold small mb-2">
+        Nombre <span class="text-danger">*</span>
+      </label>
       <input type="text"
         class="form-control form-control-sm"
         [(ngModel)]="nuevoProducto.nombre"
         (input)="validarNombre()"
         [ngClass]="{'is-invalid': errorNombre, 'is-valid': !errorNombre && nuevoProducto.nombre?.trim()}"
-        placeholder="Ej: Aceite Motor 10W40">
-      <div class="text-danger small mt-2" *ngIf="errorNombre">
-        El nombre debe tener al menos 2 caracteres.
-      </div>
+        placeholder="Ej: Aceite Motor 10W40"
+        maxlength="100">
+      <div class="invalid-feedback">El nombre debe tener al menos 2 caracteres.</div>
     </div>
 
+    <!-- Marca -->
     <div class="col-md-6">
       <label class="form-label fw-bold small mb-2">Marca</label>
       <input type="text"
         class="form-control form-control-sm"
         [(ngModel)]="nuevoProducto.marca"
-        placeholder="Ej: Castrol">
+        placeholder="Ej: Castrol"
+        maxlength="50"
+        (keypress)="$event.charCode >= 65 && $event.charCode <= 122 || $event.charCode === 32 || $event.charCode === 45 ? true : $event.preventDefault()">
     </div>
 
+    <!-- Categoría -->
     <div class="col-md-6">
       <label class="form-label fw-bold small mb-2">Categoría</label>
       <select class="form-select form-select-sm" [(ngModel)]="nuevoProducto.id_categoria">
+        <option value="0" disabled>— Selecciona una categoría —</option>
         <option *ngFor="let cat of categorias" [value]="cat.id">{{ cat.nombre }}</option>
       </select>
     </div>
 
-    <div class="col-md-6">
+    <!-- Proveedor -->
+    <div class="col-12">
       <label class="form-label fw-bold small mb-2">Proveedor</label>
       <select class="form-select form-select-sm" [(ngModel)]="nuevoProducto.ruc_proveedor">
-        <option value="">Seleccione un proveedor</option>
-        <option *ngFor="let prov of proveedores" [value]="prov.ruc">{{ prov.nombre_empresa }} ({{ prov.ruc }})</option>
+        <option value="">— Seleccione un proveedor —</option>
+        <option *ngFor="let prov of proveedores" [value]="prov.ruc">
+          {{ prov.nombre_empresa }} ({{ prov.ruc }})
+        </option>
       </select>
     </div>
 
+    <!-- Cantidad -->
     <div class="col-md-4">
-      <label class="form-label fw-bold small mb-2">Cantidad Inicial <span class="text-danger">*</span></label>
-      <input type="number" min="0"
+      <label class="form-label fw-bold small mb-2">
+        Cantidad Inicial <span class="text-danger">*</span>
+      </label>
+      <input type="number" min="0" step="1" max="999"
         class="form-control form-control-sm"
         [(ngModel)]="nuevoProducto.cantidad"
         (input)="validarCantidad()"
         [ngClass]="{'is-invalid': errorCantidad, 'is-valid': !errorCantidad && nuevoProducto.cantidad !== null}">
-      <div class="text-danger small mt-2" *ngIf="errorCantidad">
-        La cantidad no puede ser negativa.
-      </div>
-    </div>
+      <div class="invalid-feedback">Ingresa un número entero mayor a 0.</div>
+    </div> 
 
+    <!-- Precio Compra -->
     <div class="col-md-4">
-      <label class="form-label fw-bold small mb-2">Precio Compra (S/) <span class="text-danger">*</span></label>
-      <input type="number" min="0" step="0.01"
+      <label class="form-label fw-bold small mb-2">
+        Precio Compra (S/) <span class="text-danger">*</span>
+      </label>
+      <input type="number" min="0.01" step="0.01" max="999.99"
         class="form-control form-control-sm"
         [(ngModel)]="nuevoProducto.precio_compra"
         (input)="validarPrecioCompra()"
-        [ngClass]="{'is-invalid': errorPrecioCompra, 'is-valid': !errorPrecioCompra && nuevoProducto.precio_compra !== null}">
-      <div class="text-danger small mt-2" *ngIf="errorPrecioCompra">
-        El precio de compra no puede ser negativo.
-      </div>
+        [ngClass]="{'is-invalid': errorPrecioCompra, 'is-valid': !errorPrecioCompra && nuevoProducto.precio_compra}">
+      <div class="invalid-feedback">El precio de compra debe ser mayor a cero.</div>
     </div>
 
+    <!-- Precio Venta -->
     <div class="col-md-4">
-      <label class="form-label fw-bold small mb-2">Precio Venta (S/) <span class="text-danger">*</span></label>
-      <input type="number" min="0.01" step="0.01"
+      <label class="form-label fw-bold small mb-2">
+        Precio Venta (S/) <span class="text-danger">*</span>
+      </label>
+      <input type="number" min="0.01" step="0.01" max="9999.99"
         class="form-control form-control-sm"
         [(ngModel)]="nuevoProducto.precio_venta"
         (input)="validarPrecioVenta()"
         [ngClass]="{'is-invalid': errorPrecioVenta || errorPrecioVentaMenor, 'is-valid': !errorPrecioVenta && !errorPrecioVentaMenor && nuevoProducto.precio_venta}">
-      <div class="text-danger small mt-2" *ngIf="errorPrecioVenta">
+      <div class="invalid-feedback" *ngIf="errorPrecioVenta">
         El precio de venta debe ser mayor a cero.
       </div>
-      <div class="text-danger small mt-2" *ngIf="errorPrecioVentaMenor">
+      <div class="invalid-feedback" *ngIf="errorPrecioVentaMenor">
         El precio de venta debe ser mayor al precio de compra.
       </div>
     </div>
 
+    <!-- Stock Mínimo -->
     <div class="col-md-6">
       <label class="form-label fw-bold small mb-2">Stock Mínimo</label>
-      <input type="number" min="0"
+      <input type="number" min="0" step="1" max="999"
         class="form-control form-control-sm"
-        [(ngModel)]="nuevoProducto.stock_minimo">
+        [(ngModel)]="nuevoProducto.stock_minimo"
+        (input)="validarStockMinimo()"
+        [ngClass]="{'is-invalid': errorStockMinimo, 'is-valid': !errorStockMinimo && nuevoProducto.stock_minimo >= 0}">
+      <div class="invalid-feedback">
+        El stock mínimo no puede ser negativo ni mayor a la cantidad inicial.
+      </div>
     </div>
 
+    <!-- Estado -->
     <div class="col-md-6">
       <label class="form-label fw-bold small mb-2">Estado</label>
       <select class="form-select form-select-sm" [(ngModel)]="nuevoProducto.estado">
