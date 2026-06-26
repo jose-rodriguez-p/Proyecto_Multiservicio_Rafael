@@ -15,6 +15,7 @@ export class Configuracion {
   showRolOverlay = false;
   showCambiarContrasenaOverlay = false;
   showCategoriasOverlay = false;
+  showMarcasOverlay = false;
 
   constructor(public router: Router) {
     this.router.events.pipe(
@@ -25,7 +26,7 @@ export class Configuracion {
       this.showRolOverlay = event.urlAfterRedirects.includes('/sistema/configuracion/rol');
       this.showCambiarContrasenaOverlay = event.urlAfterRedirects.includes('/sistema/configuracion/actualizar-contrasena');
       this.showCategoriasOverlay = event.urlAfterRedirects.includes('/sistema/configuracion/categorias');
-      
+      this.showMarcasOverlay = event.urlAfterRedirects.includes('/sistema/configuracion/marcas');
     });
   }
 
@@ -53,4 +54,9 @@ export class Configuracion {
       confirmButtonText: 'Agregar'
     });
   }
+
+  abrirMarcas() {
+    this.router.navigate(['/sistema/configuracion/marcas']);
+  }
+  
 }

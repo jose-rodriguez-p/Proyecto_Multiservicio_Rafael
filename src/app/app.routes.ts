@@ -25,6 +25,9 @@ import { EditarRol } from './sistema/configuracion/rol/editar-rol/editar-rol';
 import { Categorias } from './sistema/configuracion/categorias/categorias'; // Importación de Categorias
 import { AgregarCategorias } from './sistema/configuracion/categorias/agregar-categorias/agregar-categorias';
 import { EditarCategorias } from './sistema/configuracion/categorias/editar-categorias/editar-categorias';
+import { Marcas } from './sistema/configuracion/marcas/marcas';
+import { AgregarMarcas } from './sistema/configuracion/marcas/agregar-marcas/agregar-marcas';
+import { EditarMarcas } from './sistema/configuracion/marcas/editar-marcas/editar-marcas';
 import { EditarProveedor } from './sistema/proveedor/editar-proveedor/editar-proveedor';
 import { AgregarProveedor } from './sistema/proveedor/agregar-proveedor/agregar-proveedor';
 import { ActualizarContrasena } from './sistema/configuracion/actualizar-contrasena/actualizar-contrasena';
@@ -104,6 +107,14 @@ export const routes: Routes = [
             children: [
               { path: 'agregar-categorias', component: AgregarCategorias },
               { path: 'editar-categorias/:id', component: EditarCategorias },
+            ]
+          },
+          {
+            path: 'marcas',
+            component: Marcas,
+            children: [
+              { path: 'agregar-marcas', component: AgregarMarcas },
+              { path: 'editar-marcas/:id', component: EditarMarcas },
             ]
           },
         ],
