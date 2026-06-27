@@ -16,7 +16,7 @@ export class Marcas implements OnInit {
   private platformId = inject(PLATFORM_ID);
 
   filtroNombre = '';
-  filtroEstado = 'Todos';
+  filtroEstado = 'Activo';
   showAgregarOverlay = false;
   showEditarOverlay = false;
 
