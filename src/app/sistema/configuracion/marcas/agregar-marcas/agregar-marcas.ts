@@ -1,8 +1,10 @@
-import { Component, OnInit, inject, PLATFORM_ID } from '@angular/core';
+import { Component, OnInit, inject, PLATFORM_ID, ChangeDetectorRef } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
+import { HttpClient } from '@angular/common/http';
 import Swal from 'sweetalert2';
+import { API_BASE_URL } from '@config';
 
 @Component({
   selector: 'app-agregar-marcas',
@@ -14,27 +16,57 @@ import Swal from 'sweetalert2';
 export class AgregarMarcas implements OnInit {
   private router = inject(Router);
   private platformId = inject(PLATFORM_ID);
+  private http = inject(HttpClient);
+  private cdr = inject(ChangeDetectorRef);
+  private URL_API = `${API_BASE_URL}/api/configuracion`;
 
   nombre = '';
   estado = 'Activo';
   errorNombre = false;
   mensajeError = '';
-  categoriasSeleccionadas: number[] = [];
+  categoriasSeleccionadas: string[] = [];
+  loading = false;
+  loadingCategorias = false;
+  error = '';
 
-  // Simulado — reemplazar con http.get('/api/productos/categorias')
-  categorias: any[] = [
-    { id: 1, nombre: 'Lubricantes' },
-    { id: 2, nombre: 'Frenos' },
-    { id: 3, nombre: 'Filtros' },
-    { id: 4, nombre: 'Llantas' },
-    { id: 5, nombre: 'Baterías' },
-    { id: 6, nombre: 'Suspensión' },
-    { id: 7, nombre: 'Electricidad' },
-  ];
+  categorias: any[] = [];
+  marcasExistentes: string[] = [];
 
-  marcasExistentes: string[] = ['Castrol', 'Mobil', 'Shell', 'Brembo', 'Bosch', 'Mann', 'Fram', 'Bridgestone', 'Michelin', 'Monroe'];
+  ngOnInit() {
+    if (isPlatformBrowser(this.platformId)) {
+      this.cargarCategorias();
+      this.cargarMarcas();
+    }
+  }
 
-  ngOnInit() {}
+  cargarCategorias() {
+    this.loadingCategorias = true;
+    this.http.get<any[]>(`${this.URL_API}/listar-categorias`).subscribe({
+      next: (data) => {
+        // Filtrar solo categorías activas
+        this.categorias = (data || []).filter(cat => cat.estado === 'Activo');
+        this.loadingCategorias = false;
+        this.cdr.detectChanges();
+      },
+      error: (err) => {
+        console.error('Error al cargar categorías:', err);
+        this.loadingCategorias = false;
+        this.cdr.detectChanges();
+        Swal.fire('Error', 'No se pudieron cargar las categorías', 'error');
+      }
+    });
+  }
+
+  cargarMarcas() {
+    this.http.get<any[]>(`${this.URL_API}/marcas-categorias`).subscribe({
+      next: (data) => {
+        this.marcasExistentes = data.map(m => m.nombre) || [];
+      },
+      error: (err) => {
+        console.error('Error al cargar marcas:', err);
+      }
+    });
+  }
 
   validar() {
     const v = this.nombre.trim();
@@ -62,14 +94,14 @@ export class AgregarMarcas implements OnInit {
     this.mensajeError = '';
   }
 
-  toggleCategoria(id: number) {
-    const idx = this.categoriasSeleccionadas.indexOf(id);
-    if (idx === -1) this.categoriasSeleccionadas.push(id);
+  toggleCategoria(nombre: string) {
+    const idx = this.categoriasSeleccionadas.indexOf(nombre);
+    if (idx === -1) this.categoriasSeleccionadas.push(nombre);
     else this.categoriasSeleccionadas.splice(idx, 1);
   }
 
-  isSeleccionada(id: number): boolean {
-    return this.categoriasSeleccionadas.includes(id);
+  isSeleccionada(nombre: string): boolean {
+    return this.categoriasSeleccionadas.includes(nombre);
   }
 
   get formularioValido(): boolean {
@@ -80,20 +112,44 @@ export class AgregarMarcas implements OnInit {
     this.validar();
     if (!this.formularioValido) return;
 
-    this.cerrar();
-    setTimeout(() => {
-      Swal.fire({
-        icon: 'success',
-        title: '¡Marca agregada!',
-        text: `"${this.nombre.trim()}" fue registrada correctamente.`,
-        confirmButtonColor: '#b91c1c',
-        confirmButtonText: 'Aceptar',
-        timer: 2000,
-        timerProgressBar: true,
-      });
-    }, 150);
+    this.loading = true;
+
+    const datos = {
+      marcaNombre: this.nombre.trim(),
+      marcaEstado: this.estado,
+      categoriasNombres: this.categoriasSeleccionadas
+    };
+
+    this.http.post(`${this.URL_API}/marcas/crear`, datos).subscribe({
+      next: (res: any) => {
+        this.loading = false;
+        this.cerrar(true);
+        setTimeout(() => {
+          Swal.fire({
+            icon: 'success',
+            title: '¡Marca agregada!',
+            text: `"${this.nombre.trim()}" fue registrada correctamente.`,
+            confirmButtonColor: '#b91c1c',
+            confirmButtonText: 'Aceptar',
+            timer: 2000,
+            timerProgressBar: true,
+          });
+        }, 150);
+      },
+      error: (err) => {
+        this.loading = false;
+        console.error('Error al crear marca:', err);
+        Swal.fire('Error', err.error || 'No se pudo crear la marca', 'error');
+      }
+    });
   }
 
-  cancelar() { this.cerrar(); }
-  cerrar() { this.router.navigate(['/sistema/configuracion/marcas']); }
+  cancelar() { this.cerrar(false); }
+  cerrar(recargar: boolean = false) {
+    if (recargar) {
+      this.router.navigate(['/sistema/configuracion/marcas'], { queryParams: { recargar: 'true' } });
+    } else {
+      this.router.navigate(['/sistema/configuracion/marcas']);
+    }
+  }
 }

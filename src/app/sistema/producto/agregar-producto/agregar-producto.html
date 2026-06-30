@@ -8,21 +8,6 @@
 <div class="modal-body p-4 p-md-5">
   <div class="row g-3 g-md-4">
 
-    <!-- Código -->
-    <div class="col-md-6">
-      <label class="form-label fw-bold small mb-2">
-        Código <span class="text-danger">*</span>
-      </label>
-      <input type="text"
-        class="form-control form-control-sm"
-        [(ngModel)]="nuevoProducto.codigo"
-        (input)="validarCodigo()"
-        [ngClass]="{'is-invalid': errorCodigo, 'is-valid': !errorCodigo && nuevoProducto.codigo?.trim()}"
-        placeholder="Ej: ACE-001"
-        maxlength="15">
-      <div class="invalid-feedback">Formato inválido. Usa letras, guión y números. Ej: ACE-001</div>
-    </div>
-
     <!-- Nombre -->
     <div class="col-md-6">
       <label class="form-label fw-bold small mb-2">
@@ -38,24 +23,29 @@
       <div class="invalid-feedback">El nombre debe tener al menos 2 caracteres.</div>
     </div>
 
-    <!-- Marca -->
-    <div class="col-md-6">
-      <label class="form-label fw-bold small mb-2">Marca</label>
-      <input type="text"
-        class="form-control form-control-sm"
-        [(ngModel)]="nuevoProducto.marca"
-        placeholder="Ej: Castrol"
-        maxlength="50"
-        (keypress)="$event.charCode >= 65 && $event.charCode <= 122 || $event.charCode === 32 || $event.charCode === 45 ? true : $event.preventDefault()">
-    </div>
-
     <!-- Categoría -->
     <div class="col-md-6">
       <label class="form-label fw-bold small mb-2">Categoría</label>
-      <select class="form-select form-select-sm" [(ngModel)]="nuevoProducto.id_categoria">
-        <option value="0" disabled>— Selecciona una categoría —</option>
-        <option *ngFor="let cat of categorias" [value]="cat.id">{{ cat.nombre }}</option>
+      <select class="form-select form-select-sm"
+        [(ngModel)]="nuevoProducto.nombre_categoria"
+        (change)="onCategoriaChange()">
+        <option value="" disabled>— Selecciona una categoría —</option>
+        <option *ngFor="let cat of categorias" [value]="cat">{{ cat }}</option>
       </select>
+    </div>
+
+    <!-- Marca -->
+    <div class="col-md-6">
+      <label class="form-label fw-bold small mb-2">Marca</label>
+      <select class="form-select form-select-sm"
+        [(ngModel)]="nuevoProducto.marca"
+        [disabled]="marcasDisponibles.length === 0">
+        <option value="" disabled>— Selecciona una marca —</option>
+        <option *ngFor="let marca of marcasDisponibles" [value]="marca">{{ marca }}</option>
+      </select>
+      <small class="text-muted" *ngIf="marcasDisponibles.length === 0">
+        Selecciona una categoría para ver las marcas disponibles
+      </small>
     </div>
 
     <!-- Proveedor -->
@@ -80,7 +70,7 @@
         (input)="validarCantidad()"
         [ngClass]="{'is-invalid': errorCantidad, 'is-valid': !errorCantidad && nuevoProducto.cantidad !== null}">
       <div class="invalid-feedback">Ingresa un número entero mayor a 0.</div>
-    </div> 
+    </div>
 
     <!-- Precio Compra -->
     <div class="col-md-4">

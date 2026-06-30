@@ -1,8 +1,10 @@
-import { Component, OnInit, inject, PLATFORM_ID } from '@angular/core';
+import { Component, OnInit, inject, PLATFORM_ID, ChangeDetectorRef } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Router, RouterOutlet, NavigationEnd } from '@angular/router';
+import { Router, RouterOutlet, NavigationEnd, ActivatedRoute } from '@angular/router';
 import { filter } from 'rxjs/operators';
+import { HttpClient } from '@angular/common/http';
+import { API_BASE_URL } from '@config';
 
 @Component({
   selector: 'app-marcas',
@@ -13,37 +15,21 @@ import { filter } from 'rxjs/operators';
 })
 export class Marcas implements OnInit {
   public router = inject(Router);
+  private route = inject(ActivatedRoute);
   private platformId = inject(PLATFORM_ID);
+  private http = inject(HttpClient);
+  private cdr = inject(ChangeDetectorRef);
+  private URL_API = `${API_BASE_URL}/api/configuracion`;
 
   filtroNombre = '';
   filtroEstado = 'Activo';
   showAgregarOverlay = false;
   showEditarOverlay = false;
 
-  // ── Datos simulados — reemplazar con http.get cuando el back esté listo ──
-  categorias: any[] = [
-    { id: 1, nombre: 'Lubricantes',   estado: 'Activo' },
-    { id: 2, nombre: 'Frenos',        estado: 'Activo' },
-    { id: 3, nombre: 'Filtros',       estado: 'Activo' },
-    { id: 4, nombre: 'Llantas',       estado: 'Activo' },
-    { id: 5, nombre: 'Baterías',      estado: 'Activo' },
-    { id: 6, nombre: 'Suspensión',    estado: 'Activo' },
-    { id: 7, nombre: 'Electricidad',  estado: 'Inactivo' },
-  ];
-
-  marcas: any[] = [
-    { id: 1, nombre: 'Castrol',    id_categoria: 1, estado: 'Activo'   },
-    { id: 2, nombre: 'Mobil',      id_categoria: 1, estado: 'Activo'   },
-    { id: 3, nombre: 'Shell',      id_categoria: 1, estado: 'Activo'   },
-    { id: 4, nombre: 'Brembo',     id_categoria: 2, estado: 'Activo'   },
-    { id: 5, nombre: 'Bosch',      id_categoria: 2, estado: 'Activo'   },
-    { id: 6, nombre: 'Mann',       id_categoria: 3, estado: 'Activo'   },
-    { id: 7, nombre: 'Fram',       id_categoria: 3, estado: 'Inactivo' },
-    { id: 8, nombre: 'Bridgestone',id_categoria: 4, estado: 'Activo'   },
-    { id: 9, nombre: 'Michelin',   id_categoria: 4, estado: 'Activo'   },
-    { id: 10,nombre: 'Bosch',      id_categoria: 5, estado: 'Activo'   },
-    { id: 11,nombre: 'Monroe',     id_categoria: 6, estado: 'Inactivo' },
-  ];
+  // Estructura del backend: Marca tiene nombre, estado y lista de categorías
+  marcas: any[] = [];
+  loading = false;
+  error = '';
 
   ngOnInit() {
     if (isPlatformBrowser(this.platformId)) {
@@ -52,12 +38,48 @@ export class Marcas implements OnInit {
       ).subscribe((e) => {
         this.showAgregarOverlay = e.urlAfterRedirects.includes('/agregar-marcas');
         this.showEditarOverlay  = e.urlAfterRedirects.includes('/editar-marcas');
+
+        // Recargar marcas solo cuando se regresa de agregar/editar con queryParams.recargar = true
+        const esRutaMarcas = e.urlAfterRedirects.includes('/sistema/configuracion/marcas') &&
+                           !e.urlAfterRedirects.includes('/agregar-marcas') &&
+                           !e.urlAfterRedirects.includes('/editar-marcas');
+        if (esRutaMarcas) {
+          const recargar = this.route.snapshot.queryParams['recargar'];
+          if (recargar === 'true') {
+            this.cargarMarcas();
+            // Limpiar el queryParams después de usarlo
+            this.router.navigate([], {
+              relativeTo: this.route,
+              queryParams: { recargar: null },
+              queryParamsHandling: 'merge'
+            });
+          }
+        }
+
+        this.cdr.markForCheck();
       });
+      this.cargarMarcas();
     }
   }
 
-  get categoriasFiltradas() {
-    return this.categorias.filter(c => c.estado === 'Activo');
+  cargarMarcas() {
+    this.loading = true;
+    this.error = '';
+    this.cdr.markForCheck();
+
+    this.http.get(`${this.URL_API}/marcas-categorias`).subscribe({
+      next: (data: any) => {
+        this.marcas = data;
+        this.loading = false;
+        this.cdr.markForCheck();
+      },
+      error: (err) => {
+        console.error('Error al cargar marcas:', err);
+        this.error = 'Error al cargar las marcas';
+        this.loading = false;
+        this.cdr.markForCheck();
+      }
+    });
   }
 
   get marcasFiltradas() {
@@ -68,8 +90,28 @@ export class Marcas implements OnInit {
     });
   }
 
-  nombreCategoria(id: number): string {
-    return this.categorias.find(c => c.id === id)?.nombre ?? '—';
+  get categoriasActivas() {
+    // Retorna todas las categorías únicas de todas las marcas que están activas
+    const todasCategorias = new Set<string>();
+    this.marcas.forEach(marca => {
+      if (marca.categorias && Array.isArray(marca.categorias)) {
+        marca.categorias.forEach((cat: any) => {
+          if (cat.estado === 'Activo') {
+            todasCategorias.add(cat.nombre);
+          }
+        });
+      }
+    });
+    return Array.from(todasCategorias);
+  }
+
+  // Obtiene los nombres de las categorías de una marca específica
+  nombresCategoriasDeMarca(marca: any): string {
+    if (!marca.categorias || !Array.isArray(marca.categorias)) return '—';
+    return marca.categorias
+      .filter((cat: any) => cat.estado === 'Activo')
+      .map((cat: any) => cat.nombre)
+      .join(', ') || '—';
   }
 
   cerrar() { this.router.navigate(['/sistema/configuracion']); }

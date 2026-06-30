@@ -39,8 +39,8 @@
       <table class="table table-hover align-middle mb-0">
         <thead class="table-dark">
           <tr>
-            <th class="ps-4">Código</th>
-            <th>Producto / Marca</th>
+            <th>Producto</th>
+            <th>Marca</th>
             <th>Categoría</th>
             <th>Proveedor</th>
             <th class="text-center">Stock</th>
@@ -51,11 +51,8 @@
         </thead>
         <tbody>
           <tr *ngFor="let prod of productosFiltrados">
-            <td class="ps-4 fw-bold text-danger">{{ prod.codigo }}</td>
-            <td>
-              <div class="fw-bold">{{ prod.nombre }}</div>
-              <div class="small text-muted">{{ prod.marca }}</div>
-            </td>
+            <td class="fw-bold">{{ prod.nombre }}</td>
+            <td>{{ prod.marca }}</td>
             <td><span class="badge bg-light text-dark border">{{ prod.categoria }}</span></td>
             <td><span class="badge bg-light text-dark border">{{ prod.nombre_proveedor || 'Sin proveedor' }}</span></td>
             <td class="text-center">
@@ -90,7 +87,7 @@
             </td>
           </tr>
           <tr *ngIf="productosFiltrados.length === 0">
-            <td colspan="8" class="text-center text-muted py-4">
+            <td colspan="7" class="text-center text-muted py-4">
               <i class="bi bi-inbox me-2"></i>No se encontraron productos.
             </td>
           </tr>

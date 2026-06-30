@@ -200,7 +200,7 @@ export class Login {
             confirmButtonColor: '#dc3545',
             confirmButtonText: 'Cambiar contraseña'
           }).then(() => {
-            this.router.navigate(['/sistema/configuracion']);
+            this.router.navigate(['/sistema/configuracion/actualizar-contrasena']);
           });
         } else {
           this.router.navigate(['/sistema']);

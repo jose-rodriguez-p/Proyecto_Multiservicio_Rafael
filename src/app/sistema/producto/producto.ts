@@ -64,7 +64,6 @@ export class Producto implements OnInit {
     return this.productos.filter((p: any) => {
       const matchBusqueda =
         p.nombre?.toLowerCase().includes(this.filtroBusqueda.toLowerCase()) ||
-        p.codigo?.toLowerCase().includes(this.filtroBusqueda.toLowerCase()) ||
         p.nombre_proveedor?.toLowerCase().includes(this.filtroBusqueda.toLowerCase());
       const matchCategoria =
         this.categoriaSeleccionada === 'Todas' || p.categoria === this.categoriaSeleccionada;
@@ -108,7 +107,6 @@ export class Producto implements OnInit {
 
   exportarExcel() {
     const payload = this.productosFiltrados.map((p) => ({
-      codigo: p.codigo,
       nombre: p.nombre,
       marca: p.marca || '',
       categoria: p.categoria,
@@ -144,7 +142,6 @@ export class Producto implements OnInit {
 
   exportarPDF() {
     const payload = this.productosFiltrados.map((p) => ({
-      codigo: p.codigo,
       nombre: p.nombre,
       marca: p.marca || '',
       categoria: p.categoria,
