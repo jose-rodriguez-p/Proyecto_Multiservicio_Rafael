@@ -188,6 +188,7 @@ export class Login {
         }
 
         localStorage.setItem('currentUser', JSON.stringify(user));
+        const passwordUsada = this.txtcontrasena;
         this.txtusuario = '';
         this.txtcontrasena = '';
 
@@ -200,7 +201,9 @@ export class Login {
             confirmButtonColor: '#dc3545',
             confirmButtonText: 'Cambiar contraseña'
           }).then(() => {
-            this.router.navigate(['/sistema/configuracion/actualizar-contrasena']);
+            this.router.navigate(['/sistema/configuracion/actualizar-contrasena'], {
+              state: { contrasenaActual: passwordUsada }
+            });
           });
         } else {
           this.router.navigate(['/sistema']);

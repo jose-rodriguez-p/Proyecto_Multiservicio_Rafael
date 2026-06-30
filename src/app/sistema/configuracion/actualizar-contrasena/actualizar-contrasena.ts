@@ -1,4 +1,4 @@
-import { Component, inject, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, inject, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
@@ -13,7 +13,7 @@ import { API_BASE_URL } from '@config';
   templateUrl: './actualizar-contrasena.html',
   styleUrl: './actualizar-contrasena.css',
 })
-export class ActualizarContrasena {
+export class ActualizarContrasena implements OnInit {
   private http   = inject(HttpClient);
   private router = inject(Router);
   private cdr    = inject(ChangeDetectorRef);
@@ -37,6 +37,16 @@ export class ActualizarContrasena {
   errorCoincide   = false;
 
   errorIgualActual = false;
+
+  ngOnInit() {
+    // Si venimos del login forzado por contraseña por defecto, viene la contraseña
+    // usada en el navigation state. La precargamos y validamos automáticamente.
+    const st: any = history.state || {};
+    if (st.contrasenaActual) {
+      this.contrasenaActual = st.contrasenaActual;
+      this.validarActual();
+    }
+  }
 
   validarActual() {
     this.errorActual = !this.contrasenaActual.trim();
