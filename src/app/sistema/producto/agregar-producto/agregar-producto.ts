@@ -39,7 +39,7 @@ export class AgregarProducto implements OnInit {
     precio_venta: null,
     stock_minimo: 5,
     estado: 'Activo',
-    ruc_proveedor: '',
+    nombre_proveedor: '',
   };
 
   private cdr = inject(ChangeDetectorRef);
@@ -167,10 +167,10 @@ export class AgregarProducto implements OnInit {
     }
 
     this.http
-      .post(`${this.URL_API}/agregar`, this.nuevoProducto, { responseType: 'text' })
+      .post(`${this.URL_API}/agregar-repuesto`, this.nuevoProducto, { responseType: 'text' })
       .subscribe({
         next: (res) => {
-          if (res === 'PRODUCTO_REGISTRADO') {
+          if (res === 'REPUESTO_REGISTRADO') {
             Swal.fire({
               icon: 'success',
               title: 'Producto registrado',
