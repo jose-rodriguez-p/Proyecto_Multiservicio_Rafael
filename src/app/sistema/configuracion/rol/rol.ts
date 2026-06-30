@@ -125,37 +125,4 @@ export class Rol implements OnInit {
       },
     });
   }
-
-  exportarPDF() {
-    const payload = this.rolesFiltrados.map((r) => ({
-      id: r.id,
-      nombre: r.nombre,
-      descripcion: r.descripcion,
-      menus: r.menus ? r.menus.join(', ') : '',
-      estado: r.activo ? 'Activo' : 'Inactivo'
-    }));
-
-    if (!payload || payload.length === 0) {
-      Swal.fire('Atención', 'No hay registros en la tabla para exportar', 'info');
-      return;
-    }
-    this.http.post(`${this.URL}/roles/export/pdf`, payload, { responseType: 'blob' }).subscribe({
-      next: (blob: Blob) => {
-        const url = window.URL.createObjectURL(blob);
-        const link = document.createElement('a');
-        link.href = url;
-        const timestamp = new Date().getTime();
-        link.download = `Reporte_Roles_${timestamp}.pdf`;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        window.URL.revokeObjectURL(url);
-        Swal.fire('¡Éxito!', 'El reporte PDF corporativo se ha descargado', 'success');
-      },
-      error: (err) => {
-        console.error('Error al exportar PDF:', err);
-        Swal.fire('Error', 'El servidor no pudo procesar la descarga del PDF', 'error');
-      },
-    });
-  }
 }

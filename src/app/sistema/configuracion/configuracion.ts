@@ -18,16 +18,28 @@ export class Configuracion {
   showMarcasOverlay = false;
 
   constructor(public router: Router) {
+    // 1) Evaluar la URL ACTUAL de inmediato (cubre navegación directa por código,
+    //    por ejemplo router.navigate(['/sistema/configuracion/actualizar-contrasena'])
+    //    que dispara su NavigationEnd antes de que este componente termine de construirse).
+    this.actualizarOverlays(this.router.url);
+
+    // 2) Seguir escuchando cambios de ruta posteriores (clicks dentro de Configuración).
     this.router.events.pipe(
       filter((event): event is NavigationEnd => event instanceof NavigationEnd)
     ).subscribe((event) => {
-      const anyOpen = this.showRolOverlay || this.showCambiarContrasenaOverlay;
-      document.body.style.overflow = anyOpen ? 'hidden' : '';
-      this.showRolOverlay = event.urlAfterRedirects.includes('/sistema/configuracion/rol');
-      this.showCambiarContrasenaOverlay = event.urlAfterRedirects.includes('/sistema/configuracion/actualizar-contrasena');
-      this.showCategoriasOverlay = event.urlAfterRedirects.includes('/sistema/configuracion/categorias');
-      this.showMarcasOverlay = event.urlAfterRedirects.includes('/sistema/configuracion/marcas');
+      this.actualizarOverlays(event.urlAfterRedirects);
     });
+  }
+
+  private actualizarOverlays(url: string) {
+    this.showRolOverlay = url.includes('/sistema/configuracion/rol');
+    this.showCambiarContrasenaOverlay = url.includes('/sistema/configuracion/actualizar-contrasena');
+    this.showCategoriasOverlay = url.includes('/sistema/configuracion/categorias');
+    this.showMarcasOverlay = url.includes('/sistema/configuracion/marcas');
+
+    const anyOpen = this.showRolOverlay || this.showCambiarContrasenaOverlay
+      || this.showCategoriasOverlay || this.showMarcasOverlay;
+    document.body.style.overflow = anyOpen ? 'hidden' : '';
   }
 
   // Métodos para manejar los formularios mediante SweetAlert2 (Modales dinámicos)
@@ -41,7 +53,7 @@ export class Configuracion {
   }
 
   abrirCategorias() {
-  this.router.navigate(['/sistema/configuracion/categorias']);
+    this.router.navigate(['/sistema/configuracion/categorias']);
   }
 
   abrirCategoriasProductos() {
@@ -58,5 +70,5 @@ export class Configuracion {
   abrirMarcas() {
     this.router.navigate(['/sistema/configuracion/marcas']);
   }
-  
+
 }
