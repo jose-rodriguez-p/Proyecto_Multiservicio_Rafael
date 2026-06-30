@@ -11,60 +11,74 @@
     <div class="col-md-6">
       <label class="form-label fw-bold small mb-2">Nombre <span class="text-danger">*</span></label>
       <input type="text"
-        class="form-control form-control-sm"
-        [(ngModel)]="productoEditando.nombre"
-        (input)="validarNombre()"
-        [ngClass]="{'is-invalid': errorNombre, 'is-valid': !errorNombre && productoEditando.nombre?.trim()}">
-      <div class="text-danger small mt-2" *ngIf="errorNombre">
-        El nombre debe tener al menos 2 caracteres.
-      </div>
+        class="form-control form-control-sm bg-light"
+        [(ngModel)]="productoEditando.nombre_repuesto"
+        readonly>
     </div>
 
     <div class="col-md-6">
       <label class="form-label fw-bold small mb-2">Marca</label>
       <input type="text"
-        class="form-control form-control-sm"
-        [(ngModel)]="productoEditando.marca">
+        class="form-control form-control-sm bg-light"
+        [(ngModel)]="productoEditando.nombre_marca"
+        readonly>
     </div>
 
     <div class="col-md-6">
       <label class="form-label fw-bold small mb-2">Categoría</label>
       <input type="text"
         class="form-control form-control-sm bg-light"
-        [(ngModel)]="productoEditando.categoria"
+        [(ngModel)]="productoEditando.nombre_categoria"
         readonly>
     </div>
 
     <div class="col-md-6">
       <label class="form-label fw-bold small mb-2">Proveedor</label>
-      <select class="form-select form-select-sm" [(ngModel)]="productoEditando.ruc_proveedor">
-        <option value="">Seleccione un proveedor</option>
-        <option *ngFor="let prov of proveedores" [value]="prov.ruc">{{ prov.nombre_empresa }} ({{ prov.ruc }})</option>
-      </select>
+      <input type="text"
+        class="form-control form-control-sm bg-light"
+        [(ngModel)]="productoEditando.nombre_proveedor"
+        readonly>
     </div>
 
-    <div class="col-md-6">
+    <div class="col-md-4">
       <label class="form-label fw-bold small mb-2">Stock Actual <span class="text-danger">*</span></label>
-      <input type="number" min="0"
+      <input type="number" min="0" step="1" max="999"
         class="form-control form-control-sm"
         [(ngModel)]="productoEditando.cantidad"
         (input)="validarCantidad()"
         [ngClass]="{'is-invalid': errorCantidad, 'is-valid': !errorCantidad && productoEditando.cantidad !== null}">
-      <div class="text-danger small mt-2" *ngIf="errorCantidad">
-        La cantidad no puede ser negativa.
-      </div>
+      <div class="invalid-feedback">Ingresa un número entero mayor a 0.</div>
     </div>
 
-    <div class="col-md-6">
+    <div class="col-md-4">
+      <label class="form-label fw-bold small mb-2">Precio Compra (S/) <span class="text-danger">*</span></label>
+      <input type="number" min="0.01" step="0.01" max="999.99"
+        class="form-control form-control-sm"
+        [(ngModel)]="productoEditando.precio_compra"
+        (input)="validarPrecioCompra()"
+        [ngClass]="{'is-invalid': errorPrecioCompra, 'is-valid': !errorPrecioCompra && productoEditando.precio_compra}">
+      <div class="invalid-feedback">El precio de compra debe ser mayor a cero.</div>
+    </div>
+
+    <div class="col-md-4">
       <label class="form-label fw-bold small mb-2">Precio Venta (S/) <span class="text-danger">*</span></label>
-      <input type="number" min="0.01" step="0.01"
+      <input type="number" min="0.01" step="0.01" max="9999.99"
         class="form-control form-control-sm"
         [(ngModel)]="productoEditando.precio_venta"
         (input)="validarPrecioVenta()"
-        [ngClass]="{'is-invalid': errorPrecioVenta, 'is-valid': !errorPrecioVenta && productoEditando.precio_venta}">
-      <div class="text-danger small mt-2" *ngIf="errorPrecioVenta">
-        El precio de venta debe ser mayor a cero.
-      </div>
+        [ngClass]="{'is-invalid': errorPrecioVenta || errorPrecioVentaMenor, 'is-valid': !errorPrecioVenta && !errorPrecioVentaMenor && productoEditando.precio_venta}">
+      <div class="invalid-feedback" *ngIf="errorPrecioVenta">El precio de venta debe ser mayor a cero.</div>
+      <div class="invalid-feedback" *ngIf="errorPrecioVentaMenor">El precio de venta debe ser mayor al precio de compra.</div>
+    </div>
+
+    <div class="col-md-6">
+      <label class="form-label fw-bold small mb-2">Stock Mínimo</label>
+      <input type="number" min="0" step="1" max="999"
+        class="form-control form-control-sm"
+        [(ngModel)]="productoEditando.stock_minimo"
+        (input)="validarStockMinimo()"
+        [ngClass]="{'is-invalid': errorStockMinimo, 'is-valid': !errorStockMinimo && productoEditando.stock_minimo >= 0}">
+      <div class="invalid-feedback">El stock mínimo no puede ser negativo ni mayor a la cantidad actual.</div>
     </div>
 
     <div class="col-md-6">

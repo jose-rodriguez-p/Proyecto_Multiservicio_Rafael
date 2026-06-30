@@ -51,10 +51,10 @@
     <!-- Proveedor -->
     <div class="col-12">
       <label class="form-label fw-bold small mb-2">Proveedor</label>
-      <select class="form-select form-select-sm" [(ngModel)]="nuevoProducto.ruc_proveedor">
+      <select class="form-select form-select-sm" [(ngModel)]="nuevoProducto.nombre_proveedor">
         <option value="">— Seleccione un proveedor —</option>
-        <option *ngFor="let prov of proveedores" [value]="prov.ruc">
-          {{ prov.nombre_empresa }} ({{ prov.ruc }})
+        <option *ngFor="let prov of proveedores" [value]="prov.nombre_empresa">
+          {{ prov.nombre_empresa }}
         </option>
       </select>
     </div>

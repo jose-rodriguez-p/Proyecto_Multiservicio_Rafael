@@ -15,9 +15,8 @@ import Swal from 'sweetalert2';
 })
 export class Producto implements OnInit {
   filtroBusqueda = '';
-  categoriaSeleccionada = 'Todas';
+  filtroEstado = 'Activo';
   productos: any[] = [];
-  categorias: string[] = ['Todas'];
   mostrarModalRuta = false;
 
   private platformId = inject(PLATFORM_ID);
@@ -39,24 +38,28 @@ export class Producto implements OnInit {
   ngOnInit() {
     if (isPlatformBrowser(this.platformId)) {
       this.cargarProductos();
-      this.cargarCategorias();
     }
   }
 
   cargarProductos() {
-    this.http.get<any[]>(`${this.URL_API}/listar`).subscribe({
-      next: (data) => { this.productos = data; this.cdr.detectChanges(); },
-      error: (err) => console.error('Error al cargar productos:', err)
-    });
-  }
-
-  cargarCategorias() {
-    this.http.get<any[]>(`${this.URL_API}/categorias`).subscribe({
+    this.http.get<any[]>(`${this.URL_API}/listar-repuestos`).subscribe({
       next: (data) => {
-        this.categorias = ['Todas', ...data.map((c: any) => c.nombre)];
+        // Mapear campos del backend a los campos que espera el frontend
+        this.productos = data.map((item: any) => ({
+          codigo: item.nombre_repuesto,
+          nombre: item.nombre_repuesto,
+          marca: item.nombre_marca,
+          categoria: item.nombre_categoria,
+          nombre_proveedor: item.nombre_proveedor,
+          stock: item.cantidad,
+          stock_minimo: item.stock_minimo,
+          precio_compra: item.precio_compra,
+          precio_venta: item.precio_venta,
+          estado: item.estado
+        }));
         this.cdr.detectChanges();
       },
-      error: (err) => console.error('Error al cargar categorías:', err)
+      error: (err) => console.error('Error al cargar productos:', err)
     });
   }
 
@@ -65,9 +68,9 @@ export class Producto implements OnInit {
       const matchBusqueda =
         p.nombre?.toLowerCase().includes(this.filtroBusqueda.toLowerCase()) ||
         p.nombre_proveedor?.toLowerCase().includes(this.filtroBusqueda.toLowerCase());
-      const matchCategoria =
-        this.categoriaSeleccionada === 'Todas' || p.categoria === this.categoriaSeleccionada;
-      return matchBusqueda && matchCategoria;
+      const matchEstado =
+        this.filtroEstado === 'Todos' || p.estado === this.filtroEstado;
+      return matchBusqueda && matchEstado;
     });
   }
 
