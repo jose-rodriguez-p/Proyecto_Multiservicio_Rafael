@@ -129,22 +129,49 @@
                 <div class="invalid-feedback">Formato inválido. Vehículos mayores: M4F-520 · Vehículos menores: AB-1234.</div>
             </div>
 
-            <div class="mb-3">
+            <div class="mb-3 position-relative">
                 <label class="form-label fw-semibold small">Marca <span class="text-danger">*</span></label>
-                <select class="form-select" [(ngModel)]="nuevoVehiculo.marca" (change)="onMarcaChange()">
-                    <option value="">— Selecciona una marca —</option>
-                    <option *ngFor="let m of marcas" [value]="m">{{ m }}</option>
-                </select>
+                <input type="text" class="form-control"
+                    [(ngModel)]="marcaTexto"
+                    (input)="onMarcaInput()"
+                    (focus)="mostrarSugerenciasMarca = true"
+                    (blur)="ocultarSugerenciasMarca()"
+                    placeholder="Escribe o selecciona una marca..."
+                    autocomplete="off" />
+                <div class="autocomplete-lista shadow-sm"
+                    *ngIf="mostrarSugerenciasMarca && marcasSugeridas.length > 0">
+                    <div class="autocomplete-item" *ngFor="let m of marcasSugeridas"
+                        (mousedown)="seleccionarMarca(m)">
+                        {{ m }}
+                    </div>
+                </div>
+                <div class="autocomplete-lista shadow-sm"
+                    *ngIf="mostrarSugerenciasMarca && marcaTexto.trim() && marcasSugeridas.length === 0">
+                    <div class="autocomplete-item autocomplete-item--vacio">Sin coincidencias</div>
+                </div>
             </div>
 
-            <div class="mb-3">
+            <div class="mb-3 position-relative">
                 <label class="form-label fw-semibold small">Modelo <span class="text-danger">*</span></label>
-                <select class="form-select" [(ngModel)]="nuevoVehiculo.modelo"
-                    (change)="onModeloChange()"
-                    [disabled]="!nuevoVehiculo.marca">
-                    <option value="">{{ nuevoVehiculo.marca ? '— Selecciona un modelo —' : '— Primero elige una marca —' }}</option>
-                    <option *ngFor="let mod of modelosFiltrados" [value]="mod">{{ mod }}</option>
-                </select>
+                <input type="text" class="form-control"
+                    [(ngModel)]="modeloTexto"
+                    (input)="onModeloInput()"
+                    (focus)="nuevoVehiculo.marca && (mostrarSugerenciasModelo = true)"
+                    (blur)="ocultarSugerenciasModelo()"
+                    [disabled]="!nuevoVehiculo.marca"
+                    [placeholder]="nuevoVehiculo.marca ? 'Escribe o selecciona un modelo...' : 'Primero elige una marca'"
+                    autocomplete="off" />
+                <div class="autocomplete-lista shadow-sm"
+                    *ngIf="mostrarSugerenciasModelo && modelosSugeridos.length > 0">
+                    <div class="autocomplete-item" *ngFor="let mod of modelosSugeridos"
+                        (mousedown)="seleccionarModelo(mod)">
+                        {{ mod }}
+                    </div>
+                </div>
+                <div class="autocomplete-lista shadow-sm"
+                    *ngIf="mostrarSugerenciasModelo && modeloTexto.trim() && modelosSugeridos.length === 0">
+                    <div class="autocomplete-item autocomplete-item--vacio">Sin coincidencias</div>
+                </div>
             </div>
             <div class="mb-1">
                 <label class="form-label fw-semibold small">Año <span class="text-danger">*</span></label>

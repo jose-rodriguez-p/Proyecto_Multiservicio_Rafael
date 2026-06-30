@@ -33,6 +33,12 @@ export class AgregarCliente {
   permiteEdicionManual = false;
   errorPlaca = false;
 
+  // ── AUTOCOMPLETE Marca / Modelo ─────────────────────────────────────────────
+  marcaTexto = '';
+  modeloTexto = '';
+  mostrarSugerenciasMarca = false;
+  mostrarSugerenciasModelo = false;
+
   readonly catalogoMarcas: Record<string, string[]> = {
     'Toyota':        ['Avanza', 'Camry', 'Corolla', 'FJ Cruiser', 'Fortuner', 'Hiace', 'Hilux', 'Innova', 'Land Cruiser', 'Land Cruiser Prado', 'RAV4', 'Rush', 'Yaris'],
     'Hyundai':       ['Accent', 'Creta', 'Elantra', 'Grand i10', 'H1', 'HD65', 'HD78', 'Ioniq 5', 'Kona', 'Santa Fe', 'Sonata', 'Tucson'],
@@ -73,10 +79,22 @@ export class AgregarCliente {
     return Object.keys(this.catalogoMarcas).sort();
   }
 
+  get marcasSugeridas(): string[] {
+    const texto = this.marcaTexto.trim().toLowerCase();
+    if (!texto) return this.marcas;
+    return this.marcas.filter(m => m.toLowerCase().includes(texto));
+  }
+
   get modelosFiltrados(): string[] {
     return this.nuevoVehiculo.marca
       ? (this.catalogoMarcas[this.nuevoVehiculo.marca] ?? []).sort()
       : [];
+  }
+
+  get modelosSugeridos(): string[] {
+    const texto = this.modeloTexto.trim().toLowerCase();
+    if (!texto) return this.modelosFiltrados;
+    return this.modelosFiltrados.filter(m => m.toLowerCase().includes(texto));
   }
 
   get anios(): number[] {
@@ -85,6 +103,69 @@ export class AgregarCliente {
     for (let a = actual; a >= 1990; a--) lista.push(a);
     return lista;
   }
+
+  // Escribir en el input de marca: filtra sugerencias y limpia selección si no coincide exacto
+  onMarcaInput() {
+    this.mostrarSugerenciasMarca = true;
+    const coincideExacto = this.marcas.find(
+      m => m.toLowerCase() === this.marcaTexto.trim().toLowerCase()
+    );
+    if (coincideExacto) {
+      this.nuevoVehiculo.marca = coincideExacto;
+    } else {
+      this.nuevoVehiculo.marca = '';
+    }
+    this.nuevoVehiculo.modelo = '';
+    this.modeloTexto = '';
+    this.nuevoVehiculo.anio = '';
+  }
+
+  seleccionarMarca(m: string) {
+    this.marcaTexto = m;
+    this.nuevoVehiculo.marca = m;
+    this.mostrarSugerenciasMarca = false;
+    this.nuevoVehiculo.modelo = '';
+    this.modeloTexto = '';
+    this.nuevoVehiculo.anio = '';
+  }
+
+  ocultarSugerenciasMarca() {
+    // Pequeño delay para permitir que el click en la sugerencia se registre antes de ocultar
+    setTimeout(() => {
+      this.mostrarSugerenciasMarca = false;
+      // Si lo que escribió no es una marca válida del catálogo, limpiar el texto
+      if (!this.nuevoVehiculo.marca) this.marcaTexto = '';
+    }, 150);
+  }
+
+  onModeloInput() {
+    if (!this.nuevoVehiculo.marca) return;
+    this.mostrarSugerenciasModelo = true;
+    const coincideExacto = this.modelosFiltrados.find(
+      m => m.toLowerCase() === this.modeloTexto.trim().toLowerCase()
+    );
+    if (coincideExacto) {
+      this.nuevoVehiculo.modelo = coincideExacto;
+    } else {
+      this.nuevoVehiculo.modelo = '';
+    }
+    this.nuevoVehiculo.anio = '';
+  }
+
+  seleccionarModelo(m: string) {
+    this.modeloTexto = m;
+    this.nuevoVehiculo.modelo = m;
+    this.mostrarSugerenciasModelo = false;
+    this.nuevoVehiculo.anio = '';
+  }
+
+  ocultarSugerenciasModelo() {
+    setTimeout(() => {
+      this.mostrarSugerenciasModelo = false;
+      if (!this.nuevoVehiculo.modelo) this.modeloTexto = '';
+    }, 150);
+  }
+  // ── FIN AUTOCOMPLETE ─────────────────────────────────────────────────────────
 
   onMarcaChange() {
     this.nuevoVehiculo.modelo = '';
@@ -228,11 +309,18 @@ export class AgregarCliente {
   if (!this.nuevoVehiculo.placa || !this.nuevoVehiculo.marca || !this.nuevoVehiculo.modelo || !this.nuevoVehiculo.anio || this.errorPlaca) return;
   this.vehiculos.push({ ...this.nuevoVehiculo });
   this.nuevoVehiculo = { placa: '', marca: '', modelo: '', anio: '' };
+  this.marcaTexto = '';
+  this.modeloTexto = '';
   this.mostrarModalVehiculo = false;
   }
 
   abrirModalVehiculo() { this.mostrarModalVehiculo = true; }
-  cerrarModalVehiculo() { this.mostrarModalVehiculo = false; }
+  cerrarModalVehiculo() {
+    this.mostrarModalVehiculo = false;
+    this.nuevoVehiculo = { placa: '', marca: '', modelo: '', anio: '' };
+    this.marcaTexto = '';
+    this.modeloTexto = '';
+  }
   eliminarVehiculo(veh: any) { this.vehiculos = this.vehiculos.filter(v => v.placa !== veh.placa); }
   validarCelular() { this.errorCelular = this.nuevoCliente.celular && !/^9\d{8}$/.test(this.nuevoCliente.celular); }
 
