@@ -56,19 +56,9 @@
             </div>
 
             <div class="col-md-6">
-                <label class="form-label fw-bold small mb-2">Correo Electrónico</label>
-                <div class="input-group">
-                    <input type="email" class="form-control" [(ngModel)]="nuevoCliente.correo" 
-                           (input)="validarCorreo()" name="correo" placeholder="correo@dominio.com"
-                           [readonly]="correoValidado" [ngClass]="{'bg-light': correoValidado, 'is-invalid': errorCorreo}">
-                    <button *ngIf="!correoValidado && !validandoCorreo && !permiteEdicionManual" class="btn btn-outline-success" type="button" (click)="validarCorreoBackend()">
-                        Validar
-                    </button>
-                    <span class="input-group-text" *ngIf="validandoCorreo">
-                        <span class="spinner-border spinner-border-sm text-success"></span>
-                    </span>
-                </div>
-                <div class="text-success small mt-2" *ngIf="correoValidado">Correo validado.</div>
+                <label class="form-label fw-bold small mb-2">Correo Electrónico <span class="text-muted fw-normal">(opcional)</span></label>
+                <input type="email" class="form-control" [(ngModel)]="nuevoCliente.correo" 
+                       name="correo" placeholder="correo@dominio.com">
             </div>
 
             <div class="col-12 mt-4">
@@ -103,8 +93,9 @@
 
 <div class="modal-footer border-0 p-4 p-md-5">
     <button class="btn btn-outline-secondary" (click)="cerrarModal()">Cancelar</button>
-    <button class="btn btn-danger" (click)="guardarCliente()" [disabled]="!puedeGuardar">
-        Guardar Cliente
+    <button class="btn btn-danger" (click)="guardarCliente()" [disabled]="!puedeGuardar || guardando">
+        <span *ngIf="guardando" class="spinner-border spinner-border-sm me-2"></span>
+        {{ guardando ? 'Guardando...' : 'Guardar Cliente' }}
     </button>
 </div>
 
@@ -125,8 +116,9 @@
                     (input)="formatearPlaca()"
                     placeholder="Ej: ABC-123"
                     maxlength="8"
-                    [ngClass]="{'is-invalid': errorPlaca}" />
-                <div class="invalid-feedback">Formato inválido. Vehículos mayores: M4F-520 · Vehículos menores: AB-1234.</div>
+                    [ngClass]="{'is-invalid': errorPlaca || errorPlacaDuplicada}" />
+                <div class="invalid-feedback" *ngIf="errorPlaca">Formato inválido. Vehículos mayores: M4F-520 · Vehículos menores: AB-1234.</div>
+                <div class="invalid-feedback" *ngIf="errorPlacaDuplicada">Este cliente ya tiene un vehículo con esa placa.</div>
             </div>
 
             <div class="mb-3 position-relative">
@@ -183,7 +175,7 @@
             </div>
             <div class="modal-footer">
                 <button class="btn btn-secondary" (click)="cerrarModalVehiculo()">Cancelar</button>
-                <button class="btn btn-danger" (click)="agregarVehiculoLista()">Agregar a lista</button>
+                <button class="btn btn-danger" (click)="agregarVehiculoLista()" [disabled]="errorPlaca || errorPlacaDuplicada">Agregar a lista</button>
             </div>
         </div>
     </div>

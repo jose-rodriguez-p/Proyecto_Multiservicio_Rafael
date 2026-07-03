@@ -4,6 +4,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
+import { finalize } from 'rxjs/operators';
 import Swal from 'sweetalert2';
 
 @Component({
@@ -25,13 +26,13 @@ export class AgregarCliente {
   mostrarModalVehiculo = false;
   dniValidado = false;
   consultandoDni = false;
-  correoValidado = false;
-  validandoCorreo = false;
   errorDni = false;
   errorCelular = false;
   errorCorreo = false;
   permiteEdicionManual = false;
   errorPlaca = false;
+  errorPlacaDuplicada = false;
+  guardando = false;
 
   // ── AUTOCOMPLETE Marca / Modelo ─────────────────────────────────────────────
   marcaTexto = '';
@@ -194,6 +195,8 @@ export class AgregarCliente {
   const menorValido = /^[A-Z]{2}-\d{4}$/.test(v);     // AB-1234
   const limpio = v.replace('-', '');
   this.errorPlaca = limpio.length >= 4 && !mayorValido && !menorValido;
+  this.errorPlacaDuplicada = (mayorValido || menorValido) &&
+    this.vehiculos.some(veh => veh.placa === v);
 }
 
 
@@ -232,85 +235,22 @@ export class AgregarCliente {
   }
 
   get esCorreoValido(): boolean { return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(this.nuevoCliente.correo); }
-  
-  validarCorreoBackend() {
-    // Si está en modo edición manual, no requiere validación por código
-    if (this.permiteEdicionManual) {
-      this.correoValidado = true;
-      return;
-    }
-    
-    if (!this.esCorreoValido) return;
-    this.validandoCorreo = true;
-    this.http.post(`${this.URL_API}/correo/enviar`, { correo: this.nuevoCliente.correo, dni: this.nuevoCliente.dni }, { responseType: 'text' }).subscribe({
-      next: () => { 
-        this.validandoCorreo = false; 
-        this.cdr.detectChanges();
-        this.mostrarPromptCodigo(); 
-      },
-      error: () => { 
-        this.validandoCorreo = false; 
-        this.cdr.detectChanges();
-        Swal.fire('Error', 'No se pudo enviar código', 'error'); 
-      }
-    });
-  }
-
-  private mostrarPromptCodigo() {
-    Swal.fire({
-      title: 'Validar Correo',
-      input: 'text',
-      inputAttributes: { maxlength: '6' },
-      showCancelButton: true,
-      confirmButtonText: 'Validar',
-      inputValidator: (value) => {
-        if (!value || value.length !== 6) {
-          return 'El código debe tener 6 dígitos';
-        }
-        return null;
-      }
-    }).then((r) => {
-      if (r.isConfirmed && r.value) this.verificarCodigo(r.value);
-    });
-  }
-
-  private verificarCodigo(codigo: string) {
-    this.http.post(`${this.URL_API}/correo/validar`, { dni: this.nuevoCliente.dni, codigo }, { responseType: 'text' }).subscribe({
-      next: (res) => {
-        if (res === 'CODIGO_VALIDO') {
-            this.correoValidado = true;
-            Swal.fire('Correcto', 'Correo verificado', 'success');
-        } else {
-            Swal.fire({
-              title: 'Código incorrecto',
-              text: 'El código ingresado no es válido. Por favor, intenta nuevamente.',
-              icon: 'error',
-              confirmButtonText: 'Reintentar'
-            }).then(() => {
-              this.mostrarPromptCodigo();
-            });
-        }
-        this.cdr.detectChanges();
-      },
-      error: () => {
-        Swal.fire({
-          title: 'Error',
-          text: 'Hubo un error al validar el código. Por favor, intenta nuevamente.',
-          icon: 'error',
-          confirmButtonText: 'Reintentar'
-        }).then(() => {
-          this.mostrarPromptCodigo();
-        });
-      }
-    });
-  }
 
   agregarVehiculoLista() {
   if (!this.nuevoVehiculo.placa || !this.nuevoVehiculo.marca || !this.nuevoVehiculo.modelo || !this.nuevoVehiculo.anio || this.errorPlaca) return;
+
+  const yaExiste = this.vehiculos.some(v => v.placa === this.nuevoVehiculo.placa);
+  if (yaExiste) {
+    this.errorPlacaDuplicada = true;
+    Swal.fire('Placa duplicada', 'Este cliente ya tiene registrado un vehículo con esa placa.', 'warning');
+    return;
+  }
+
   this.vehiculos.push({ ...this.nuevoVehiculo });
   this.nuevoVehiculo = { placa: '', marca: '', modelo: '', anio: '' };
   this.marcaTexto = '';
   this.modeloTexto = '';
+  this.errorPlacaDuplicada = false;
   this.mostrarModalVehiculo = false;
   }
 
@@ -320,12 +260,17 @@ export class AgregarCliente {
     this.nuevoVehiculo = { placa: '', marca: '', modelo: '', anio: '' };
     this.marcaTexto = '';
     this.modeloTexto = '';
+    this.errorPlacaDuplicada = false;
   }
-  eliminarVehiculo(veh: any) { this.vehiculos = this.vehiculos.filter(v => v.placa !== veh.placa); }
+  eliminarVehiculo(veh: any) {
+    const index = this.vehiculos.indexOf(veh);
+    if (index > -1) this.vehiculos.splice(index, 1);
+  }
   validarCelular() { this.errorCelular = this.nuevoCliente.celular && !/^9\d{8}$/.test(this.nuevoCliente.celular); }
 
   // Getter centralizado: usado en el HTML con [disabled]="!puedeGuardar"
   get puedeGuardar(): boolean {
+    if (this.guardando) return false;
     if (this.permiteEdicionManual) {
       return !!(
         this.nuevoCliente.dni?.trim() &&
@@ -333,12 +278,10 @@ export class AgregarCliente {
         this.nuevoCliente.apellido_paterno?.trim() &&
         this.nuevoCliente.apellido_materno?.trim() &&
         this.nuevoCliente.celular?.trim() &&
-        this.nuevoCliente.correo?.trim() &&
-        !this.errorCelular &&
-        !this.errorCorreo
+        !this.errorCelular
       );
     }
-    return this.dniValidado && this.correoValidado;
+    return this.dniValidado;
   }
   
   obtenerUsuarioLogueado(): string {
@@ -349,6 +292,8 @@ export class AgregarCliente {
   }
 
   guardarCliente() {
+    if (this.guardando) return;
+
     if (!this.puedeGuardar) {
       Swal.fire('Error', 'Complete todos los campos correctamente', 'warning');
       return;
@@ -365,17 +310,30 @@ export class AgregarCliente {
         estado: this.nuevoCliente.estado,
         usuario_logueado: this.obtenerUsuarioLogueado()
       },
-      vehiculos: this.vehiculos
+      carros: this.vehiculos.map((v: any) => ({
+        placa: v.placa,
+        marca: v.marca,
+        modelo: v.modelo,
+        anio: String(v.anio)
+      }))
     };
-    this.http.post(`${this.URL_API}/registrar`, payload, { responseType: 'text' }).subscribe({
-      next: () => {
-        Swal.fire('Guardado', 'Cliente registrado exitosamente', 'success');
-        this.cerrarModal();
-      },
-      error: (err) => Swal.fire('Error', err.error || 'Error al registrar cliente', 'error')
-    });
+
+    this.guardando = true;
+    this.http.post(`${this.URL_API}/registrar`, payload, { responseType: 'text' })
+      .pipe(finalize(() => {
+        this.guardando = false;
+        this.cdr.detectChanges();
+      }))
+      .subscribe({
+        next: () => {
+          Swal.fire('Guardado', 'Cliente registrado exitosamente', 'success');
+          this.cerrarModal();
+        },
+        error: (err) => {
+          Swal.fire('Error', err.error || 'Error al registrar cliente', 'error');
+        }
+      });
   }
   
   cerrarModal() { this.router.navigate(['/sistema/cliente']); }
-  validarCorreo() { this.errorCorreo = this.nuevoCliente.correo && !this.esCorreoValido; }
 }

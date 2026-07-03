@@ -75,7 +75,6 @@ export class EditarCliente implements OnInit {
       !this.errorNombre &&
       !this.errorApPaterno &&
       !this.errorCelular &&
-      !this.errorCorreo &&
       this.clienteEditando.nombre.trim().length >= 2 &&
       this.clienteEditando.apellido_paterno.trim() &&
       String(this.clienteEditando.celular).length === 9
@@ -106,6 +105,15 @@ export class EditarCliente implements OnInit {
 
     if (!this.clienteEditando.vehiculos) {
       this.clienteEditando.vehiculos = [];
+    }
+
+    const placaNueva = this.nuevoVehiculo.placa.toUpperCase().trim();
+    const yaExiste = this.clienteEditando.vehiculos.some(
+      (v: any) => v.placa.toUpperCase().trim() === placaNueva
+    );
+    if (yaExiste) {
+      Swal.fire('Placa duplicada', 'Este cliente ya tiene registrado un vehículo con esa placa.', 'warning');
+      return;
     }
 
     // Insertar el vehículo de forma reactiva clonando el arreglo
