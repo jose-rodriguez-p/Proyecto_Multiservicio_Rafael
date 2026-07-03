@@ -6,6 +6,7 @@ import { Router } from '@angular/router';
 import Swal from 'sweetalert2';
 import { API_BASE_URL } from '@config';
 
+
 @Component({
   selector: 'app-actualizar-contrasena',
   standalone: true,
@@ -161,6 +162,7 @@ export class ActualizarContrasena implements OnInit {
             text: 'Tu contraseña fue cambiada correctamente.',
             confirmButtonColor: '#dc3545'
           }).then(() => this.cerrar());
+
         } else {
           Swal.fire('Error', res || 'No se pudo actualizar la contraseña.', 'error');
         }
@@ -176,16 +178,6 @@ export class ActualizarContrasena implements OnInit {
   }
 
   cerrar() {
-    this.router.navigate(['/sistema/configuracion']).then(() => {
-      this.contrasenaActual = '';
-      this.nuevaContrasena = '';
-      this.confirmarContrasena = '';
-      this.contrasenaActualValida = false;
-      this.errorActual = false;
-      this.errorNueva = false;
-      this.errorCoincide = false;
-      this.errorIgualActual = false; 
-      this.cdr.detectChanges();
-    });
+    this.router.navigate(['/sistema/configuracion']);
   }
 }

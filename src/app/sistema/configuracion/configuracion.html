@@ -83,10 +83,10 @@
 
     <!-- UN SOLO router-outlet para todos los overlays -->
     <div class="mt-4">
-        <div class="config-overlay" *ngIf="showRolOverlay || showCambiarContrasenaOverlay || showCategoriasOverlay || showMarcasOverlay">
-            <div class="config-modal" [class.config-modal--transparent]="showCambiarContrasenaOverlay">
+        <div class="config-overlay" *ngIf="anyOverlayOpen()">
+            <div class="config-modal" [class.config-modal--transparent]="showCambiarContrasenaOverlay()">
 
-                <div *ngIf="showRolOverlay" class="config-modal-header d-flex justify-content-between align-items-center mb-3">
+                <div *ngIf="showRolOverlay()" class="config-modal-header d-flex justify-content-between align-items-center mb-3">
                     <div>
                         <h5 class="mb-0">Roles</h5>
                         <small class="text-muted">Lista de roles disponibles y sus menús.</small>
@@ -94,7 +94,7 @@
                     <button class="btn btn-sm btn-outline-secondary" (click)="router.navigate(['/sistema/configuracion'])">Cerrar</button>
                 </div>
 
-                <div *ngIf="showCategoriasOverlay" class="config-modal-header d-flex justify-content-between align-items-center mb-3">
+                <div *ngIf="showCategoriasOverlay()" class="config-modal-header d-flex justify-content-between align-items-center mb-3">
                     <div>
                         <h5 class="mb-0">Categorías de Productos</h5>
                         <small class="text-muted">Organiza el inventario con categorías personalizadas.</small>
@@ -102,7 +102,7 @@
                     <button class="btn btn-sm btn-outline-secondary" (click)="router.navigate(['/sistema/configuracion'])">Cerrar</button>
                 </div>
 
-                <div *ngIf="showMarcasOverlay" class="config-modal-header d-flex justify-content-between align-items-center mb-3">
+                <div *ngIf="showMarcasOverlay()" class="config-modal-header d-flex justify-content-between align-items-center mb-3">
                     <div>
                         <h5 class="mb-0">Marcas</h5>
                         <small class="text-muted">Administra las marcas disponibles por categoría.</small>

@@ -1,8 +1,9 @@
-import { Component } from '@angular/core';
+import { Component, computed, effect, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterOutlet, NavigationEnd } from '@angular/router';
-import { filter } from 'rxjs/operators';
+import { toSignal } from '@angular/core/rxjs-interop';
+import { filter, map, startWith } from 'rxjs/operators';
 import Swal from 'sweetalert2';
 
 @Component({
@@ -12,34 +13,41 @@ import Swal from 'sweetalert2';
   styleUrl: './configuracion.css',
 })
 export class Configuracion {
-  showRolOverlay = false;
-  showCambiarContrasenaOverlay = false;
-  showCategoriasOverlay = false;
-  showMarcasOverlay = false;
+  public router = inject(Router);
 
-  constructor(public router: Router) {
-    // 1) Evaluar la URL ACTUAL de inmediato (cubre navegación directa por código,
-    //    por ejemplo router.navigate(['/sistema/configuracion/actualizar-contrasena'])
-    //    que dispara su NavigationEnd antes de que este componente termine de construirse).
-    this.actualizarOverlays(this.router.url);
-
-    // 2) Seguir escuchando cambios de ruta posteriores (clicks dentro de Configuración).
+  // Señal reactiva con la URL actual: arranca con this.router.url y se actualiza
+  // en cada NavigationEnd. A diferencia de una suscripción manual + asignación de
+  // booleanos, un signal se propaga al template de forma inmediata y consistente,
+  // sin depender de zone.js ni de en qué callback/tick ocurrió el cambio. Esto es
+  // lo que elimina de raíz el NG0100 y los overlays que se quedaban "atorados".
+  private url = toSignal(
     this.router.events.pipe(
-      filter((event): event is NavigationEnd => event instanceof NavigationEnd)
-    ).subscribe((event) => {
-      this.actualizarOverlays(event.urlAfterRedirects);
+      filter((e): e is NavigationEnd => e instanceof NavigationEnd),
+      map((e) => e.urlAfterRedirects),
+      startWith(this.router.url),
+    ),
+    { initialValue: this.router.url },
+  );
+
+  // Cada overlay es un valor DERIVADO de la URL, no un estado mutado a mano.
+  // Angular garantiza que estos 4 son siempre consistentes entre sí porque se
+  // recalculan todos juntos a partir de la misma lectura de this.url().
+  showRolOverlay = computed(() => this.url().includes('/sistema/configuracion/rol'));
+  showCambiarContrasenaOverlay = computed(() => this.url().includes('/sistema/configuracion/actualizar-contrasena'));
+  showCategoriasOverlay = computed(() => this.url().includes('/sistema/configuracion/categorias'));
+  showMarcasOverlay = computed(() => this.url().includes('/sistema/configuracion/marcas'));
+
+  anyOverlayOpen = computed(() =>
+    this.showRolOverlay() || this.showCambiarContrasenaOverlay()
+    || this.showCategoriasOverlay() || this.showMarcasOverlay(),
+  );
+
+  constructor() {
+    // Efecto secundario aparte (bloquear scroll del body): se ejecuta cada vez
+    // que anyOverlayOpen cambia, de forma reactiva y automática.
+    effect(() => {
+      document.body.style.overflow = this.anyOverlayOpen() ? 'hidden' : '';
     });
-  }
-
-  private actualizarOverlays(url: string) {
-    this.showRolOverlay = url.includes('/sistema/configuracion/rol');
-    this.showCambiarContrasenaOverlay = url.includes('/sistema/configuracion/actualizar-contrasena');
-    this.showCategoriasOverlay = url.includes('/sistema/configuracion/categorias');
-    this.showMarcasOverlay = url.includes('/sistema/configuracion/marcas');
-
-    const anyOpen = this.showRolOverlay || this.showCambiarContrasenaOverlay
-      || this.showCategoriasOverlay || this.showMarcasOverlay;
-    document.body.style.overflow = anyOpen ? 'hidden' : '';
   }
 
   // Métodos para manejar los formularios mediante SweetAlert2 (Modales dinámicos)
