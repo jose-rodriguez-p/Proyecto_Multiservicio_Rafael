@@ -355,11 +355,17 @@
           </button>
         </div>
         <div class="text-danger small mt-1" *ngIf="errorDniNuevo">El DNI debe tener exactamente 8 dígitos.</div>
+        <div class="mb-1 small" *ngIf="nuevoClienteDniValidado">
+          <i class="bi bi-check-circle me-1 text-success"></i>DNI validado por RENIEC.
+        </div>
+        <div class="mb-1 small text-warning" *ngIf="nuevoClientePermiteEditar && !nuevoClienteDniValidado">
+          <i class="bi bi-exclamation-circle me-1"></i>No registrado — datos manuales.
+        </div>
       </div>
       <div class="mb-2">
         <label class="form-label small fw-semibold">Nombres <span class="text-danger">*</span></label>
         <input type="text" class="form-control form-control-sm"
-          [ngClass]="{'is-invalid': errorNombreNuevo, 'is-valid': !errorNombreNuevo && nuevoCliente.nombre.trim()}"
+          [ngClass]="{'is-invalid': errorNombreNuevo, 'is-valid': !errorNombreNuevo && nuevoCliente.nombre.trim(), 'bg-light': !nuevoClientePermiteEditar && nuevoClienteDniValidado}"
           [(ngModel)]="nuevoCliente.nombre" (input)="validarNombreNuevo()" [readonly]="!nuevoClientePermiteEditar && nuevoClienteDniValidado">
         <div class="text-danger small mt-1" *ngIf="errorNombreNuevo">Mínimo 2 caracteres.</div>
       </div>
@@ -367,12 +373,12 @@
         <div class="col-6">
           <label class="form-label small fw-semibold">Ap. Paterno <span class="text-danger">*</span></label>
           <input type="text" class="form-control form-control-sm"
-            [ngClass]="{'is-invalid': errorApPaternoNuevo, 'is-valid': !errorApPaternoNuevo && nuevoCliente.apellido_paterno.trim()}"
+            [ngClass]="{'is-invalid': errorApPaternoNuevo, 'is-valid': !errorApPaternoNuevo && nuevoCliente.apellido_paterno.trim(), 'bg-light': !nuevoClientePermiteEditar && nuevoClienteDniValidado}"
             [(ngModel)]="nuevoCliente.apellido_paterno" (input)="validarApPaternoNuevo()" [readonly]="!nuevoClientePermiteEditar && nuevoClienteDniValidado">
         </div>
         <div class="col-6">
           <label class="form-label small fw-semibold">Ap. Materno</label>
-          <input type="text" class="form-control form-control-sm" [(ngModel)]="nuevoCliente.apellido_materno" [readonly]="!nuevoClientePermiteEditar && nuevoClienteDniValidado">
+          <input type="text" class="form-control form-control-sm" [(ngModel)]="nuevoCliente.apellido_materno" [readonly]="!nuevoClientePermiteEditar && nuevoClienteDniValidado" [ngClass]="{'bg-light': !nuevoClientePermiteEditar && nuevoClienteDniValidado}">
         </div>
       </div>
       <div class="mb-2">
@@ -384,13 +390,25 @@
       </div>
       <div class="mb-3">
         <label class="form-label small fw-semibold">Correo <span class="text-muted fw-normal">(opcional)</span></label>
-        <input type="email" class="form-control form-control-sm"
+        <div class="input-group" *ngIf="!nuevoClientePermiteEditar">
+          <input type="email" class="form-control form-control-sm"
+            [ngClass]="{'is-invalid': errorCorreoNuevo, 'is-valid': nuevoClienteCorreoValidado}"
+            [(ngModel)]="nuevoCliente.correo" (input)="validarCorreoNuevo()">
+          <button class="btn btn-outline-secondary btn-sm" type="button" (click)="validarCorreoBackendNuevo()" 
+            [disabled]="validandoCorreoNuevo || !esCorreoValidoNuevo || nuevoClienteCorreoValidado">
+            <span *ngIf="validandoCorreoNuevo" class="spinner-border spinner-border-sm me-1"></span>
+            <i *ngIf="!validandoCorreoNuevo && !nuevoClienteCorreoValidado" class="bi bi-send me-1"></i>
+            <i *ngIf="nuevoClienteCorreoValidado" class="bi bi-check-circle me-1"></i>
+            {{ nuevoClienteCorreoValidado ? 'Verificado' : 'Enviar' }}
+          </button>
+        </div>
+        <input type="email" class="form-control form-control-sm" *ngIf="nuevoClientePermiteEditar"
           [ngClass]="{'is-invalid': errorCorreoNuevo}"
           [(ngModel)]="nuevoCliente.correo" (input)="validarCorreoNuevo()">
         <div class="text-danger small mt-1" *ngIf="errorCorreoNuevo">Formato de correo inválido.</div>
       </div>
       <button class="btn btn-danger w-100" (click)="guardarNuevoCliente()"
-        [disabled]="guardandoCliente || !nuevoClienteValido()">
+        [disabled]="guardandoCliente || !puedeGuardarNuevoCliente">
         <span *ngIf="guardandoCliente" class="spinner-border spinner-border-sm me-2"></span>
         <i *ngIf="!guardandoCliente" class="bi bi-person-check me-1"></i>
         {{ guardandoCliente ? 'Guardando...' : 'Registrar y seleccionar' }}

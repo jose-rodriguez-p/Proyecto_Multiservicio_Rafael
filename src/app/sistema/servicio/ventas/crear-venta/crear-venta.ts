@@ -93,6 +93,8 @@ export class CrearVenta implements OnInit {
   nuevoClienteDniValidado = false;
   nuevoClientePermiteEditar = false;
   consultandoDniNuevo = false;
+  nuevoClienteCorreoValidado = false;
+  validandoCorreoNuevo = false;
 
   items: ItemDetalle[] = [];
   repuestos: Repuesto[] = [];
@@ -144,6 +146,8 @@ export class CrearVenta implements OnInit {
     this.nuevoClienteDniValidado = false;
     this.nuevoClientePermiteEditar = false;
     this.consultandoDniNuevo = false;
+    this.nuevoClienteCorreoValidado = false;
+    this.validandoCorreoNuevo = false;
   }
 
   cambiarModo(modo: ModoPanel) {
@@ -156,6 +160,8 @@ export class CrearVenta implements OnInit {
       this.nuevoClienteDniValidado = false;
       this.nuevoClientePermiteEditar = false;
       this.consultandoDniNuevo = false;
+      this.nuevoClienteCorreoValidado = false;
+      this.validandoCorreoNuevo = false;
     }
   }
 
@@ -304,6 +310,18 @@ export class CrearVenta implements OnInit {
   buscarDniNuevo() {
     this.validarDniNuevo();
     if (this.errorDniNuevo) { return; }
+    
+    // First check if DNI is already in listaClientes
+    if (this.listaClientes.length === 0) {
+      // Load listaClientes if not already loaded
+      this.cargarListaClientes();
+    }
+    const clienteExistente = this.listaClientes.find(c => c.dni === this.nuevoCliente.dni);
+    if (clienteExistente) {
+      Swal.fire('Error', 'El DNI ya está registrado en el sistema.', 'error');
+      return;
+    }
+
     this.consultandoDniNuevo = true;
     this.http.get<any>(`${this.URL_CLIENTES}/buscar-dni/${this.nuevoCliente.dni}`).subscribe({
       next: (data) => {
@@ -335,22 +353,107 @@ export class CrearVenta implements OnInit {
     });
   }
 
+  get esCorreoValidoNuevo(): boolean { return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(this.nuevoCliente.correo); }
+
+  validarCorreoBackendNuevo() {
+    // If in manual edit mode, no code required
+    if (this.nuevoClientePermiteEditar) {
+      this.nuevoClienteCorreoValidado = true;
+      return;
+    }
+    
+    if (!this.esCorreoValidoNuevo) return;
+    this.validandoCorreoNuevo = true;
+    this.http.post(`${this.URL_CLIENTES}/correo/enviar`, { correo: this.nuevoCliente.correo, dni: this.nuevoCliente.dni }, { responseType: 'text' }).subscribe({
+      next: () => { 
+        this.validandoCorreoNuevo = false; 
+        this.cdr.detectChanges();
+        this.mostrarPromptCodigoNuevo(); 
+      },
+      error: () => { 
+        this.validandoCorreoNuevo = false; 
+        this.cdr.detectChanges();
+        Swal.fire('Error', 'No se pudo enviar código', 'error'); 
+      }
+    });
+  }
+
+  private mostrarPromptCodigoNuevo() {
+    Swal.fire({
+      title: 'Validar Correo',
+      input: 'text',
+      inputAttributes: { maxlength: '6' },
+      showCancelButton: true,
+      confirmButtonText: 'Validar',
+      inputValidator: (value) => {
+        if (!value || value.length !== 6) {
+          return 'El código debe tener 6 dígitos';
+        }
+        return null;
+      }
+    }).then((r) => {
+      if (r.isConfirmed && r.value) this.verificarCodigoNuevo(r.value);
+    });
+  }
+
+  private verificarCodigoNuevo(codigo: string) {
+    this.http.post(`${this.URL_CLIENTES}/correo/validar`, { dni: this.nuevoCliente.dni, codigo }, { responseType: 'text' }).subscribe({
+      next: (res) => {
+        if (res === 'CODIGO_VALIDO') {
+          this.nuevoClienteCorreoValidado = true;
+          Swal.fire('Correcto', 'Correo verificado', 'success');
+        } else {
+          Swal.fire({
+            title: 'Código incorrecto',
+            text: 'El código ingresado no es válido. Por favor, intenta nuevamente.',
+            icon: 'error',
+            confirmButtonText: 'Reintentar'
+          }).then(() => {
+            this.mostrarPromptCodigoNuevo();
+          });
+        }
+        this.cdr.detectChanges();
+      },
+      error: () => {
+        Swal.fire({
+          title: 'Error',
+          text: 'Hubo un error al validar el código. Por favor, intenta nuevamente.',
+          icon: 'error',
+          confirmButtonText: 'Reintentar'
+        }).then(() => {
+          this.mostrarPromptCodigoNuevo();
+        });
+      }
+    });
+  }
+
   validarNombreNuevo()    { this.errorNombreNuevo    = !this.nuevoCliente.nombre.trim() || this.nuevoCliente.nombre.trim().length < 2; }
   validarApPaternoNuevo() { this.errorApPaternoNuevo = !this.nuevoCliente.apellido_paterno.trim(); }
   validarCelularNuevo()   { this.errorCelularNuevo   = !/^9\d{8}$/.test(this.nuevoCliente.celular.trim()); }
   validarCorreoNuevo()    { this.errorCorreoNuevo    = !!this.nuevoCliente.correo.trim() && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(this.nuevoCliente.correo.trim()); }
 
+  get puedeGuardarNuevoCliente(): boolean {
+    if (this.nuevoClientePermiteEditar) {
+      return !!(
+        this.nuevoCliente.dni?.trim() &&
+        this.nuevoCliente.nombre?.trim() &&
+        this.nuevoCliente.apellido_paterno?.trim() &&
+        this.nuevoCliente.celular?.trim() &&
+        !this.errorCelularNuevo &&
+        !this.errorCorreoNuevo
+      );
+    }
+    return this.nuevoClienteDniValidado && this.nuevoClienteCorreoValidado;
+  }
+
   nuevoClienteValido(): boolean {
-    return !this.errorDniNuevo && !this.errorNombreNuevo && !this.errorApPaternoNuevo &&
-           !this.errorCelularNuevo && !this.errorCorreoNuevo &&
-           !!this.nuevoCliente.dni.trim() && !!this.nuevoCliente.nombre.trim() &&
-           !!this.nuevoCliente.apellido_paterno.trim() && !!this.nuevoCliente.celular.trim();
+    return this.puedeGuardarNuevoCliente;
   }
 
   guardarNuevoCliente() {
     this.validarDniNuevo(); this.validarNombreNuevo(); this.validarApPaternoNuevo();
     this.validarCelularNuevo(); this.validarCorreoNuevo();
-    if (!this.nuevoClienteValido()) { Swal.fire('Datos incompletos', 'Corrige los campos marcados.', 'warning'); return; }
+    if (!this.puedeGuardarNuevoCliente) { Swal.fire('Datos incompletos', 'Corrige los campos marcados.', 'warning'); return; }
     this.guardandoCliente = true;
     const payload = {
       cliente: {
