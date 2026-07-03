@@ -84,6 +84,7 @@
           <thead class="table-light">
             <tr>
               <th class="text-muted small">N° ORDEN</th>
+              <th class="text-muted small">PRODUCTOS</th>
               <th class="text-muted small">FECHA</th>
               <th class="text-muted small">HORA</th>
               <th class="text-muted small">CLIENTE</th>
@@ -96,28 +97,29 @@
           <tbody>
             <ng-container *ngIf="cargandoTabla">
               <tr *ngFor="let i of [1,2,3,4,5]">
-                <td colspan="8" class="placeholder-glow py-2">
+                <td colspan="9" class="placeholder-glow py-2">
                   <span class="placeholder col-12 rounded" style="height:18px"></span>
                 </td>
               </tr>
             </ng-container>
             <tr *ngIf="!cargandoTabla && ventas.length === 0">
-              <td colspan="8" class="text-center py-5 text-muted">
+              <td colspan="9" class="text-center py-5 text-muted">
                 <i class="bi bi-inbox fs-3 d-block mb-2"></i>
                 {{ busqueda ? 'No se encontraron resultados para "' + busqueda + '"' : 'Aún no hay ventas registradas' }}
               </td>
             </tr>
             <tr *ngFor="let v of ventas">
-              <td><span class="badge bg-light text-dark border">#{{ v.idOrdenVenta }}</span></td>
+              <td><span class="badge bg-light text-dark border">#{{ v.n_orden }}</span></td>
+              <td class="small text-muted">{{ v.productos || 'Ninguno' }}</td>
               <td class="small text-muted">{{ v.fecha }}</td>
               <td class="small text-muted">{{ v.hora }}</td>
               <td class="fw-semibold small">{{ v.cliente || 'Cliente Varios' }}</td>
-              <td class="small text-muted">{{ v.dniCliente }}</td>
+              <td class="small text-muted">{{ v.dni }}</td>
               <td class="small">{{ v.vendedor }}</td>
               <td class="small">
-                <span class="badge bg-light text-dark border">{{ v.metodoPago }}</span>
+                <span class="badge bg-light text-dark border">{{ v.metodo_pago }}</span>
               </td>
-              <td class="text-end fw-bold text-danger small">S/ {{ v.precioTotal | number:'1.2-2' }}</td>
+              <td class="text-end fw-bold text-danger small">S/ {{ v.total | number:'1.2-2' }}</td>
             </tr>
           </tbody>
         </table>

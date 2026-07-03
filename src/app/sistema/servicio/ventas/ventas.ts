@@ -7,14 +7,15 @@ import { Router, RouterOutlet, NavigationEnd } from '@angular/router';
 import { filter } from 'rxjs/operators';
 
 interface VentaResumen {
-  idOrdenVenta: number;
+  n_orden: number;
+  productos: string;
   fecha:        string;
   hora:         string;
   cliente:      string;
-  dniCliente:   string;
+  dni:   string;
   vendedor:     string;
-  metodoPago:   string;
-  precioTotal:  number;
+  metodo_pago:   string;
+  total:  number;
 }
 
 interface ResumenHoy {
@@ -68,23 +69,59 @@ export class Ventas implements OnInit {
 
   cargarResumen() {
     this.cargandoResumen = true;
-    // Simulación — reemplazar con: this.http.get<ResumenHoy>(`${this.URL}/resumen-hoy`).subscribe(...)
-    this.resumen = { totalVentas: 12, montoTotalHoy: 3450.00, ticketPromedio: 287.50 };
+    // Por ahora, resumen inicializado en 0, se puede agregar endpoint en backend si necesario
+    this.resumen = { totalVentas: 0, montoTotalHoy: 0, ticketPromedio: 0 };
     this.cargandoResumen = false;
   }
 
   cargarVentas() {
     this.cargandoTabla = true;
-    // Simulación — reemplazar con llamada real al back con HttpParams
-    this.ventas = [
-      { idOrdenVenta: 4, fecha: '27/06/2026', hora: '11:20', cliente: 'Robert Tucto',   dniCliente: '74771893', vendedor: 'admin', metodoPago: 'Yape',         precioTotal: 450.00 },
-      { idOrdenVenta: 3, fecha: '27/06/2026', hora: '10:45', cliente: 'Cliente Varios', dniCliente: '00000000', vendedor: 'admin', metodoPago: 'Efectivo',      precioTotal: 95.00  },
-      { idOrdenVenta: 2, fecha: '27/06/2026', hora: '09:30', cliente: 'Jose Rodriguez', dniCliente: '74622234', vendedor: 'admin', metodoPago: 'Transferencia', precioTotal: 180.50 },
-      { idOrdenVenta: 1, fecha: '27/06/2026', hora: '08:15', cliente: 'Rafael Mendoza', dniCliente: '75481236', vendedor: 'admin', metodoPago: 'Tarjeta',       precioTotal: 320.00 },
-    ];
-    this.totalRegistros = 4;
-    this.totalPaginas   = 1;
-    this.cargandoTabla  = false;
+    
+    // Para el resumen, vamos a traer todas las ventas (sin paginación)
+    let paramsResumen = new HttpParams()
+      .set('pagina', '1')
+      .set('porPagina', '10000'); // Un número grande para traer todas las ventas
+    
+    this.http.get<{ ventas: VentaResumen[], totalRegistros: number }>(`${this.URL}/listar`, { params: paramsResumen })
+      .subscribe({
+        next: (resResumen) => {
+          // Calcular el resumen a partir de todas las ventas
+          const todasLasVentas = resResumen.ventas;
+          const totalVentas = todasLasVentas.length;
+          const montoTotalHoy = todasLasVentas.reduce((sum, v) => sum + v.total, 0);
+          const ticketPromedio = totalVentas > 0 ? montoTotalHoy / totalVentas : 0;
+          
+          this.resumen = { totalVentas, montoTotalHoy, ticketPromedio };
+          this.cargandoResumen = false;
+        },
+        error: (err) => {
+          console.error('Error cargando resumen:', err);
+          this.cargandoResumen = false;
+        }
+      });
+    
+    // Cargar ventas paginadas para la tabla
+    let params = new HttpParams()
+      .set('pagina', this.paginaActual.toString())
+      .set('porPagina', this.porPagina.toString());
+    
+    if (this.busqueda) {
+      params = params.set('busqueda', this.busqueda);
+    }
+    
+    this.http.get<{ ventas: VentaResumen[], totalRegistros: number }>(`${this.URL}/listar`, { params })
+      .subscribe({
+        next: (res) => {
+          this.ventas = res.ventas;
+          this.totalRegistros = res.totalRegistros;
+          this.totalPaginas = Math.ceil(this.totalRegistros / this.porPagina);
+          this.cargandoTabla = false;
+        },
+        error: (err) => {
+          console.error('Error cargando ventas:', err);
+          this.cargandoTabla = false;
+        }
+      });
   }
 
   onBusqueda() {

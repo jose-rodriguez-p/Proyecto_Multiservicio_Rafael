@@ -89,7 +89,7 @@
           <thead class="table-light">
             <tr>
               <th style="width:32px">#</th>
-              <th style="min-width:230px">* CÓDIGO / NOMBRE</th>
+              <th style="min-width:230px">* NOMBRE</th>
               <th style="min-width:160px">DESCRIPCIÓN</th>
               <th style="width:90px">* CANT.</th>
               <th style="width:120px">* PRECIO UNIT.</th>
@@ -102,9 +102,9 @@
             <tr *ngFor="let item of items; let i = index">
               <td class="text-muted small">{{ i + 1 }}</td>
               <td class="celda-repuesto" style="position:relative">
-                <ng-container *ngIf="item.repuesto.id_repuesto === 0">
+                <ng-container *ngIf="!item.repuesto.nombre">
                   <input type="text" class="form-control form-control-sm"
-                    placeholder="Código o nombre..."
+                    placeholder="Nombre..."
                     [(ngModel)]="item.busqueda"
                     (input)="filtrarRepuestosItem(item)"
                     (focus)="filtrarRepuestosItem(item)"
@@ -114,8 +114,7 @@
                       (mousedown)="seleccionarRepuesto(r, item)">
                       <div class="d-flex justify-content-between align-items-center">
                         <div>
-                          <span class="fw-semibold small">{{ r.codigo }}</span>
-                          <span class="text-muted small ms-2">{{ r.nombre }}</span>
+                          <span class="fw-semibold small">{{ r.nombre }}</span>
                           <div class="text-muted" style="font-size:0.7rem">{{ r.marca }} · {{ r.categoria }}</div>
                         </div>
                         <div class="text-end ms-3">
@@ -130,10 +129,10 @@
                     </div>
                   </div>
                 </ng-container>
-                <div *ngIf="item.repuesto.id_repuesto > 0" class="d-flex align-items-center gap-2">
+                <div *ngIf="item.repuesto.nombre" class="d-flex align-items-center gap-2">
                   <div>
-                    <div class="small fw-semibold">{{ item.repuesto.codigo }}</div>
-                    <div class="small text-muted">{{ item.repuesto.nombre }}</div>
+                    <div class="small fw-semibold">{{ item.repuesto.nombre }}</div>
+                    <div class="small text-muted">{{ item.repuesto.marca }} · {{ item.repuesto.categoria }}</div>
                   </div>
                   <button class="btn btn-sm p-0 text-muted ms-auto" (click)="limpiarRepuesto(item)">
                     <i class="bi bi-x-circle"></i>
@@ -259,32 +258,48 @@
       <div class="input-group mb-1">
         <input type="text" class="form-control" placeholder="Ej: 74622233"
           [(ngModel)]="dniBusqueda" (input)="buscarClientePorDni()" maxlength="8">
-        <span class="input-group-text">
-          <span *ngIf="buscandoCliente" class="spinner-border spinner-border-sm text-secondary"></span>
-          <i *ngIf="!buscandoCliente" class="bi bi-search text-muted"></i>
+        <span class="input-group-text" *ngIf="buscandoCliente">
+          <span class="spinner-border spinner-border-sm text-danger"></span>
+        </span>
+        <span class="input-group-text" *ngIf="!buscandoCliente">
+          <i class="bi bi-search text-muted"></i>
         </span>
       </div>
-      <div class="mb-3 small" *ngIf="dniBusqueda.length===8">
-        <span *ngIf="clienteEncontrado" class="text-success">
+      <div class="mb-3 small">
+        <div *ngIf="clienteEncontrado" class="text-success">
           <i class="bi bi-check-circle me-1"></i>Cliente encontrado
-        </span>
-        <span *ngIf="!clienteEncontrado && !buscandoCliente" class="text-warning">
-          <i class="bi bi-exclamation-circle me-1"></i>No registrado —
-          <a class="text-danger fw-semibold" style="cursor:pointer" (click)="cambiarModo('nuevo')">Crear cliente nuevo</a>
-        </span>
+        </div>
+        <div *ngIf="!clienteEncontrado && !buscandoCliente && dniBusqueda.length===8">
+          <div *ngIf="cliente.nombre && cliente.apellido_paterno" class="text-success">
+            <i class="bi bi-check-circle me-1"></i>DNI validado por RENIEC.
+          </div>
+          <div *ngIf="clienteEditableNombres" class="text-warning">
+            <i class="bi bi-exclamation-circle me-1"></i>No registrado —
+            <a class="text-danger fw-semibold" style="cursor:pointer" (click)="cambiarModo('nuevo')">Crear cliente nuevo</a>
+          </div>
+        </div>
       </div>
       <div class="mb-2">
         <label class="form-label small fw-semibold">Nombres</label>
-        <input type="text" class="form-control form-control-sm" [(ngModel)]="cliente.nombre">
+        <input type="text" class="form-control form-control-sm" 
+          [(ngModel)]="cliente.nombre" 
+          [readonly]="!clienteEditableNombres && (dniBusqueda.length === 8)"
+          [ngClass]="{'bg-light': !clienteEditableNombres && (dniBusqueda.length === 8)}">
       </div>
       <div class="row g-2 mb-2">
         <div class="col-6">
           <label class="form-label small fw-semibold">Ap. Paterno</label>
-          <input type="text" class="form-control form-control-sm" [(ngModel)]="cliente.apellido_paterno">
+          <input type="text" class="form-control form-control-sm" 
+            [(ngModel)]="cliente.apellido_paterno" 
+            [readonly]="!clienteEditableNombres && (dniBusqueda.length === 8)"
+            [ngClass]="{'bg-light': !clienteEditableNombres && (dniBusqueda.length === 8)}">
         </div>
         <div class="col-6">
           <label class="form-label small fw-semibold">Ap. Materno</label>
-          <input type="text" class="form-control form-control-sm" [(ngModel)]="cliente.apellido_materno">
+          <input type="text" class="form-control form-control-sm" 
+            [(ngModel)]="cliente.apellido_materno" 
+            [readonly]="!clienteEditableNombres && (dniBusqueda.length === 8)"
+            [ngClass]="{'bg-light': !clienteEditableNombres && (dniBusqueda.length === 8)}">
         </div>
       </div>
       <div class="mb-2">
@@ -329,16 +344,23 @@
       <p class="small text-muted mb-3">Complete los datos para registrar un nuevo cliente.</p>
       <div class="mb-2">
         <label class="form-label small fw-semibold">DNI <span class="text-danger">*</span></label>
-        <input type="text" maxlength="8" class="form-control form-control-sm" placeholder="8 dígitos"
-          [ngClass]="{'is-invalid': errorDniNuevo, 'is-valid': !errorDniNuevo && nuevoCliente.dni.length===8}"
-          [(ngModel)]="nuevoCliente.dni" (input)="validarDniNuevo()">
+        <div class="input-group">
+          <input type="text" maxlength="8" class="form-control form-control-sm" placeholder="8 dígitos"
+            [ngClass]="{'is-invalid': errorDniNuevo, 'is-valid': !errorDniNuevo && nuevoCliente.dni.length===8}"
+            [(ngModel)]="nuevoCliente.dni" (input)="validarDniNuevo()">
+          <button class="btn btn-outline-secondary btn-sm" type="button" (click)="buscarDniNuevo()" [disabled]="consultandoDniNuevo || errorDniNuevo">
+            <span *ngIf="consultandoDniNuevo" class="spinner-border spinner-border-sm me-1"></span>
+            <i *ngIf="!consultandoDniNuevo" class="bi bi-search me-1"></i>
+            Buscar
+          </button>
+        </div>
         <div class="text-danger small mt-1" *ngIf="errorDniNuevo">El DNI debe tener exactamente 8 dígitos.</div>
       </div>
       <div class="mb-2">
         <label class="form-label small fw-semibold">Nombres <span class="text-danger">*</span></label>
         <input type="text" class="form-control form-control-sm"
           [ngClass]="{'is-invalid': errorNombreNuevo, 'is-valid': !errorNombreNuevo && nuevoCliente.nombre.trim()}"
-          [(ngModel)]="nuevoCliente.nombre" (input)="validarNombreNuevo()">
+          [(ngModel)]="nuevoCliente.nombre" (input)="validarNombreNuevo()" [readonly]="!nuevoClientePermiteEditar && nuevoClienteDniValidado">
         <div class="text-danger small mt-1" *ngIf="errorNombreNuevo">Mínimo 2 caracteres.</div>
       </div>
       <div class="row g-2 mb-2">
@@ -346,11 +368,11 @@
           <label class="form-label small fw-semibold">Ap. Paterno <span class="text-danger">*</span></label>
           <input type="text" class="form-control form-control-sm"
             [ngClass]="{'is-invalid': errorApPaternoNuevo, 'is-valid': !errorApPaternoNuevo && nuevoCliente.apellido_paterno.trim()}"
-            [(ngModel)]="nuevoCliente.apellido_paterno" (input)="validarApPaternoNuevo()">
+            [(ngModel)]="nuevoCliente.apellido_paterno" (input)="validarApPaternoNuevo()" [readonly]="!nuevoClientePermiteEditar && nuevoClienteDniValidado">
         </div>
         <div class="col-6">
           <label class="form-label small fw-semibold">Ap. Materno</label>
-          <input type="text" class="form-control form-control-sm" [(ngModel)]="nuevoCliente.apellido_materno">
+          <input type="text" class="form-control form-control-sm" [(ngModel)]="nuevoCliente.apellido_materno" [readonly]="!nuevoClientePermiteEditar && nuevoClienteDniValidado">
         </div>
       </div>
       <div class="mb-2">
