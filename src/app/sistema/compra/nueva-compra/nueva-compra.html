@@ -1,0 +1,125 @@
+<div class="modal-header bg-danger text-white border-0 py-3 py-md-4">
+  <h5 class="modal-title fw-bold">
+    <i class="bi bi-cart-plus-fill me-2"></i> Nueva Compra
+  </h5>
+  <button type="button" class="btn-close btn-close-white" (click)="cerrarModal()"></button>
+</div>
+
+<div class="modal-body p-4 p-md-5">
+
+  <!-- Proveedor -->
+  <div class="row g-3 g-md-4 mb-4">
+    <div class="col-md-6">
+      <label class="form-label fw-bold small mb-2">Proveedor <span class="text-danger">*</span></label>
+      <select class="form-select form-select-sm"
+        [(ngModel)]="rucProveedor"
+        [ngClass]="{'is-invalid': errorProveedor}">
+        <option value="" disabled>— Selecciona un proveedor —</option>
+        <option *ngFor="let p of proveedores" [value]="p.ruc">{{ p.nombre_empresa }} — {{ p.ruc }}</option>
+      </select>
+      <div class="invalid-feedback">Debes seleccionar un proveedor.</div>
+    </div>
+  </div>
+
+  <hr>
+
+  <!-- Items -->
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h6 class="fw-bold mb-0">Productos a comprar</h6>
+    <button type="button" class="btn btn-sm btn-outline-danger" (click)="agregarItem()">
+      <i class="bi bi-plus-circle me-1"></i> Agregar producto
+    </button>
+  </div>
+
+  <div class="table-responsive">
+    <table class="table table-sm align-middle">
+      <thead class="table-light">
+        <tr>
+          <th style="min-width: 220px;">Producto</th>
+          <th style="width: 110px;" class="text-center">Cantidad</th>
+          <th style="width: 140px;" class="text-center">Precio Compra (S/)</th>
+          <th style="width: 120px;" class="text-center">Subtotal</th>
+          <th style="width: 50px;"></th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let item of items; let i = index">
+          <td class="position-relative">
+            <input type="text"
+              class="form-control form-control-sm"
+              placeholder="Buscar producto..."
+              [(ngModel)]="item.busqueda"
+              (input)="buscarProducto(item)"
+              (focus)="buscarProducto(item)"
+              (blur)="cerrarDropdown(item)"
+              [ngClass]="{'is-valid': item.nombre_repuesto}">
+            <div class="list-group position-absolute w-100 shadow-sm"
+                 style="z-index: 20; max-height: 180px; overflow-y:auto;"
+                 *ngIf="item.mostrarDropdown && item.resultados.length > 0">
+              <button type="button" class="list-group-item list-group-item-action py-2"
+                *ngFor="let prod of item.resultados"
+                (mousedown)="seleccionarProducto(item, prod)">
+                <div class="fw-bold small">{{ prod.nombre_repuesto }}</div>
+                <div class="text-muted small">
+                  {{ prod.nombre_marca }} · Stock actual: {{ prod.cantidad }}
+                </div>
+              </button>
+            </div>
+            <div class="small text-muted mt-1" *ngIf="item.mostrarDropdown && item.busqueda && item.resultados.length === 0">
+              Sin coincidencias.
+            </div>
+          </td>
+          <td>
+            <input type="number" min="1" step="1"
+              class="form-control form-control-sm text-center"
+              [(ngModel)]="item.cantidad"
+              (input)="validarCantidad(item)"
+              [ngClass]="{'is-invalid': item.errorCantidad}"
+              [disabled]="!item.nombre_repuesto">
+          </td>
+          <td>
+            <input type="number" min="0.01" step="0.01"
+              class="form-control form-control-sm text-center"
+              [(ngModel)]="item.precio_compra"
+              (input)="validarPrecio(item)"
+              [ngClass]="{'is-invalid': item.errorPrecio}"
+              [disabled]="!item.nombre_repuesto">
+          </td>
+          <td class="text-center fw-bold">
+            S/ {{ subtotal(item) | number:'1.2-2' }}
+          </td>
+          <td class="text-center">
+            <button type="button" class="btn btn-sm btn-outline-secondary" (click)="quitarItem(i)">
+              <i class="bi bi-trash"></i>
+            </button>
+          </td>
+        </tr>
+      </tbody>
+      <tfoot>
+        <tr>
+          <th colspan="3" class="text-end">Total de la compra</th>
+          <th class="text-center text-danger">S/ {{ total | number:'1.2-2' }}</th>
+          <th></th>
+        </tr>
+      </tfoot>
+    </table>
+  </div>
+
+  <div class="alert alert-light border small mb-0">
+    <i class="bi bi-info-circle me-1"></i>
+    Al registrar la compra, el stock de cada producto se incrementará automáticamente
+    según la cantidad ingresada. El campo "Stock" ya no se edita manualmente en
+    Editar Producto.
+  </div>
+
+</div>
+
+<div class="modal-footer border-0 p-4 p-md-5">
+  <button type="button" class="btn btn-outline-secondary px-4" (click)="cerrarModal()">Cancelar</button>
+  <button type="button" class="btn btn-danger px-4"
+    (click)="registrarCompra()"
+    [disabled]="guardando">
+    <span *ngIf="guardando" class="spinner-border spinner-border-sm me-2"></span>
+    Registrar Compra
+  </button>
+</div>

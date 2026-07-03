@@ -32,6 +32,8 @@ import { AgregarProveedor } from './sistema/proveedor/agregar-proveedor/agregar-
 import { ActualizarContrasena } from './sistema/configuracion/actualizar-contrasena/actualizar-contrasena';
 import { AgregarCliente } from './sistema/cliente/agregar-cliente/agregar-cliente';
 import { EditarCliente } from './sistema/cliente/editar-cliente/editar-cliente';
+import { Compra } from './sistema/compra/compra';
+import { NuevaCompra } from './sistema/compra/nueva-compra/nueva-compra';
 
 export const routes: Routes = [
   { path: '', redirectTo: 'login', pathMatch: 'full' },
@@ -60,6 +62,13 @@ export const routes: Routes = [
         ],
       },
       { path: 'reabastecimiento', component: Reabastecimiento },
+      {
+        path: 'compra',
+        component: Compra,
+        children: [
+          { path: 'nueva-compra', component: NuevaCompra },
+        ],
+      },
       {
         path: 'servicio',
         component: Servicio,

@@ -41,13 +41,18 @@
     </div>
 
     <div class="col-md-4">
-      <label class="form-label fw-bold small mb-2">Stock Actual <span class="text-danger">*</span></label>
-      <input type="number" min="0" step="1" max="999"
-        class="form-control form-control-sm"
+      <label class="form-label fw-bold small mb-2">
+        Stock Actual
+        <i class="bi bi-lock-fill text-muted ms-1" title="El stock se actualiza automáticamente desde Compras"></i>
+      </label>
+      <input type="number"
+        class="form-control form-control-sm bg-light"
         [(ngModel)]="productoEditando.cantidad"
-        (input)="validarCantidad()"
-        [ngClass]="{'is-invalid': errorCantidad, 'is-valid': !errorCantidad && productoEditando.cantidad !== null}">
-      <div class="invalid-feedback">Ingresa un número entero mayor a 0.</div>
+        readonly>
+      <div class="form-text">
+        No editable aquí. Para aumentar el stock, registra una
+        <a routerLink="/sistema/compra/nueva-compra">nueva compra</a>.
+      </div>
     </div>
 
     <div class="col-md-4">

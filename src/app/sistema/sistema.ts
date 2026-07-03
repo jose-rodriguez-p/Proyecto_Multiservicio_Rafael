@@ -20,6 +20,8 @@ export class Sistema implements OnInit {
     'cliente':          'Clientes',
     'producto':         'Productos',
     'reabastecimiento': 'Reabastecimiento',
+    'compra':           'Compras',
+    'nueva-compra':     'Compras — Nueva Compra',
     'proveedor':        'Proveedores',
     'trabajador':       'Trabajadores',
     'configuracion':    'Configuración',
