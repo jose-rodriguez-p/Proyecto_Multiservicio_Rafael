@@ -1,0 +1,76 @@
+<div class="servicios-page" *ngIf="!showAgregarOverlay && !showEditarOverlay">
+  <div class="servicios-header">
+    <div>
+      <div class="servicios-titulo">
+        <i class="bi bi-wrench servicios-titulo-icono"></i>
+        Servicios
+      </div>
+      <p class="text-muted small mb-0">Lista de servicios de mantenimiento registrados.</p>
+    </div>
+    <button class="btn btn-nuevo-servicio" (click)="abrirAgregar()">
+      <i class="bi bi-plus-lg me-1"></i>Nuevo Servicio
+    </button>
+  </div>
+
+  <div class="servicios-filtros">
+    <div class="input-group">
+      <span class="input-group-text bg-white"><i class="bi bi-search text-muted"></i></span>
+      <input type="text" class="form-control" placeholder="Buscar servicio..."
+        [(ngModel)]="filtroNombre">
+    </div>
+    <select class="form-select" [(ngModel)]="filtroEstado">
+      <option value="">Todos los estados</option>
+      <option value="Activo">Activo</option>
+      <option value="Inactivo">Inactivo</option>
+    </select>
+  </div>
+
+  <div class="table-responsive">
+    <table class="table table-hover align-middle">
+      <thead class="table-light">
+        <tr>
+          <th class="small text-muted">NOMBRE</th>
+          <th class="small text-muted">PRECIO</th>
+          <th class="small text-muted">ESTADO</th>
+          <th class="small text-muted text-center">ACCIÓN</th>
+        </tr>
+      </thead>
+      <tbody>
+        <ng-container *ngIf="cargando">
+          <tr *ngFor="let i of [1,2,3]">
+            <td colspan="4" class="placeholder-glow py-2">
+              <span class="placeholder col-12 rounded" style="height:18px"></span>
+            </td>
+          </tr>
+        </ng-container>
+        <tr *ngIf="!cargando && serviciosFiltrados.length === 0">
+          <td colspan="4" class="text-center py-4 text-muted small">
+            <i class="bi bi-inbox fs-4 d-block mb-1"></i>
+            No hay servicios registrados
+          </td>
+        </tr>
+        <tr *ngFor="let s of serviciosFiltrados">
+          <td class="fw-semibold">{{ s.nombre }}</td>
+          <td>S/ {{ s.precio | number:'1.2-2' }}</td>
+          <td>
+            <span class="badge" [ngClass]="s.estado === 'Activo' ? 'bg-success' : 'bg-secondary'">
+              {{ s.estado }}
+            </span>
+          </td>
+          <td class="text-center">
+            <button class="btn btn-sm btn-outline-danger" (click)="abrirEditar(s)">
+              <i class="bi bi-pencil"></i>
+            </button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- OVERLAY: Agregar / Editar -->
+<div class="config-overlay" *ngIf="showAgregarOverlay || showEditarOverlay">
+  <div class="config-modal">
+    <router-outlet></router-outlet>
+  </div>
+</div>

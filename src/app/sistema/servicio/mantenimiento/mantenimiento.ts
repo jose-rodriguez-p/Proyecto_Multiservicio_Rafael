@@ -1,5 +1,5 @@
 import { API_BASE_URL } from '@config';
-import { Component, OnInit, inject, PLATFORM_ID } from '@angular/core';
+import { Component, OnInit, inject, PLATFORM_ID, ChangeDetectorRef } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpClient, HttpParams } from '@angular/common/http';
@@ -34,6 +34,7 @@ export class Mantenimiento implements OnInit {
   private http       = inject(HttpClient);
   private router     = inject(Router);
   private platformId = inject(PLATFORM_ID);
+  private cdr        = inject(ChangeDetectorRef);
 
   private URL = `${API_BASE_URL}/api/mantenimiento`;
 
@@ -48,20 +49,26 @@ export class Mantenimiento implements OnInit {
   porPagina = 10;
   totalRegistros = 0;
   totalPaginas = 0;
-  private timerBusqueda: any;
 
   constructor() {
-    inject(Router).events.pipe(
+    this.router.events.pipe(
       filter((e): e is NavigationEnd => e instanceof NavigationEnd)
     ).subscribe((e) => {
       this.enCrear = e.urlAfterRedirects.includes('/mantenimiento/crear');
+      this.cdr.detectChanges();
+      if (isPlatformBrowser(this.platformId) && !this.enCrear) {
+        this.cargarOrdenes();
+      }
     });
   }
 
   ngOnInit() {
     if (isPlatformBrowser(this.platformId)) {
-      this.cargarResumen();
-      this.cargarOrdenes();
+      this.enCrear = this.router.url.includes('/mantenimiento/crear');
+      if (!this.enCrear) {
+        this.cargarResumen();
+        this.cargarOrdenes();
+      }
     }
   }
 
@@ -87,14 +94,15 @@ export class Mantenimiento implements OnInit {
         this.totalPaginas    = res.totalPaginas   || 0;
         this.paginaActual    = res.paginaActual   || 1;
         this.cargandoTabla   = false;
+        this.cdr.detectChanges();
       },
-      error: () => { this.cargandoTabla = false; }
+      error: () => { this.cargandoTabla = false; this.cdr.detectChanges(); }
     });
   }
 
   onBusqueda() {
-    clearTimeout(this.timerBusqueda);
-    this.timerBusqueda = setTimeout(() => { this.paginaActual = 1; this.cargarOrdenes(); }, 400);
+    this.paginaActual = 1;
+    this.cargarOrdenes();
   }
 
   get paginas(): number[] {

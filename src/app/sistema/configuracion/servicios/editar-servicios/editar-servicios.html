@@ -1,0 +1,30 @@
+<div class="bg-white rounded-3 overflow-hidden">
+  <div class="p-3 text-white" style="background: #1e293b;">
+    <h5 class="mb-0"><i class="bi bi-pencil me-2"></i>Editar Servicio</h5>
+  </div>
+  <div class="p-3">
+    <div class="mb-3">
+      <label class="form-label fw-semibold small">Nombre del servicio</label>
+      <input type="text" class="form-control bg-light" [(ngModel)]="nombre" readonly>
+      <div class="small text-muted mt-1">El nombre no se puede modificar.</div>
+    </div>
+    <div class="mb-3">
+      <label class="form-label fw-semibold small">Precio</label>
+      <div class="input-group">
+        <span class="input-group-text">S/</span>
+        <input type="number" class="form-control" [(ngModel)]="precio" min="0.01" step="0.01">
+      </div>
+    </div>
+    <div class="mb-3">
+      <label class="form-label fw-semibold small">Estado</label>
+      <select class="form-select" [(ngModel)]="estado">
+        <option value="Activo">Activo</option>
+        <option value="Inactivo">Inactivo</option>
+      </select>
+    </div>
+  </div>
+  <div class="d-flex justify-content-end gap-2 p-3 border-top">
+    <button class="btn btn-outline-secondary btn-sm" (click)="cerrar()">Cancelar</button>
+    <button class="btn btn-danger btn-sm" (click)="guardar()">Guardar Cambios</button>
+  </div>
+</div>

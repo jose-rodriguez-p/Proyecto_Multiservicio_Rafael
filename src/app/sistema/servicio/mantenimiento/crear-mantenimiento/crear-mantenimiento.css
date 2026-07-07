@@ -102,10 +102,63 @@
 /* ── Inputs numéricos ──────────────────────────────────────────────────────── */
 input[type="number"] {
   -moz-appearance: textfield;
-}h
+}
 
 input[type="number"]::-webkit-inner-spin-button,
 input[type="number"]::-webkit-outer-spin-button {
   -webkit-appearance: none;
   margin: 0;
+}
+
+/* ── Vehículo item en modal ────────────────────────────────────────────── */
+.vehiculo-item {
+  padding: 12px 14px;
+  border-radius: 8px;
+  cursor: pointer;
+  border: 1px solid #e9ecef;
+  margin-bottom: 8px;
+  transition: all 0.15s;
+}
+
+.vehiculo-item:hover {
+  background-color: #fff5f5;
+  border-color: #f5c6cb;
+}
+
+/* ── Autocomplete Marca / Modelo ───────────────────────────────────────── */
+.autocomplete-lista {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  z-index: 1060;
+  max-height: 220px;
+  overflow-y: auto;
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  margin-top: 2px;
+}
+
+.autocomplete-item {
+  padding: 8px 14px;
+  font-size: 0.875rem;
+  cursor: pointer;
+  color: #1e293b;
+}
+
+.autocomplete-item:hover {
+  background: #fee2e2;
+  color: #b91c1c;
+}
+
+.autocomplete-item--vacio {
+  color: #94a3b8;
+  font-style: italic;
+  cursor: default;
+}
+
+.autocomplete-item--vacio:hover {
+  background: transparent;
+  color: #94a3b8;
 }

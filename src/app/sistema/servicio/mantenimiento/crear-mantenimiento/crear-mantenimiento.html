@@ -9,17 +9,72 @@
     </h2>
   </div>
 
-  <!-- ── CABECERA ──────────────────────────────────────────────────────────── -->
+  <!-- ── CLIENTE + VEHÍCULO ──────────────────────────────────────────────── -->
+  <div class="card border-0 shadow-sm mb-3">
+    <div class="card-body p-4">
+      <div class="row g-4">
+
+        <!-- DNI -->
+        <div class="col-12 col-md-4">
+          <label class="form-label small fw-semibold">DNI del Cliente *</label>
+          <div class="input-group">
+            <input type="text" class="form-control" maxlength="8"
+              placeholder="Ej: 74622233"
+              [(ngModel)]="dniBusqueda"
+              (input)="onDniInput()"
+              [class.is-invalid]="dniBuscado && !clienteEncontrado"
+              [class.is-valid]="clienteEncontrado">
+            <span class="input-group-text">
+              <span *ngIf="buscandoCliente" class="spinner-border spinner-border-sm text-secondary"></span>
+              <i *ngIf="!buscandoCliente" class="bi bi-person text-muted"></i>
+            </span>
+          </div>
+          <div class="text-danger small mt-1" *ngIf="dniBuscado && !buscandoCliente && !clienteEncontrado">
+            <i class="bi bi-exclamation-circle me-1"></i>Cliente no encontrado
+          </div>
+          <div class="text-success small mt-1" *ngIf="clienteEncontrado">
+            <i class="bi bi-check-circle me-1"></i>Cliente encontrado
+          </div>
+        </div>
+
+        <!-- Cliente data (se muestra solo si hay cliente) -->
+        <ng-container *ngIf="clienteEncontrado">
+          <div class="col-12 col-md-4">
+            <label class="form-label small fw-semibold">Cliente</label>
+            <div class="fw-bold">{{ nombreCompletoCliente }}</div>
+            <div class="small text-muted" *ngIf="cliente.celular">
+              <i class="bi bi-telephone me-1"></i>{{ cliente.celular }}
+            </div>
+            <div class="small text-muted" *ngIf="cliente.correo">
+              <i class="bi bi-envelope me-1"></i>{{ cliente.correo }}
+            </div>
+          </div>
+
+          <!-- Vehículo seleccionado / selector -->
+          <div class="col-12 col-md-4">
+            <label class="form-label small fw-semibold">Vehículo *</label>
+            <div class="d-flex align-items-center gap-2">
+              <input type="text" class="form-control form-control-sm bg-light"
+                [value]="descripcionVehiculo"
+                placeholder="Selecciona un vehículo..."
+                readonly>
+              <button class="btn btn-outline-danger btn-sm text-nowrap"
+                (click)="openVehicleModal()"
+                [disabled]="!clienteEncontrado">
+                <i class="bi bi-car me-1"></i>{{ vehiculoSeleccionado ? 'Cambiar' : 'Seleccionar' }}
+              </button>
+            </div>
+          </div>
+        </ng-container>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- ── CABECERA (fecha, estado, técnico) ───────────────────────────────── -->
   <div class="card border-0 shadow-sm mb-3">
     <div class="card-body p-3">
       <div class="row g-3 align-items-end">
-
-        <div class="col-12 col-md-4">
-          <label class="form-label small fw-semibold">Descripción del vehículo *</label>
-          <input type="text" class="form-control form-control-sm"
-            placeholder="Ej: Toyota Corolla ABC-123"
-            [(ngModel)]="descripcionVehiculo">
-        </div>
 
         <div class="col-6 col-md-2">
           <label class="form-label small fw-semibold">Estado</label>
@@ -30,51 +85,23 @@
           </select>
         </div>
 
-        <div class="col-6 col-md-3">
+        <div class="col-6 col-md-2">
           <label class="form-label small fw-semibold">Fecha</label>
           <input type="date" class="form-control form-control-sm" [(ngModel)]="fechaEmision">
         </div>
 
-      </div>
-    </div>
-  </div>
-
-  <!-- ── TÉCNICO / CLIENTE ─────────────────────────────────────────────────── -->
-  <div class="card border-0 shadow-sm mb-3">
-    <div class="card-body p-3">
-      <div class="row g-3">
-
-        <!-- Técnico logueado -->
-        <div class="col-12 col-md-5">
+        <div class="col-12 col-md-4">
           <div class="small text-muted mb-1">Registrado por:</div>
           <div class="fw-bold">{{ tecnicoLogueado.nombre }}</div>
           <div class="small text-muted">{{ tecnicoLogueado.cargo }}</div>
-          <div class="small text-muted" *ngIf="tecnicoLogueado.codigo">cod. {{ tecnicoLogueado.codigo }}</div>
         </div>
 
-        <!-- Separador -->
-        <div class="col-12 col-md-1 d-none d-md-flex justify-content-center">
-          <div class="border-start h-100"></div>
-        </div>
-
-        <!-- Cliente -->
-        <div class="col-12 col-md-6">
-          <div class="d-flex justify-content-between align-items-start">
-            <div>
-              <div class="small text-muted mb-1">Cliente</div>
-              <div class="fw-bold">{{ nombreCompletoCliente }}</div>
-              <div class="small text-muted" *ngIf="cliente.dni">DNI {{ cliente.dni }}</div>
-              <div class="small text-muted">{{ cliente.celular || 'Sin celular' }}</div>
-              <div class="small text-muted">{{ cliente.correo || 'Sin correo' }}</div>
-            </div>
-            <div class="d-flex gap-2 flex-wrap justify-content-end">
-              <button class="btn btn-outline-secondary btn-sm" (click)="abrirPanelCliente('buscar')">
-                <i class="bi bi-search me-1"></i>Buscar DNI
-              </button>
-              <button class="btn btn-outline-primary btn-sm" (click)="abrirPanelCliente('lista')">
-                <i class="bi bi-people me-1"></i>Lista
-              </button>
-            </div>
+        <div class="col-12 col-md-4">
+          <label class="form-label small fw-semibold">Mano de obra</label>
+          <div class="input-group input-group-sm">
+            <span class="input-group-text">S/</span>
+            <input type="number" class="form-control text-end"
+              [(ngModel)]="precioManoObra" min="0" step="0.01">
           </div>
         </div>
 
@@ -82,7 +109,7 @@
     </div>
   </div>
 
-  <!-- ── DETALLE DE SERVICIOS ──────────────────────────────────────────────── -->
+  <!-- ── DETALLE DE SERVICIOS ────────────────────────────────────────────── -->
   <div class="card border-0 shadow-sm mb-3">
     <div class="card-body p-3">
       <div class="fw-semibold mb-3">Detalle de servicios</div>
@@ -196,7 +223,7 @@
     </div>
   </div>
 
-  <!-- ── TOTALES + NOTA ────────────────────────────────────────────────────── -->
+  <!-- ── TOTALES + NOTA ──────────────────────────────────────────────────── -->
   <div class="row g-3">
 
     <div class="col-12 col-md-6">
@@ -214,24 +241,11 @@
       <div class="card border-0 shadow-sm">
         <div class="card-body p-3">
 
-          <div class="d-flex align-items-center gap-2 mb-2">
-            <span class="small text-muted flex-grow-1">Mano de obra</span>
-            <div class="input-group input-group-sm" style="width:130px">
-              <span class="input-group-text">S/</span>
-              <input type="number" class="form-control text-end"
-                [(ngModel)]="precioManoObra" min="0" step="0.01">
-            </div>
-          </div>
-
           <hr class="my-2">
 
           <div class="d-flex justify-content-between small mb-1">
             <span class="text-muted">Subtotal servicios :</span>
             <span>S/ {{ subtotalServicios | number:'1.2-2' }}</span>
-          </div>
-          <div class="d-flex justify-content-between small mb-1">
-            <span class="text-muted">Mano de obra :</span>
-            <span>S/ {{ precioManoObra | number:'1.2-2' }}</span>
           </div>
           <div class="d-flex justify-content-between small mb-1">
             <span class="text-muted">IGV (18%) :</span>
@@ -241,7 +255,6 @@
             <span>Total :</span>
             <span class="text-danger">S/ {{ total | number:'1.2-2' }}</span>
           </div>
-
         </div>
       </div>
     </div>
@@ -264,173 +277,298 @@
 
 </div>
 
-<!-- ═══════════════════════════════════════════════════════════════════════════
-     BACKDROP + PANEL LATERAL: CLIENTE
-═══════════════════════════════════════════════════════════════════════════ -->
-<div class="offcanvas-backdrop" *ngIf="mostrarPanelCliente" (click)="cerrarPanelCliente()"></div>
+<!-- ════════════════════════════════════════════════════════════════════════
+     MODAL: SELECCIONAR VEHÍCULO
+════════════════════════════════════════════════════════════════════════ -->
+<div class="modal d-block" *ngIf="showVehicleModal" style="background: rgba(0,0,0,0.5);">
+  <div class="modal-dialog modal-dialog-centered">
 
-<div class="panel-cliente shadow-lg" [class.panel-cliente--abierto]="mostrarPanelCliente">
+    <!-- Si no está agregando vehículo nuevo: mostrar lista -->
+    <div class="modal-content" *ngIf="!mostrandoFormVehiculo">
+      <div class="modal-header bg-danger text-white">
+        <h5 class="modal-title">
+          <i class="bi bi-car me-2"></i>Vehículos de {{ nombreCompletoCliente }}
+        </h5>
+        <button type="button" class="btn-close btn-close-white" (click)="cerrarModalVehiculo()"></button>
+      </div>
+      <div class="modal-body p-3">
 
-  <!-- Header con tabs -->
-  <div class="panel-header p-3 border-bottom">
-    <div class="d-flex justify-content-between align-items-center mb-2">
-      <span class="fw-bold"><i class="bi bi-person-fill me-2 text-danger"></i>Cliente</span>
-      <button class="btn-close" (click)="cerrarPanelCliente()"></button>
+        <!-- Lista de vehículos -->
+        <div *ngIf="clientVehicles.length > 0">
+          <div class="vehiculo-item"
+            *ngFor="let v of clientVehicles"
+            (click)="seleccionarVehiculo(v)">
+            <div class="d-flex justify-content-between align-items-center">
+              <div>
+                <span class="fw-bold">{{ v.placa }}</span>
+                <span class="ms-2">{{ v.marca }} {{ v.modelo }} - {{ v.anio }}</span>
+              </div>
+              <i class="bi bi-chevron-right text-muted"></i>
+            </div>
+          </div>
+        </div>
+
+        <div *ngIf="clientVehicles.length === 0" class="text-center text-muted py-4">
+          <i class="bi bi-inbox fs-3 d-block mb-2"></i>
+          Este cliente no tiene vehículos registrados
+        </div>
+
+      </div>
+      <div class="modal-footer d-flex justify-content-between">
+        <button class="btn btn-outline-danger" (click)="mostrandoFormVehiculo = true">
+          <i class="bi bi-plus-circle me-1"></i>Agregar nuevo vehículo
+        </button>
+        <button class="btn btn-secondary" (click)="cerrarModalVehiculo()">Cancelar</button>
+      </div>
     </div>
-    <div class="btn-group w-100" role="group">
-      <button class="btn btn-sm"
-        [class.btn-danger]="modoPanel === 'buscar'"
-        [class.btn-outline-secondary]="modoPanel !== 'buscar'"
-        (click)="cambiarModo('buscar')">
-        <i class="bi bi-search me-1"></i>Por DNI
-      </button>
-      <button class="btn btn-sm"
-        [class.btn-danger]="modoPanel === 'lista'"
-        [class.btn-outline-secondary]="modoPanel !== 'lista'"
-        (click)="cambiarModo('lista')">
-        <i class="bi bi-people me-1"></i>Lista
-      </button>
-      <button class="btn btn-sm"
-        [class.btn-danger]="modoPanel === 'nuevo'"
-        [class.btn-outline-secondary]="modoPanel !== 'nuevo'"
-        (click)="cambiarModo('nuevo')">
-        <i class="bi bi-person-plus me-1"></i>Nuevo
-      </button>
+
+    <!-- Formulario agregar vehículo -->
+    <div class="modal-content" *ngIf="mostrandoFormVehiculo">
+      <div class="modal-header bg-danger text-white">
+        <h5 class="modal-title">
+          <i class="bi bi-plus-circle me-2"></i>Agregar Vehículo
+        </h5>
+        <button type="button" class="btn-close btn-close-white" (click)="cerrarFormVehiculo()"></button>
+      </div>
+      <div class="modal-body p-3">
+
+        <div class="mb-3">
+          <label class="form-label fw-semibold small">Placa <span class="text-danger">*</span></label>
+          <input class="form-control text-uppercase"
+            [(ngModel)]="nuevoVehiculo.placa"
+            (input)="formatearPlaca()"
+            placeholder="Ej: ABC-123"
+            maxlength="8"
+            [ngClass]="{'is-invalid': errorPlaca || errorPlacaDuplicada}" />
+          <div class="invalid-feedback" *ngIf="errorPlaca">Formato inválido. Vehículos mayores: M4F-520 · Vehículos menores: AB-1234.</div>
+          <div class="invalid-feedback" *ngIf="errorPlacaDuplicada">Este cliente ya tiene un vehículo con esa placa.</div>
+        </div>
+
+        <div class="mb-3 position-relative">
+          <label class="form-label fw-semibold small">Marca <span class="text-danger">*</span></label>
+          <input type="text" class="form-control"
+            [(ngModel)]="marcaTexto"
+            (input)="onMarcaInput()"
+            (focus)="mostrarSugerenciasMarca = true"
+            (blur)="ocultarSugerenciasMarca()"
+            placeholder="Escribe o selecciona una marca..."
+            autocomplete="off" />
+          <div class="autocomplete-lista shadow-sm"
+            *ngIf="mostrarSugerenciasMarca && marcasSugeridas.length > 0">
+            <div class="autocomplete-item" *ngFor="let m of marcasSugeridas"
+              (mousedown)="seleccionarMarca(m)">
+              {{ m }}
+            </div>
+          </div>
+          <div class="autocomplete-lista shadow-sm"
+            *ngIf="mostrarSugerenciasMarca && marcaTexto.trim() && marcasSugeridas.length === 0">
+            <div class="autocomplete-item autocomplete-item--vacio">Sin coincidencias</div>
+          </div>
+        </div>
+
+        <div class="mb-3 position-relative">
+          <label class="form-label fw-semibold small">Modelo <span class="text-danger">*</span></label>
+          <input type="text" class="form-control"
+            [(ngModel)]="modeloTexto"
+            (input)="onModeloInput()"
+            (focus)="nuevoVehiculo.marca && (mostrarSugerenciasModelo = true)"
+            (blur)="ocultarSugerenciasModelo()"
+            [disabled]="!nuevoVehiculo.marca"
+            [placeholder]="nuevoVehiculo.marca ? 'Escribe o selecciona un modelo...' : 'Primero elige una marca'"
+            autocomplete="off" />
+          <div class="autocomplete-lista shadow-sm"
+            *ngIf="mostrarSugerenciasModelo && modelosSugeridos.length > 0">
+            <div class="autocomplete-item" *ngFor="let mod of modelosSugeridos"
+              (mousedown)="seleccionarModelo(mod)">
+              {{ mod }}
+            </div>
+          </div>
+          <div class="autocomplete-lista shadow-sm"
+            *ngIf="mostrarSugerenciasModelo && modeloTexto.trim() && modelosSugeridos.length === 0">
+            <div class="autocomplete-item autocomplete-item--vacio">Sin coincidencias</div>
+          </div>
+        </div>
+
+        <div class="mb-1">
+          <label class="form-label fw-semibold small">Año <span class="text-danger">*</span></label>
+          <select class="form-select" [(ngModel)]="nuevoVehiculo.anio"
+            [disabled]="!nuevoVehiculo.modelo">
+            <option value="">{{ nuevoVehiculo.modelo ? '— Selecciona el año —' : '— Primero elige un modelo —' }}</option>
+            <option *ngFor="let a of anios" [value]="a">{{ a }}</option>
+          </select>
+        </div>
+
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" (click)="cerrarFormVehiculo()">Cancelar</button>
+        <button class="btn btn-danger" (click)="agregarYSeleccionarVehiculo()"
+          [disabled]="!nuevoVehiculo.placa || !nuevoVehiculo.marca || !nuevoVehiculo.modelo || !nuevoVehiculo.anio || errorPlaca || errorPlacaDuplicada">
+          <i class="bi bi-check me-1"></i>Agregar y seleccionar
+        </button>
+      </div>
     </div>
+
   </div>
+</div>
 
-  <div class="p-3">
-
-    <!-- ══ TAB: BUSCAR POR DNI ══ -->
-    <ng-container *ngIf="modoPanel === 'buscar'">
-
-      <label class="form-label small fw-semibold">Buscar por DNI</label>
-      <div class="input-group mb-1">
-        <input type="text" class="form-control" placeholder="Ej: 74622233"
-          [(ngModel)]="dniBusqueda"
-          (input)="buscarClientePorDni()"
-          maxlength="8">
-        <span class="input-group-text">
-          <span *ngIf="buscandoCliente" class="spinner-border spinner-border-sm text-secondary"></span>
-          <i *ngIf="!buscandoCliente" class="bi bi-search text-muted"></i>
-        </span>
+<!-- ════════════════════════════════════════════════════════════════════════
+     MODAL: REGISTRAR NUEVO CLIENTE
+════════════════════════════════════════════════════════════════════════ -->
+<div class="modal d-block" *ngIf="showRegistroModal" style="background: rgba(0,0,0,0.5);">
+  <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+    <div class="modal-content">
+      <div class="modal-header p-3 text-white" style="background: linear-gradient(135deg, #b91c1c, #dc2626);">
+        <h5 class="modal-title"><i class="bi bi-person-plus me-2"></i>Registrar Nuevo Cliente</h5>
+        <button type="button" class="btn-close btn-close-white" (click)="cerrarRegistroModal()"></button>
       </div>
+      <div class="modal-body p-3">
 
-      <div class="mb-3 small" *ngIf="dniBusqueda.length === 8">
-        <span *ngIf="clienteEncontrado" class="text-success">
-          <i class="bi bi-check-circle me-1"></i>Cliente encontrado
-        </span>
-        <span *ngIf="!clienteEncontrado && !buscandoCliente" class="text-warning">
-          <i class="bi bi-exclamation-circle me-1"></i>No registrado —
-          <a class="text-danger fw-semibold" style="cursor:pointer" (click)="cambiarModo('nuevo')">Crear cliente nuevo</a>
-        </span>
-      </div>
-
-      <div class="mb-2">
-        <label class="form-label small fw-semibold">Nombres *</label>
-        <input type="text" class="form-control form-control-sm" [(ngModel)]="cliente.nombre">
-      </div>
-      <div class="row g-2 mb-2">
-        <div class="col-6">
-          <label class="form-label small fw-semibold">Ap. Paterno</label>
-          <input type="text" class="form-control form-control-sm" [(ngModel)]="cliente.apellido_paterno">
+        <!-- DNI (pre‑cargado, readonly) -->
+        <div class="row g-3 mb-3">
+          <div class="col-md-6">
+            <label class="form-label fw-semibold small">DNI <span class="text-danger">*</span></label>
+            <div class="input-group">
+              <input type="text" class="form-control bg-light" [value]="registroCliente?.dni" readonly>
+              <span class="input-group-text" *ngIf="consultandoDniRegistro">
+                <span class="spinner-border spinner-border-sm"></span>
+              </span>
+              <span class="input-group-text bg-success text-white" *ngIf="dniValidadoRegistro && !consultandoDniRegistro">
+                <i class="bi bi-check-lg"></i>
+              </span>
+            </div>
+            <div class="text-success small mt-1" *ngIf="dniValidadoRegistro">Datos obtenidos de RENIEC.</div>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label fw-semibold small">Estado</label>
+            <select class="form-select bg-light" [ngModel]="'Activo'" disabled>
+              <option value="Activo">Activo</option>
+            </select>
+          </div>
         </div>
-        <div class="col-6">
-          <label class="form-label small fw-semibold">Ap. Materno</label>
-          <input type="text" class="form-control form-control-sm" [(ngModel)]="cliente.apellido_materno">
-        </div>
-      </div>
-      <div class="mb-2">
-        <label class="form-label small fw-semibold">Celular</label>
-        <input type="text" class="form-control form-control-sm" [(ngModel)]="cliente.celular" maxlength="9">
-      </div>
-      <div class="mb-3">
-        <label class="form-label small fw-semibold">Correo <span class="text-muted fw-normal">(opcional)</span></label>
-        <input type="email" class="form-control form-control-sm" [(ngModel)]="cliente.correo">
-      </div>
 
-      <div class="d-flex gap-2">
-        <button class="btn btn-outline-secondary btn-sm flex-grow-1" (click)="cerrarPanelCliente()">
-          Cancelar
+        <!-- Nombre / Apellidos -->
+        <div class="row g-3 mb-3">
+          <div class="col-12">
+            <label class="form-label fw-semibold small">Nombres *</label>
+            <input type="text" class="form-control" [(ngModel)]="registroCliente.nombre"
+              [readonly]="dniValidadoRegistro" [ngClass]="{'bg-light': dniValidadoRegistro}">
+          </div>
+          <div class="col-md-6">
+            <label class="form-label fw-semibold small">Apellido Paterno *</label>
+            <input type="text" class="form-control" [(ngModel)]="registroCliente.apellido_paterno"
+              [readonly]="dniValidadoRegistro" [ngClass]="{'bg-light': dniValidadoRegistro}">
+          </div>
+          <div class="col-md-6">
+            <label class="form-label fw-semibold small">Apellido Materno</label>
+            <input type="text" class="form-control" [(ngModel)]="registroCliente.apellido_materno"
+              [readonly]="dniValidadoRegistro" [ngClass]="{'bg-light': dniValidadoRegistro}">
+          </div>
+        </div>
+
+        <!-- Celular / Correo -->
+        <div class="row g-3 mb-3">
+          <div class="col-md-6">
+            <label class="form-label fw-semibold small">Celular *</label>
+            <input type="text" class="form-control" maxlength="9" [(ngModel)]="registroCliente.celular"
+              (input)="validarCelularRegistro()" placeholder="9XXXXXXXX"
+              [ngClass]="{'is-invalid': errorCelularRegistro}">
+            <div class="invalid-feedback" *ngIf="errorCelularRegistro">Debe comenzar con 9 y tener 9 dígitos.</div>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label fw-semibold small">Correo <span class="text-muted fw-normal">(opcional)</span></label>
+            <input type="email" class="form-control" [(ngModel)]="registroCliente.correo" placeholder="correo@dominio.com">
+          </div>
+        </div>
+
+        <!-- Vehículos del cliente -->
+        <div class="p-3 bg-light rounded mb-2">
+          <div class="d-flex justify-content-between align-items-center mb-2">
+            <h6 class="fw-bold text-danger mb-0"><i class="bi bi-car me-1"></i>Vehículos del Cliente</h6>
+          </div>
+
+          <!-- Lista de vehículos agregados -->
+          <div *ngIf="registroVehiculos.length > 0">
+            <div *ngFor="let v of registroVehiculos; let i = index" class="card mb-2">
+              <div class="card-body p-2 d-flex justify-content-between align-items-center">
+                <div>
+                  <span class="fw-bold">{{ v.placa }}</span>
+                  <span class="ms-2 small">{{ v.marca }} {{ v.modelo }} - {{ v.anio }}</span>
+                </div>
+                <button class="btn btn-sm btn-outline-danger" (click)="regEliminarVehiculo(i)">
+                  <i class="bi bi-trash"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+          <div *ngIf="registroVehiculos.length === 0" class="text-center text-muted py-2 small">
+            <i class="bi bi-car me-1"></i>Sin vehículos registrados
+          </div>
+
+          <!-- Formulario agregar vehículo -->
+          <div class="card border mt-2">
+            <div class="card-body p-2">
+              <div class="row g-2 align-items-end">
+                <div class="col-12 col-md-3">
+                  <label class="form-label fw-semibold small">Placa *</label>
+                  <input class="form-control form-control-sm text-uppercase"
+                    [(ngModel)]="regVehiculo.placa" (input)="regFormatearPlaca()"
+                    placeholder="ABC-123" maxlength="8"
+                    [ngClass]="{'is-invalid': regErrorPlaca || regErrorPlacaDuplicada}">
+                  <div class="invalid-feedback" *ngIf="regErrorPlaca">Formato inválido.</div>
+                  <div class="invalid-feedback" *ngIf="regErrorPlacaDuplicada">{{ regErrorPlacaDuplicadaMensaje }}</div>
+                </div>
+                <div class="col-12 col-md-3 position-relative">
+                  <label class="form-label fw-semibold small">Marca *</label>
+                  <input type="text" class="form-control form-control-sm"
+                    [(ngModel)]="regMarcaTexto" (input)="regOnMarcaInput()"
+                    (focus)="regMostrarSugerenciasMarca = true" (blur)="regOcultarSugerenciasMarca()"
+                    placeholder="Escribe..." autocomplete="off">
+                  <div class="autocomplete-lista shadow-sm" *ngIf="regMostrarSugerenciasMarca && regMarcasSugeridas.length > 0">
+                    <div class="autocomplete-item" *ngFor="let m of regMarcasSugeridas" (mousedown)="regSeleccionarMarca(m)">{{ m }}</div>
+                  </div>
+                </div>
+                <div class="col-12 col-md-3 position-relative">
+                  <label class="form-label fw-semibold small">Modelo *</label>
+                  <input type="text" class="form-control form-control-sm"
+                    [(ngModel)]="regModeloTexto" (input)="regOnModeloInput()"
+                    (focus)="regVehiculo.marca && (regMostrarSugerenciasModelo = true)"
+                    (blur)="regOcultarSugerenciasModelo()"
+                    [disabled]="!regVehiculo.marca" autocomplete="off"
+                    [placeholder]="regVehiculo.marca ? 'Escribe...' : 'Primero marca'">
+                  <div class="autocomplete-lista shadow-sm" *ngIf="regMostrarSugerenciasModelo && regModelosSugeridos.length > 0">
+                    <div class="autocomplete-item" *ngFor="let mod of regModelosSugeridos" (mousedown)="regSeleccionarModelo(mod)">{{ mod }}</div>
+                  </div>
+                </div>
+                <div class="col-12 col-md-2">
+                  <label class="form-label fw-semibold small">Año *</label>
+                  <select class="form-select form-select-sm" [(ngModel)]="regVehiculo.anio"
+                    [disabled]="!regVehiculo.modelo">
+                    <option value="">—</option>
+                    <option *ngFor="let a of anios" [value]="a">{{ a }}</option>
+                  </select>
+                </div>
+                <div class="col-12 col-md-1">
+                  <button class="btn btn-sm btn-danger w-100" (click)="regAgregarVehiculo()"
+                    [disabled]="!regVehiculo.placa || !regVehiculo.marca || !regVehiculo.modelo || !regVehiculo.anio || regErrorPlaca || regErrorPlacaDuplicada"
+                    title="Agregar vehículo">
+                    <i class="bi bi-plus"></i>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-outline-secondary" (click)="cerrarRegistroModal()">Cancelar</button>
+        <button class="btn btn-danger" (click)="guardarNuevoClienteDesdeMantenimiento()"
+          [disabled]="consultandoDniRegistro || !registroCliente?.nombre?.trim() || !registroCliente?.apellido_paterno?.trim() || !registroCliente?.celular?.trim() || errorCelularRegistro">
+          <span *ngIf="consultandoDniRegistro" class="spinner-border spinner-border-sm me-2"></span>
+          <i *ngIf="!consultandoDniRegistro" class="bi bi-person-check me-1"></i>
+          {{ consultandoDniRegistro ? 'Guardando...' : 'Registrar y seleccionar' }}
         </button>
-        <button class="btn btn-danger btn-sm flex-grow-1" (click)="confirmarCliente()">
-          Confirmar
-        </button>
       </div>
-
-    </ng-container>
-
-    <!-- ══ TAB: LISTA DE CLIENTES ══ -->
-    <ng-container *ngIf="modoPanel === 'lista'">
-
-      <div class="input-group mb-3">
-        <span class="input-group-text"><i class="bi bi-search"></i></span>
-        <input type="text" class="form-control form-control-sm"
-          placeholder="Filtrar por nombre, DNI o celular..."
-          [(ngModel)]="filtroBusquedaLista"
-          (input)="aplicarFiltroLista()">
-      </div>
-
-      <div *ngIf="cargandoLista" class="text-center text-muted py-4">
-        <span class="spinner-border spinner-border-sm me-2"></span>Cargando clientes...
-      </div>
-
-      <div *ngIf="!cargandoLista" class="lista-clientes">
-        <div *ngIf="listaClientesFiltrada.length === 0" class="text-center text-muted py-4 small">
-          <i class="bi bi-inbox me-1"></i>Sin resultados
-        </div>
-        <div class="lista-cliente-item"
-          *ngFor="let c of listaClientesFiltrada"
-          (click)="seleccionarDeListaClientes(c)">
-          <div class="fw-semibold small">{{ c.nombre }} {{ c.apellido_paterno }} {{ c.apellido_materno }}</div>
-          <div class="text-muted" style="font-size:0.75rem">DNI: {{ c.dni }} · {{ c.celular }}</div>
-        </div>
-      </div>
-
-    </ng-container>
-
-    <!-- ══ TAB: NUEVO CLIENTE ══ -->
-    <ng-container *ngIf="modoPanel === 'nuevo'">
-
-      <p class="small text-muted mb-3">Complete los datos para registrar un nuevo cliente en el sistema.</p>
-
-      <div class="mb-2">
-        <label class="form-label small fw-semibold">DNI *</label>
-        <input type="text" class="form-control form-control-sm"
-          placeholder="8 dígitos"
-          [(ngModel)]="nuevoCliente.dni"
-          maxlength="8">
-      </div>
-      <div class="mb-2">
-        <label class="form-label small fw-semibold">Nombres *</label>
-        <input type="text" class="form-control form-control-sm" [(ngModel)]="nuevoCliente.nombre">
-      </div>
-      <div class="row g-2 mb-2">
-        <div class="col-6">
-          <label class="form-label small fw-semibold">Ap. Paterno *</label>
-          <input type="text" class="form-control form-control-sm" [(ngModel)]="nuevoCliente.apellido_paterno">
-        </div>
-        <div class="col-6">
-          <label class="form-label small fw-semibold">Ap. Materno</label>
-          <input type="text" class="form-control form-control-sm" [(ngModel)]="nuevoCliente.apellido_materno">
-        </div>
-      </div>
-      <div class="mb-2">
-        <label class="form-label small fw-semibold">Celular *</label>
-        <input type="text" class="form-control form-control-sm" [(ngModel)]="nuevoCliente.celular" maxlength="9">
-      </div>
-      <div class="mb-3">
-        <label class="form-label small fw-semibold">Correo <span class="text-muted fw-normal">(opcional)</span></label>
-        <input type="email" class="form-control form-control-sm" [(ngModel)]="nuevoCliente.correo">
-      </div>
-
-      <button class="btn btn-danger w-100" (click)="guardarNuevoCliente()" [disabled]="guardandoCliente">
-        <span *ngIf="guardandoCliente" class="spinner-border spinner-border-sm me-2"></span>
-        <i *ngIf="!guardandoCliente" class="bi bi-person-check me-1"></i>
-        {{ guardandoCliente ? 'Guardando...' : 'Registrar y seleccionar' }}
-      </button>
-
-    </ng-container>
-
+    </div>
   </div>
 </div>

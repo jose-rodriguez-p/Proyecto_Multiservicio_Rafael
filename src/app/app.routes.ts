@@ -11,6 +11,9 @@ import { Producto } from './sistema/producto/producto';
 import { AgregarProducto } from './sistema/producto/agregar-producto/agregar-producto';
 import { EditarProducto } from './sistema/producto/editar-producto/editar-producto';
 import { Configuracion } from './sistema/configuracion/configuracion';
+import { ServiciosConf } from './sistema/configuracion/servicios/servicios';
+import { AgregarServicios } from './sistema/configuracion/servicios/agregar-servicios/agregar-servicios';
+import { EditarServicios } from './sistema/configuracion/servicios/editar-servicios/editar-servicios';
 import { Servicio } from './sistema/servicio/servicio';
 import { Ventas }        from './sistema/servicio/ventas/ventas';
 import { Mantenimiento } from './sistema/servicio/mantenimiento/mantenimiento';
@@ -116,6 +119,14 @@ export const routes: Routes = [
             children: [
               { path: 'agregar-marcas', component: AgregarMarcas },
               { path: 'editar-marcas/:id', component: EditarMarcas },
+            ],
+          },
+          {
+            path: 'servicios',
+            component: ServiciosConf,
+            children: [
+              { path: 'agregar-servicios', component: AgregarServicios },
+              { path: 'editar-servicios/:id', component: EditarServicios },
             ],
           },
         ],

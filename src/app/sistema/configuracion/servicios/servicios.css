@@ -1,0 +1,81 @@
+.servicios-page {
+  padding: 4px 0;
+}
+
+.servicios-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 20px;
+}
+
+.servicios-titulo {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #1e293b;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.servicios-titulo-icono {
+  width: 34px;
+  height: 34px;
+  background: #fee2e2;
+  color: #b91c1c;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  font-size: 1rem;
+}
+
+.btn-nuevo-servicio {
+  background: #b91c1c;
+  color: #fff;
+  border: none;
+  padding: 7px 18px;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.btn-nuevo-servicio:hover {
+  background: #991b1b;
+  color: #fff;
+}
+
+.servicios-filtros {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+
+.servicios-filtros .input-group {
+  max-width: 280px;
+}
+
+.servicios-filtros .form-select {
+  width: 160px;
+}
+
+.table thead th {
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  white-space: nowrap;
+}
+
+.table td {
+  vertical-align: middle;
+  font-size: 0.875rem;
+}
+
+.badge {
+  font-size: 0.75rem;
+  font-weight: 500;
+  padding: 4px 10px;
+}

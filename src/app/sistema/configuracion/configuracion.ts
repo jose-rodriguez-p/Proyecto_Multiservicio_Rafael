@@ -36,10 +36,12 @@ export class Configuracion {
   showCambiarContrasenaOverlay = computed(() => this.url().includes('/sistema/configuracion/actualizar-contrasena'));
   showCategoriasOverlay = computed(() => this.url().includes('/sistema/configuracion/categorias'));
   showMarcasOverlay = computed(() => this.url().includes('/sistema/configuracion/marcas'));
+  showServiciosOverlay = computed(() => this.url().includes('/sistema/configuracion/servicios'));
 
   anyOverlayOpen = computed(() =>
     this.showRolOverlay() || this.showCambiarContrasenaOverlay()
-    || this.showCategoriasOverlay() || this.showMarcasOverlay(),
+    || this.showCategoriasOverlay() || this.showMarcasOverlay()
+    || this.showServiciosOverlay(),
   );
 
   constructor() {
@@ -77,6 +79,10 @@ export class Configuracion {
 
   abrirMarcas() {
     this.router.navigate(['/sistema/configuracion/marcas']);
+  }
+
+  abrirServicios() {
+    this.router.navigate(['/sistema/configuracion/servicios']);
   }
 
 }
