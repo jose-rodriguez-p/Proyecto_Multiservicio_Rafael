@@ -67,9 +67,6 @@
               <div class="small text-muted">{{ cliente.celular || 'Sin celular' }}</div>
             </div>
             <div class="d-flex gap-2 flex-wrap justify-content-end">
-              <button class="btn btn-outline-secondary btn-sm" (click)="abrirPanelCliente('buscar')">
-                <i class="bi bi-search me-1"></i>Buscar DNI
-              </button>
               <button class="btn btn-outline-primary btn-sm" (click)="abrirPanelCliente('lista')">
                 <i class="bi bi-people me-1"></i>Lista
               </button>
@@ -145,7 +142,11 @@
               </td>
               <td>
                 <input type="number" class="form-control form-control-sm text-center"
-                  [(ngModel)]="item.cantidad" [max]="item.repuesto.stock||9999" min="1">
+                  [(ngModel)]="item.cantidad" [max]="item.repuesto.stock||9999" min="1"
+                  (ngModelChange)="validarCantidadItem(item)">
+                <div *ngIf="item.cantidad > (item.repuesto.stock||0) && item.repuesto.nombre" class="text-danger small mt-1">
+                  <i class="bi bi-exclamation-triangle me-1"></i>Stock disponible: {{ item.repuesto.stock }}
+                </div>
               </td>
               <td>
                 <input type="number" class="form-control form-control-sm text-end"
@@ -240,9 +241,6 @@
       <button class="btn-close" (click)="cerrarPanelCliente()"></button>
     </div>
     <div class="btn-group w-100" role="group">
-      <button class="btn btn-sm" [class.btn-danger]="modoPanel==='buscar'" [class.btn-outline-secondary]="modoPanel!=='buscar'" (click)="cambiarModo('buscar')">
-        <i class="bi bi-search me-1"></i>Por DNI
-      </button>
       <button class="btn btn-sm" [class.btn-danger]="modoPanel==='lista'" [class.btn-outline-secondary]="modoPanel!=='lista'" (click)="cambiarModo('lista')">
         <i class="bi bi-people me-1"></i>Lista
       </button>
@@ -252,70 +250,6 @@
     </div>
   </div>
   <div class="p-3">
-    <!-- Buscar por DNI -->
-    <ng-container *ngIf="modoPanel==='buscar'">
-      <label class="form-label small fw-semibold">Buscar por DNI</label>
-      <div class="input-group mb-1">
-        <input type="text" class="form-control" placeholder="Ej: 74622233"
-          [(ngModel)]="dniBusqueda" (input)="buscarClientePorDni()" maxlength="8">
-        <span class="input-group-text" *ngIf="buscandoCliente">
-          <span class="spinner-border spinner-border-sm text-danger"></span>
-        </span>
-        <span class="input-group-text" *ngIf="!buscandoCliente">
-          <i class="bi bi-search text-muted"></i>
-        </span>
-      </div>
-      <div class="mb-3 small">
-        <div *ngIf="clienteEncontrado" class="text-success">
-          <i class="bi bi-check-circle me-1"></i>Cliente encontrado
-        </div>
-        <div *ngIf="!clienteEncontrado && !buscandoCliente && dniBusqueda.length===8">
-          <div *ngIf="cliente.nombre && cliente.apellido_paterno" class="text-success">
-            <i class="bi bi-check-circle me-1"></i>DNI validado por RENIEC.
-          </div>
-          <div *ngIf="clienteEditableNombres" class="text-warning">
-            <i class="bi bi-exclamation-circle me-1"></i>No registrado —
-            <a class="text-danger fw-semibold" style="cursor:pointer" (click)="cambiarModo('nuevo')">Crear cliente nuevo</a>
-          </div>
-        </div>
-      </div>
-      <div class="mb-2">
-        <label class="form-label small fw-semibold">Nombres</label>
-        <input type="text" class="form-control form-control-sm" 
-          [(ngModel)]="cliente.nombre" 
-          [readonly]="!clienteEditableNombres && (dniBusqueda.length === 8)"
-          [ngClass]="{'bg-light': !clienteEditableNombres && (dniBusqueda.length === 8)}">
-      </div>
-      <div class="row g-2 mb-2">
-        <div class="col-6">
-          <label class="form-label small fw-semibold">Ap. Paterno</label>
-          <input type="text" class="form-control form-control-sm" 
-            [(ngModel)]="cliente.apellido_paterno" 
-            [readonly]="!clienteEditableNombres && (dniBusqueda.length === 8)"
-            [ngClass]="{'bg-light': !clienteEditableNombres && (dniBusqueda.length === 8)}">
-        </div>
-        <div class="col-6">
-          <label class="form-label small fw-semibold">Ap. Materno</label>
-          <input type="text" class="form-control form-control-sm" 
-            [(ngModel)]="cliente.apellido_materno" 
-            [readonly]="!clienteEditableNombres && (dniBusqueda.length === 8)"
-            [ngClass]="{'bg-light': !clienteEditableNombres && (dniBusqueda.length === 8)}">
-        </div>
-      </div>
-      <div class="mb-2">
-        <label class="form-label small fw-semibold">Celular</label>
-        <input type="text" class="form-control form-control-sm" [(ngModel)]="cliente.celular" maxlength="9">
-      </div>
-      <div class="mb-3">
-        <label class="form-label small fw-semibold">Correo <span class="text-muted fw-normal">(opcional)</span></label>
-        <input type="email" class="form-control form-control-sm" [(ngModel)]="cliente.correo">
-      </div>
-      <div class="d-flex gap-2">
-        <button class="btn btn-outline-secondary btn-sm flex-grow-1" (click)="usarClienteVarios()">Cliente Varios</button>
-        <button class="btn btn-danger btn-sm flex-grow-1" (click)="confirmarCliente()">Confirmar</button>
-      </div>
-    </ng-container>
-
     <!-- Lista de clientes -->
     <ng-container *ngIf="modoPanel==='lista'">
       <div class="input-group mb-3">
@@ -390,25 +324,13 @@
       </div>
       <div class="mb-3">
         <label class="form-label small fw-semibold">Correo <span class="text-muted fw-normal">(opcional)</span></label>
-        <div class="input-group" *ngIf="!nuevoClientePermiteEditar">
-          <input type="email" class="form-control form-control-sm"
-            [ngClass]="{'is-invalid': errorCorreoNuevo, 'is-valid': nuevoClienteCorreoValidado}"
-            [(ngModel)]="nuevoCliente.correo" (input)="validarCorreoNuevo()">
-          <button class="btn btn-outline-secondary btn-sm" type="button" (click)="validarCorreoBackendNuevo()" 
-            [disabled]="validandoCorreoNuevo || !esCorreoValidoNuevo || nuevoClienteCorreoValidado">
-            <span *ngIf="validandoCorreoNuevo" class="spinner-border spinner-border-sm me-1"></span>
-            <i *ngIf="!validandoCorreoNuevo && !nuevoClienteCorreoValidado" class="bi bi-send me-1"></i>
-            <i *ngIf="nuevoClienteCorreoValidado" class="bi bi-check-circle me-1"></i>
-            {{ nuevoClienteCorreoValidado ? 'Verificado' : 'Enviar' }}
-          </button>
-        </div>
-        <input type="email" class="form-control form-control-sm" *ngIf="nuevoClientePermiteEditar"
+        <input type="email" class="form-control form-control-sm"
           [ngClass]="{'is-invalid': errorCorreoNuevo}"
           [(ngModel)]="nuevoCliente.correo" (input)="validarCorreoNuevo()">
         <div class="text-danger small mt-1" *ngIf="errorCorreoNuevo">Formato de correo inválido.</div>
       </div>
       <button class="btn btn-danger w-100" (click)="guardarNuevoCliente()"
-        [disabled]="guardandoCliente || !puedeGuardarNuevoCliente">
+        [disabled]="guardandoCliente || !nuevoClienteValido">
         <span *ngIf="guardandoCliente" class="spinner-border spinner-border-sm me-2"></span>
         <i *ngIf="!guardandoCliente" class="bi bi-person-check me-1"></i>
         {{ guardandoCliente ? 'Guardando...' : 'Registrar y seleccionar' }}

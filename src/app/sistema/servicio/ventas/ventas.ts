@@ -1,5 +1,5 @@
 import { API_BASE_URL } from '@config';
-import { Component, OnInit, inject, PLATFORM_ID } from '@angular/core';
+import { Component, OnInit, inject, PLATFORM_ID, ChangeDetectorRef } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpClient, HttpParams } from '@angular/common/http';
@@ -35,6 +35,7 @@ export class Ventas implements OnInit {
   private http       = inject(HttpClient);
   private router     = inject(Router);
   private platformId = inject(PLATFORM_ID);
+  private cdr        = inject(ChangeDetectorRef);
 
   private URL = `${API_BASE_URL}/api/ventas`;
 
@@ -49,58 +50,28 @@ export class Ventas implements OnInit {
   porPagina = 10;
   totalRegistros = 0;
   totalPaginas = 0;
-  private timerBusqueda: any;
 
   constructor() {
-    inject(Router).events.pipe(
+    this.router.events.pipe(
       filter((e): e is NavigationEnd => e instanceof NavigationEnd)
     ).subscribe((e) => {
       this.enCrear = e.urlAfterRedirects.includes('/ventas/crear');
+      if (isPlatformBrowser(this.platformId) && !this.enCrear) {
+        this.cargarVentas();
+      }
     });
   }
 
   ngOnInit() {
     if (isPlatformBrowser(this.platformId)) {
-      this.cargarResumen();
       this.cargarVentas();
     }
   }
   
 
-  cargarResumen() {
-    this.cargandoResumen = true;
-    // Por ahora, resumen inicializado en 0, se puede agregar endpoint en backend si necesario
-    this.resumen = { totalVentas: 0, montoTotalHoy: 0, ticketPromedio: 0 };
-    this.cargandoResumen = false;
-  }
-
   cargarVentas() {
     this.cargandoTabla = true;
     
-    // Para el resumen, vamos a traer todas las ventas (sin paginación)
-    let paramsResumen = new HttpParams()
-      .set('pagina', '1')
-      .set('porPagina', '10000'); // Un número grande para traer todas las ventas
-    
-    this.http.get<{ ventas: VentaResumen[], totalRegistros: number }>(`${this.URL}/listar`, { params: paramsResumen })
-      .subscribe({
-        next: (resResumen) => {
-          // Calcular el resumen a partir de todas las ventas
-          const todasLasVentas = resResumen.ventas;
-          const totalVentas = todasLasVentas.length;
-          const montoTotalHoy = todasLasVentas.reduce((sum, v) => sum + v.total, 0);
-          const ticketPromedio = totalVentas > 0 ? montoTotalHoy / totalVentas : 0;
-          
-          this.resumen = { totalVentas, montoTotalHoy, ticketPromedio };
-          this.cargandoResumen = false;
-        },
-        error: (err) => {
-          console.error('Error cargando resumen:', err);
-          this.cargandoResumen = false;
-        }
-      });
-    
-    // Cargar ventas paginadas para la tabla
     let params = new HttpParams()
       .set('pagina', this.paginaActual.toString())
       .set('porPagina', this.porPagina.toString());
@@ -116,17 +87,28 @@ export class Ventas implements OnInit {
           this.totalRegistros = res.totalRegistros;
           this.totalPaginas = Math.ceil(this.totalRegistros / this.porPagina);
           this.cargandoTabla = false;
+          this.actualizarResumen();
+          this.cdr.detectChanges();
         },
         error: (err) => {
           console.error('Error cargando ventas:', err);
           this.cargandoTabla = false;
+          this.cdr.detectChanges();
         }
       });
   }
 
+  private actualizarResumen() {
+    const totalVentas = this.totalRegistros;
+    const montoTotalHoy = this.ventas.reduce((sum, v) => sum + v.total, 0);
+    const ticketPromedio = totalVentas > 0 ? montoTotalHoy / totalVentas : 0;
+    this.resumen = { totalVentas, montoTotalHoy, ticketPromedio };
+    this.cargandoResumen = false;
+  }
+
   onBusqueda() {
-    clearTimeout(this.timerBusqueda);
-    this.timerBusqueda = setTimeout(() => { this.paginaActual = 1; this.cargarVentas(); }, 400);
+    this.paginaActual = 1;
+    this.cargarVentas();
   }
 
   get paginas(): number[] {
