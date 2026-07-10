@@ -24,7 +24,7 @@ export class ServiciosConf implements OnInit {
   servicios: any[] = [];
   cargando = true;
   filtroNombre = '';
-  filtroEstado = '';
+  filtroEstado = 'Activo';
 
   showAgregarOverlay = false;
   showEditarOverlay = false;
@@ -67,8 +67,10 @@ export class ServiciosConf implements OnInit {
 
   get serviciosFiltrados(): any[] {
     let lista = this.servicios;
-    if (this.filtroEstado) {
-      lista = lista.filter(s => s.estado === this.filtroEstado);
+    if (this.filtroEstado === 'Activo') {
+      lista = lista.filter(s => s.estado === 'Activo');
+    } else if (this.filtroEstado === 'Inactivo') {
+      lista = lista.filter(s => s.estado === 'Inactivo');
     }
     if (this.filtroNombre.trim()) {
       const q = this.filtroNombre.toLowerCase().trim();
@@ -82,7 +84,7 @@ export class ServiciosConf implements OnInit {
   }
 
   abrirEditar(s: any) {
-    this.router.navigate(['/sistema/configuracion/servicios/editar-servicios', s.nombre], {
+    this.router.navigate(['/sistema/configuracion/servicios/editar-servicios', s.id_servicio], {
       state: { datosServicio: s },
     });
   }

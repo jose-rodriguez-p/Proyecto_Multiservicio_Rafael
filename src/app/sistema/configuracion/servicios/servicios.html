@@ -3,12 +3,12 @@
     <div>
       <div class="servicios-titulo">
         <i class="bi bi-wrench servicios-titulo-icono"></i>
-        Servicios
+        Servicios de Mantenimiento
       </div>
-      <p class="text-muted small mb-0">Lista de servicios de mantenimiento registrados.</p>
+      <p class="text-muted small mb-0">Lista de servicios con sus repuestos asociados.</p>
     </div>
     <button class="btn btn-nuevo-servicio" (click)="abrirAgregar()">
-      <i class="bi bi-plus-lg me-1"></i>Nuevo Servicio
+      <i class="bi bi-plus-lg me-1"></i> Nuevo Servicio
     </button>
   </div>
 
@@ -19,52 +19,64 @@
         [(ngModel)]="filtroNombre">
     </div>
     <select class="form-select" [(ngModel)]="filtroEstado">
-      <option value="">Todos los estados</option>
-      <option value="Activo">Activo</option>
-      <option value="Inactivo">Inactivo</option>
+      <option value="Activo">Activos</option>
+      <option value="Inactivo">Inactivos</option>
+      <option value="">Todos</option>
     </select>
   </div>
 
-  <div class="table-responsive">
-    <table class="table table-hover align-middle">
-      <thead class="table-light">
-        <tr>
-          <th class="small text-muted">NOMBRE</th>
-          <th class="small text-muted">PRECIO</th>
-          <th class="small text-muted">ESTADO</th>
-          <th class="small text-muted text-center">ACCIÓN</th>
-        </tr>
-      </thead>
-      <tbody>
-        <ng-container *ngIf="cargando">
-          <tr *ngFor="let i of [1,2,3]">
-            <td colspan="4" class="placeholder-glow py-2">
-              <span class="placeholder col-12 rounded" style="height:18px"></span>
-            </td>
-          </tr>
-        </ng-container>
-        <tr *ngIf="!cargando && serviciosFiltrados.length === 0">
-          <td colspan="4" class="text-center py-4 text-muted small">
-            <i class="bi bi-inbox fs-4 d-block mb-1"></i>
-            No hay servicios registrados
-          </td>
-        </tr>
-        <tr *ngFor="let s of serviciosFiltrados">
-          <td class="fw-semibold">{{ s.nombre }}</td>
-          <td>S/ {{ s.precio | number:'1.2-2' }}</td>
-          <td>
-            <span class="badge" [ngClass]="s.estado === 'Activo' ? 'bg-success' : 'bg-secondary'">
-              {{ s.estado }}
-            </span>
-          </td>
-          <td class="text-center">
-            <button class="btn btn-sm btn-outline-danger" (click)="abrirEditar(s)">
-              <i class="bi bi-pencil"></i>
-            </button>
-          </td>
-        </tr>
-      </tbody>
-    </table>
+  <!-- Grid de servicios -->
+  <div class="serv-grid" *ngIf="!cargando && serviciosFiltrados.length > 0">
+    <div *ngFor="let s of serviciosFiltrados" class="serv-card">
+
+      <div class="serv-card-head">
+        <div class="serv-card-icono">
+          <i class="bi bi-tools"></i>
+        </div>
+        <div class="flex-grow-1">
+          <div class="serv-card-nombre">{{ s.nombre }}</div>
+        </div>
+        <span class="serv-badge" [class.activo]="s.estado === 'Activo'" [class.inactivo]="s.estado !== 'Activo'">
+          <i class="bi" [class.bi-check-circle-fill]="s.estado === 'Activo'" [class.bi-x-circle-fill]="s.estado !== 'Activo'"></i>
+          {{ s.estado }}
+        </span>
+      </div>
+
+      <div class="serv-card-repuestos">
+        <div class="serv-repuestos-titulo">
+          <i class="bi bi-box-seam me-1"></i> Repuestos a usar
+          <span class="serv-repuestos-contador">{{ s.repuestos?.length || 0 }}</span>
+        </div>
+        <div class="serv-repuestos-lista">
+          <div *ngFor="let r of s.repuestos" class="serv-repuesto-item">
+            <i class="bi bi-dot"></i>
+            <span class="flex-grow-1">{{ r.nombre_repuesto }}</span>
+            <span class="serv-repuesto-cant">x{{ r.cantidad }}</span>
+          </div>
+          <div *ngIf="!s.repuestos || s.repuestos.length === 0" class="text-muted small fst-italic">
+            Sin repuestos asignados
+          </div>
+        </div>
+      </div>
+
+      <div class="serv-card-footer">
+        <button class="btn-accion editar" (click)="abrirEditar(s)" title="Editar">
+          <i class="bi bi-pencil-fill"></i> Editar
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Cargando -->
+  <div *ngIf="cargando" class="text-center py-5">
+    <div class="spinner-border text-danger" role="status"></div>
+    <p class="text-muted small mt-2">Cargando servicios...</p>
+  </div>
+
+  <!-- Vacío -->
+  <div *ngIf="!cargando && serviciosFiltrados.length === 0" class="serv-vacio">
+    <i class="bi bi-inbox"></i>
+    <p class="mb-0 mt-2">No se encontraron servicios</p>
   </div>
 </div>
 

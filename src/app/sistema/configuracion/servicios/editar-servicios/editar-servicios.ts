@@ -4,6 +4,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
+import { firstValueFrom } from 'rxjs';
 import Swal from 'sweetalert2';
 
 @Component({
@@ -18,40 +19,105 @@ export class EditarServicios implements OnInit {
   private router = inject(Router);
 
   private URL = `${API_BASE_URL}/api/configuracion`;
+  private URL_REPUESTOS = `${API_BASE_URL}/api/productos/listar-repuestos`;
 
-  nombreOriginal = '';
+  idServicio = 0;
   nombre = '';
-  precio: number | null = null;
+  nombreOriginal = '';
   estado = 'Activo';
-  estadoOriginal = '';
+
+  // Repuestos disponibles y seleccionados
+  todosRepuestos: any[] = [];
+  repuestosSeleccionados: { nombre_repuesto: string; cantidad: number }[] = [];
+  repuestoSeleccionadoNombre: string | null = null;
+  repuestoCantidad = 1;
+
+  // Servicios existentes para validar nombre duplicado
+  serviciosExistentes: { nombre: string }[] = [];
 
   ngOnInit() {
     const state = history.state?.datosServicio;
     if (state) {
-      this.nombreOriginal = state.nombre || '';
+      this.idServicio = state.id_servicio || 0;
       this.nombre = state.nombre || '';
-      this.precio = state.precio || null;
+      this.nombreOriginal = state.nombre || '';
       this.estado = state.estado || 'Activo';
-      this.estadoOriginal = state.estado || 'Activo';
+      this.repuestosSeleccionados = (state.repuestos || []).map((r: any) => ({
+        nombre_repuesto: r.nombre_repuesto,
+        cantidad: r.cantidad,
+      }));
     }
+
+    this.http.get<any[]>(this.URL_REPUESTOS).subscribe({
+      next: (data) => { this.todosRepuestos = data || []; },
+    });
+    this.http.get<any[]>(`${this.URL}/servicios`).subscribe({
+      next: (data) => { this.serviciosExistentes = data || []; },
+    });
   }
 
-  guardar() {
-    if (!this.nombre.trim()) {
+  get repuestosDisponibles(): any[] {
+    const seleccionados = this.repuestosSeleccionados.map(r => r.nombre_repuesto);
+    return this.todosRepuestos.filter(r => !seleccionados.includes(r.nombre_repuesto));
+  }
+
+  agregarRepuesto() {
+    if (!this.repuestoSeleccionadoNombre || this.repuestoCantidad < 1) return;
+    const rep = this.todosRepuestos.find(r => r.nombre_repuesto === this.repuestoSeleccionadoNombre);
+    if (!rep) return;
+    this.repuestosSeleccionados.push({
+      nombre_repuesto: rep.nombre_repuesto,
+      cantidad: this.repuestoCantidad,
+    });
+    this.repuestoSeleccionadoNombre = null;
+    this.repuestoCantidad = 1;
+  }
+
+  quitarRepuesto(idx: number) {
+    this.repuestosSeleccionados.splice(idx, 1);
+  }
+
+  errorNombreDuplicado = false;
+
+  validarNombre() {
+    const n = this.nombre.trim();
+    if (!n || n === this.nombreOriginal) {
+      this.errorNombreDuplicado = false;
+      return;
+    }
+    this.errorNombreDuplicado = this.serviciosExistentes.some(
+      s => s.nombre.toLowerCase() === n.toLowerCase() && s.nombre.toLowerCase() !== this.nombreOriginal.toLowerCase()
+    );
+  }
+
+  async guardar() {
+    if (this.serviciosExistentes.length === 0) {
+      try {
+        const data = await firstValueFrom(this.http.get<any[]>(`${this.URL}/servicios`));
+        this.serviciosExistentes = data || [];
+      } catch {}
+    }
+    const n = this.nombre.trim();
+    if (!n) {
       Swal.fire('Error', 'El nombre del servicio es obligatorio.', 'warning');
       return;
     }
-    if (this.precio === null || this.precio <= 0) {
-      Swal.fire('Error', 'El precio debe ser mayor a 0.', 'warning');
+    this.validarNombre();
+    if (this.errorNombreDuplicado) {
+      Swal.fire('Error', 'Ese nombre de servicio ya existe.', 'warning');
       return;
     }
-
-    this.http.put(`${this.URL}/servicios`, {
-      nombre_original: this.nombreOriginal,
+    const payload = {
+      id_servicio: this.idServicio,
       nombre: this.nombre.trim(),
-      precio: this.precio,
       estado: this.estado,
-    }, { responseType: 'text' }).subscribe({
+      repuestos: this.repuestosSeleccionados.map(r => ({
+        nombre_repuesto: r.nombre_repuesto,
+        cantidad: r.cantidad,
+      })),
+    };
+
+    this.http.put(`${this.URL}/servicios`, payload, { responseType: 'text' }).subscribe({
       next: (res) => {
         if (res === 'OK') {
           Swal.fire({ icon: 'success', title: 'Servicio actualizado', timer: 1500, showConfirmButton: false });
