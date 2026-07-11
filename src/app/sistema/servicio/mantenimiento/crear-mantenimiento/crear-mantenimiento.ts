@@ -8,10 +8,25 @@ import Swal from 'sweetalert2';
 
 // ─── Interfaces ───────────────────────────────────────────────────────────────
 
+interface RepuestoServicio {
+  nombre_repuesto: string;
+  cantidad:        number;
+  cantidad_usar:   number;
+  precio_unitario: number;
+  subtotal:        number;
+}
+
 interface Servicio {
   id_servicio: number;
   nombre:      string;
-  precio:      number;
+  estado:      string;
+  precio?:     number;
+  repuestos?:  RepuestoServicio[];
+}
+
+interface Producto {
+  nombre: string;
+  precio_venta: number;
 }
 
 interface Tecnico {
@@ -28,6 +43,7 @@ interface ItemServicio {
   busqueda:        string;
   resultados:      Servicio[];
   mostrarDropdown: boolean;
+  repuestos:      RepuestoServicio[];
 }
 
 interface Vehiculo {
@@ -154,7 +170,14 @@ export class CrearMantenimiento implements OnInit {
   // ── Catálogos ────────────────────────────────────────────────────────────────
   servicios:        Servicio[] = [];
   tecnicos:         Tecnico[]  = [];
+  productos:        Producto[] = [];
   cargandoCatalogos = false;
+
+  // ── Modal de repuestos del servicio ───────────────────────────────────────
+  showRepuestosModal = false;
+  servicioSeleccionado: Servicio | null = null;
+  repuestosModal: RepuestoServicio[] = [];
+  cargandoProductos = false;
 
   // ── Ítems de la orden ────────────────────────────────────────────────────────
   items: ItemServicio[] = [];
@@ -196,12 +219,44 @@ export class CrearMantenimiento implements OnInit {
   // ── Catálogos ────────────────────────────────────────────────────────────────
   cargarCatalogos() {
     this.cargandoCatalogos = true;
-    this.http.get<Servicio[]>(`${this.URL}/servicios`).subscribe({
-      next: (r) => { this.servicios = r || []; this.cargandoCatalogos = false; },
-      error: ()  => { this.cargandoCatalogos = false; },
+    this.http.get<any[]>(`${API_BASE_URL}/api/configuracion/servicios`).subscribe({
+      next: (r) => {
+        console.log('Servicios cargados:', r);
+        this.servicios = (r || []).map((s: any) => ({
+          id_servicio: s.id_servicio,
+          nombre: s.nombre,
+          estado: s.estado,
+          precio: s.precio || 0,
+          repuestos: s.repuestos || [],
+        }));
+        this.cargandoCatalogos = false;
+      },
+      error: (e) => {
+        console.error('Error cargando servicios:', e);
+        this.cargandoCatalogos = false;
+      },
     });
     this.http.get<Tecnico[]>(`${this.URL}/tecnicos`).subscribe({
       next: (r) => { this.tecnicos = r || []; },
+    });
+    this.cargarProductos();
+  }
+
+  cargarProductos() {
+    this.cargandoProductos = true;
+    this.http.get<any[]>(`${API_BASE_URL}/api/productos/listar-repuestos`).subscribe({
+      next: (r) => {
+        console.log('Productos cargados:', r);
+        this.productos = (r || []).map((p: any) => ({
+          nombre: p.nombre_repuesto || p.nombre,
+          precio_venta: p.precio_venta || 0,
+        }));
+        this.cargandoProductos = false;
+      },
+      error: (e) => {
+        console.error('Error cargando productos:', e);
+        this.cargandoProductos = false;
+      },
     });
   }
 
@@ -740,32 +795,77 @@ export class CrearMantenimiento implements OnInit {
   }
 
   seleccionarServicio(serv: Servicio, item: ItemServicio) {
-    item.servicio        = serv;
-    item.precio_subtotal = serv.precio * item.cantidad;
-    item.busqueda        = '';
-    item.resultados      = [];
+    this.servicioSeleccionado = serv;
+    this.abrirModalRepuestos(serv);
+  }
+
+  abrirModalRepuestos(serv: Servicio) {
+    this.repuestosModal = (serv.repuestos || []).map(r => {
+      const producto = this.productos.find(p => p.nombre === r.nombre_repuesto);
+      return {
+        nombre_repuesto: r.nombre_repuesto,
+        cantidad: r.cantidad,
+        cantidad_usar: r.cantidad,
+        precio_unitario: producto?.precio_venta || 0,
+        subtotal: (producto?.precio_venta || 0) * r.cantidad,
+      };
+    });
+    this.showRepuestosModal = true;
+  }
+
+  cerrarModalRepuestos() {
+    this.showRepuestosModal = false;
+    this.servicioSeleccionado = null;
+    this.repuestosModal = [];
+  }
+
+  actualizarCantidadRepuesto(repuesto: RepuestoServicio, cantidad: number) {
+    repuesto.cantidad_usar = cantidad;
+    repuesto.subtotal = repuesto.precio_unitario * cantidad;
+  }
+
+  confirmarRepuestos(item: ItemServicio) {
+    if (!this.servicioSeleccionado) return;
+    item.servicio = this.servicioSeleccionado;
+    item.precio_subtotal = (this.servicioSeleccionado.precio || 0) * item.cantidad;
+    item.busqueda = '';
+    item.resultados = [];
     item.mostrarDropdown = false;
+    item.repuestos = this.repuestosModal.map(r => ({
+      nombre_repuesto: r.nombre_repuesto,
+      cantidad: r.cantidad,
+      cantidad_usar: r.cantidad_usar,
+      precio_unitario: r.precio_unitario,
+      subtotal: r.subtotal,
+    }));
+    this.cerrarModalRepuestos();
+  }
+
+  getTotalRepuestos(): number {
+    return this.repuestosModal.reduce((total, rep) => total + rep.subtotal, 0);
   }
 
   limpiarServicio(item: ItemServicio) {
-    item.servicio        = { id_servicio: 0, nombre: '', precio: 0 };
+    item.servicio        = { id_servicio: 0, nombre: '', estado: '', precio: 0, repuestos: [] };
     item.busqueda        = '';
     item.resultados      = [];
     item.mostrarDropdown = false;
     item.precio_subtotal = 0;
+    item.repuestos       = [];
   }
 
   // ── Items ────────────────────────────────────────────────────────────────────
 
   agregarItem() {
     this.items.push({
-      servicio:        { id_servicio: 0, nombre: '', precio: 0 },
+      servicio:        { id_servicio: 0, nombre: '', estado: '', precio: 0, repuestos: [] },
       id_trabajador:   0,
       cantidad:        1,
       precio_subtotal: 0,
       busqueda:        '',
       resultados:      [],
       mostrarDropdown: false,
+      repuestos:      [],
     });
   }
 
@@ -774,7 +874,7 @@ export class CrearMantenimiento implements OnInit {
   }
 
   recalcularSubtotal(item: ItemServicio) {
-    item.precio_subtotal = item.servicio.precio * item.cantidad;
+    item.precio_subtotal = (item.servicio.precio || 0) * item.cantidad;
   }
 
   // ── Totales ──────────────────────────────────────────────────────────────────
@@ -821,6 +921,7 @@ export class CrearMantenimiento implements OnInit {
         id_trabajador:   it.id_trabajador,
         cantidad:        it.cantidad,
         precio_subtotal: it.precio_subtotal,
+        repuestos:       it.repuestos,
       })),
     };
 
