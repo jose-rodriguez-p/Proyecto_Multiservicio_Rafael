@@ -1,5 +1,5 @@
 import { API_BASE_URL } from '@config';
-import { Component, OnInit, HostListener, inject, PLATFORM_ID } from '@angular/core';
+import { Component, OnInit, HostListener, inject, PLATFORM_ID, ChangeDetectorRef } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
@@ -61,6 +61,7 @@ export class CrearMantenimiento implements OnInit {
   private http        = inject(HttpClient);
   private router      = inject(Router);
   private platformId  = inject(PLATFORM_ID);
+  private cdr         = inject(ChangeDetectorRef);
 
   private URL         = `${API_BASE_URL}/api/mantenimiento`;
   private URL_CLIENTES = `${API_BASE_URL}/api/clientes`;
@@ -237,6 +238,7 @@ export class CrearMantenimiento implements OnInit {
         this.clientVehicles = (res.carros || []) as Vehiculo[];
         this.vehiculoSeleccionado = null;
         this.descripcionVehiculo = '';
+        this.cdr.detectChanges();
         setTimeout(() => this.openVehicleModal(), 300);
       },
       error: () => {
@@ -246,6 +248,7 @@ export class CrearMantenimiento implements OnInit {
         this.clientVehicles = [];
         this.vehiculoSeleccionado = null;
         this.descripcionVehiculo = '';
+        this.cdr.detectChanges();
         this.mostrarOpcionRegistro(dni);
       },
     });
@@ -294,10 +297,12 @@ export class CrearMantenimiento implements OnInit {
           this.dniValidadoRegistro = true;
         }
         this.showRegistroModal = true;
+        this.cdr.detectChanges();
       },
       error: () => {
         this.consultandoDniRegistro = false;
         this.showRegistroModal = true;
+        this.cdr.detectChanges();
       },
     });
   }
@@ -525,15 +530,18 @@ export class CrearMantenimiento implements OnInit {
           };
           this.clientVehicles = this.registroVehiculos.map(v => ({ ...v }));
           this.showRegistroModal = false;
+          this.cdr.detectChanges();
           setTimeout(() => this.openVehicleModal(), 400);
         } else {
           Swal.fire('Error', res?.status || 'No se pudo registrar el cliente.', 'error');
+          this.cdr.detectChanges();
         }
       },
       error: (err) => {
         this.consultandoDniRegistro = false;
         const msg = err.error?.status || err.error || 'No se pudo registrar el cliente.';
         Swal.fire('Error', msg, 'error');
+        this.cdr.detectChanges();
       },
     });
   }

@@ -114,15 +114,24 @@ export class CrearVenta implements OnInit {
   cargarVendedor() {
     try {
       const user = JSON.parse(localStorage.getItem('currentUser') || '{}');
+      const nombreCompleto = `${user.nombre || ''} ${user.apellido_paterno || ''}`.trim();
       this.vendedor = {
-        nombre: user.trabajadorCompleto || user.username || 'Sin nombre',
-        cargo:  user.rolNombre || '',
+        nombre: nombreCompleto || 'Sin nombre',
+        cargo:  user.rol || '',
         codigo: user.username || '',
       };
     } catch { this.vendedor = { nombre: 'Sin nombre', cargo: '', codigo: '' }; }
   }
 
   onTipoChange() { this.serie = this.tipoComprobante === 'Boleta' ? 'B001' : 'F001'; }
+
+  onEstadoChange() {
+    if (this.estado === 'Pendiente') {
+      this.metodoPago = '';
+    } else {
+      this.metodoPago = 'Efectivo';
+    }
+  }
 
   volver() { this.router.navigate(['/sistema/servicio/ventas']); }
 
@@ -140,6 +149,21 @@ export class CrearVenta implements OnInit {
     this.nuevoClienteDniValidado = false;
     this.nuevoClientePermiteEditar = false;
     this.consultandoDniNuevo = false;
+  }
+
+    irACrearNuevoDesdeLista() {
+    const posibleDni = this.filtroBusquedaLista.replace(/\D/g, '');
+    this.modoPanel = 'nuevo';
+    this.nuevoCliente = this.clienteVacioFactory();
+    this.resetErroresNuevoCliente();
+    this.nuevoClienteDniValidado = false;
+    this.nuevoClientePermiteEditar = false;
+    this.consultandoDniNuevo = false;
+
+    if (/^\d{8}$/.test(posibleDni)) {
+      this.nuevoCliente.dni = posibleDni;
+      this.buscarDniNuevo();
+    }
   }
 
   cambiarModo(modo: ModoPanel) {
@@ -384,8 +408,15 @@ export class CrearVenta implements OnInit {
 
   get subtotal(): number { return this.items.reduce((s, it) => s + this.importeItem(it), 0); }
   get descuentoMonto(): number { return this.descuentoTipo === '%' ? this.subtotal * this.descuentoGlobal / 100 : this.descuentoGlobal; }
-  get igv(): number { return (this.subtotal - this.descuentoMonto) * 0.18; }
-  get total(): number { return this.subtotal - this.descuentoMonto + this.igv; }
+
+  // El precio de cada producto YA INCLUYE el IGV (así se maneja en Perú: el precio
+  // de venta al público es el precio final). Por eso el IGV no se suma al total,
+  // se EXTRAE del precio para mostrarlo desglosado en el comprobante.
+  // Precio con IGV incluido = Valor de venta × 1.18  →  IGV = Precio - (Precio / 1.18)
+  get precioConDescuento(): number { return this.subtotal - this.descuentoMonto; }
+  get valorVenta(): number { return this.precioConDescuento / 1.18; }
+  get igv(): number { return this.precioConDescuento - this.valorVenta; }
+  get total(): number { return this.precioConDescuento; }
 
   itemsValidos(): boolean {
     return this.items.length > 0 && this.items.every(it =>

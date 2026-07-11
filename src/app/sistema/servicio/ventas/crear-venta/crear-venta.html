@@ -26,14 +26,14 @@
         </div>
         <div class="col-6 col-md-2">
           <label class="form-label small fw-semibold">Estado</label>
-          <select class="form-select form-select-sm" [(ngModel)]="estado">
+          <select class="form-select form-select-sm" [(ngModel)]="estado" (change)="onEstadoChange()">
             <option>Pagado</option>
             <option>Pendiente</option>
           </select>
         </div>
         <div class="col-6 col-md-2">
           <label class="form-label small fw-semibold">Método de Pago</label>
-          <select class="form-select form-select-sm" [(ngModel)]="metodoPago">
+          <select class="form-select form-select-sm" [(ngModel)]="metodoPago" [disabled]="estado === 'Pendiente'">
             <option *ngFor="let m of metodosPago" [value]="m">{{ m }}</option>
           </select>
         </div>
@@ -150,7 +150,9 @@
               </td>
               <td>
                 <input type="number" class="form-control form-control-sm text-end"
-                  [(ngModel)]="item.precio_unit" step="0.01" min="0">
+                  [ngClass]="{'bg-light': !!item.repuesto.nombre}"
+                  [(ngModel)]="item.precio_unit" step="0.01" min="0"
+                  [readonly]="!!item.repuesto.nombre">
               </td>
               <td>
                 <input type="number" class="form-control form-control-sm text-center"
@@ -205,8 +207,13 @@
             <span class="text-muted">Descuento :</span>
             <span class="text-danger">- S/ {{ descuentoMonto | number:'1.2-2' }}</span>
           </div>
+          <hr class="my-2">
           <div class="d-flex justify-content-between small mb-1">
-            <span class="text-muted">IGV (18%) :</span>
+            <span class="text-muted">Valor de venta :</span>
+            <span>S/ {{ valorVenta | number:'1.2-2' }}</span>
+          </div>
+          <div class="d-flex justify-content-between small mb-1">
+            <span class="text-muted">IGV (18%):</span>
             <span>S/ {{ igv | number:'1.2-2' }}</span>
           </div>
           <div class="d-flex justify-content-between fw-bold mt-1">
@@ -263,7 +270,8 @@
       </div>
       <div *ngIf="!cargandoLista" class="lista-clientes">
         <div *ngIf="listaClientesFiltrada.length===0" class="text-center text-muted py-4 small">
-          <i class="bi bi-inbox me-1"></i>Sin resultados
+          <i class="bi bi-inbox me-1"></i>Sin resultados —
+          <a class="text-danger fw-semibold" style="cursor:pointer" (click)="irACrearNuevoDesdeLista()">Crear cliente nuevo</a>
         </div>
         <div class="lista-cliente-item" *ngFor="let c of listaClientesFiltrada"
           (click)="seleccionarDeListaClientes(c)">
