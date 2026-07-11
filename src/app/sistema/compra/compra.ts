@@ -23,9 +23,10 @@ export class Compra implements OnInit {
 
   private platformId = inject(PLATFORM_ID);
   private cdr = inject(ChangeDetectorRef);
+  private http = inject(HttpClient);
   private URL_API = `${API_BASE_URL}/api/compras`;
 
-  constructor(private http: HttpClient, public router: Router) {
+  constructor(public router: Router) {
     this.router.events
       .pipe(filter((e) => e instanceof NavigationEnd))
       .subscribe((e: any) => {
@@ -94,5 +95,71 @@ export class Compra implements OnInit {
     this.mostrarModalDetalle = false;
     this.compraSeleccionada = null;
     this.detalleCompra = [];
+  }
+
+  exportarExcel() {
+    const payload = this.comprasFiltradas.map((c) => ({
+      fecha: c.fecha || '',
+      proveedor: c.nombre_proveedor || '',
+      ruc: c.ruc_proveedor || '',
+      productos: c.cantidad_items || 0,
+      total: c.total || 0,
+      usuario: c.usuario || '',
+      estado: c.estado || '',
+    }));
+    if (!payload || payload.length === 0) {
+      Swal.fire('Atención', 'No hay registros en la tabla para exportar', 'info');
+      return;
+    }
+    this.http.post(`${this.URL_API}/export/excel`, payload, { responseType: 'blob' }).subscribe({
+      next: (blob: Blob) => {
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `Reporte_Compras_${new Date().getTime()}.xlsx`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        window.URL.revokeObjectURL(url);
+        Swal.fire('Éxito', 'El reporte de Excel se ha descargado', 'success');
+      },
+      error: (err) => {
+        console.error('Error al exportar Excel:', err);
+        Swal.fire('Error', 'El servidor no pudo procesar la descarga de Excel', 'error');
+      },
+    });
+  }
+
+  exportarPDF() {
+    const payload = this.comprasFiltradas.map((c) => ({
+      fecha: c.fecha || '',
+      proveedor: c.nombre_proveedor || '',
+      ruc: c.ruc_proveedor || '',
+      productos: c.cantidad_items || 0,
+      total: c.total || 0,
+      usuario: c.usuario || '',
+      estado: c.estado || '',
+    }));
+    if (!payload || payload.length === 0) {
+      Swal.fire('Atención', 'No hay registros en la tabla para exportar', 'info');
+      return;
+    }
+    this.http.post(`${this.URL_API}/export/pdf`, payload, { responseType: 'blob' }).subscribe({
+      next: (blob: Blob) => {
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `Reporte_Compras_${new Date().getTime()}.pdf`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        window.URL.revokeObjectURL(url);
+        Swal.fire('Éxito', 'El reporte de PDF se ha descargado', 'success');
+      },
+      error: (err) => {
+        console.error('Error al exportar PDF:', err);
+        Swal.fire('Error', 'El servidor no pudo procesar la descarga de PDF', 'error');
+      },
+    });
   }
 }

@@ -23,6 +23,9 @@ interface ItemCompra {
   mostrarDropdown: boolean;
   errorCantidad: boolean;
   errorPrecio: boolean;
+  dropdownTop: number;
+  dropdownLeft: number;
+  dropdownWidth: number;
 }
 
 @Component({
@@ -82,6 +85,9 @@ export class NuevaCompra implements OnInit {
       mostrarDropdown: false,
       errorCantidad: false,
       errorPrecio: false,
+      dropdownTop: 0,
+      dropdownLeft: 0,
+      dropdownWidth: 0,
     };
   }
 
@@ -94,7 +100,7 @@ export class NuevaCompra implements OnInit {
     if (this.items.length === 0) this.agregarItem();
   }
 
-  buscarProducto(item: ItemCompra) {
+  buscarProducto(item: ItemCompra, event?: Event) {
     item.nombre_repuesto = '';
     const q = item.busqueda.trim().toLowerCase();
     if (!q) {
@@ -105,7 +111,14 @@ export class NuevaCompra implements OnInit {
     item.resultados = this.productosDisponibles.filter((p) =>
       p.nombre_repuesto.toLowerCase().includes(q),
     );
-    item.mostrarDropdown = true;
+    if (item.resultados.length > 0 && event) {
+      const input = event.target as HTMLInputElement;
+      const rect = input.getBoundingClientRect();
+      item.dropdownTop = rect.bottom + 2;
+      item.dropdownLeft = rect.left;
+      item.dropdownWidth = rect.width;
+    }
+    item.mostrarDropdown = item.resultados.length > 0;
   }
 
   seleccionarProducto(item: ItemCompra, producto: ProductoDisponible) {
