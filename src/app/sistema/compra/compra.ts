@@ -64,8 +64,7 @@ export class Compra implements OnInit {
     return this.compras.filter(
       (c) =>
         (c.nombre_proveedor || '').toLowerCase().includes(q) ||
-        (c.ruc_proveedor || '').toLowerCase().includes(q) ||
-        (c.usuario || '').toLowerCase().includes(q),
+        (c.ruc_proveedor || '').toLowerCase().includes(q),
     );
   }
 
@@ -77,7 +76,7 @@ export class Compra implements OnInit {
     this.compraSeleccionada = compra;
     this.detalleCompra = [];
     this.mostrarModalDetalle = true;
-    this.http.get<any[]>(`${this.URL_API}/detalle/${compra.id_compra}`).subscribe({
+    this.http.get<any[]>(`${this.URL_API}/detalle/${compra.id_oper_compra}`).subscribe({
       next: (data) => {
         this.detalleCompra = Array.isArray(data) ? data : [];
         this.cdr.detectChanges();
@@ -99,13 +98,11 @@ export class Compra implements OnInit {
 
   exportarExcel() {
     const payload = this.comprasFiltradas.map((c) => ({
-      fecha: c.fecha || '',
+      fecha: c.fec_compra || '',
       proveedor: c.nombre_proveedor || '',
       ruc: c.ruc_proveedor || '',
       productos: c.cantidad_items || 0,
-      total: c.total || 0,
-      usuario: c.usuario || '',
-      estado: c.estado || '',
+      total: c.tot_pago || 0,
     }));
     if (!payload || payload.length === 0) {
       Swal.fire('Atención', 'No hay registros en la tabla para exportar', 'info');
@@ -132,13 +129,11 @@ export class Compra implements OnInit {
 
   exportarPDF() {
     const payload = this.comprasFiltradas.map((c) => ({
-      fecha: c.fecha || '',
+      fecha: c.fec_compra || '',
       proveedor: c.nombre_proveedor || '',
       ruc: c.ruc_proveedor || '',
       productos: c.cantidad_items || 0,
-      total: c.total || 0,
-      usuario: c.usuario || '',
-      estado: c.estado || '',
+      total: c.tot_pago || 0,
     }));
     if (!payload || payload.length === 0) {
       Swal.fire('Atención', 'No hay registros en la tabla para exportar', 'info');
