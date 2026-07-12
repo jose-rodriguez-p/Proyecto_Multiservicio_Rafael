@@ -1,0 +1,7 @@
+.dropdown-productos {
+  max-height: 220px;
+  overflow-y: auto;
+  background: #fff;
+  border: 1px solid #dee2e6;
+  border-radius: 6px;
+}
