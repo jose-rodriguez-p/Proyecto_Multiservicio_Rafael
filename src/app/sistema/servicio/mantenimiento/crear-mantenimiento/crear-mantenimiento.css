@@ -1,3 +1,8 @@
+/* ── Tabla detalle ─────────────────────────────────────────────────────────── */
+.table-responsive {
+  overflow: visible !important;
+}
+
 /* ── Dropdown de repuestos (por fila) ──────────────────────────────────────── */
 .dropdown-producto {
   position: absolute;
