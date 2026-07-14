@@ -14,7 +14,7 @@ interface OrdenResumen {
   cliente:             string;
   dniCliente:          string;
   descripcionVehiculo: string;
-  precioManoObra:      number;
+  servicios:           string;
   precioTotal:         number;
   estado:              string;
   tecnicos?:           string;
@@ -154,6 +154,10 @@ export class Mantenimiento implements OnInit {
   onFechaChange() {
     this.paginaActual = 1;
     this.cargarOrdenes();
+  }
+
+  formatearServicios(servicios: string): string {
+    return servicios ? servicios.split(', ').join('\n') : '-';
   }
 
   badgeEstado(estado: string): string {

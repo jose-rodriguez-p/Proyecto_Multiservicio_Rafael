@@ -106,7 +106,7 @@
               <th class="text-muted small">CLIENTE</th>
               <th class="text-muted small">DNI</th>
               <th class="text-muted small">VEHÍCULO</th>
-              <th class="text-muted small">MANO DE OBRA</th>
+              <th class="text-muted small">SERVICIOS</th>
               <th class="text-muted small">TÉCNICOS</th>
               <th class="text-muted small text-end">TOTAL</th>
               <th class="text-muted small text-center">ESTADO</th>
@@ -122,23 +122,25 @@
             </ng-container>
 
             <tr *ngIf="!cargandoTabla && ordenesFiltradas.length === 0">
-              <td colspan="8" class="text-center py-5 text-muted">
+              <td colspan="9" class="text-center py-5 text-muted">
                 <i class="bi bi-inbox fs-3 d-block mb-2"></i>
                 {{ busqueda || fechaFiltro ? 'No se encontraron órdenes' : 'Aún no hay órdenes de servicio registradas' }}
               </td>
             </tr>
 
             <tr *ngFor="let o of ordenesFiltradas">
-              <td><span class="badge bg-light text-dark border">#{{ o.idOrdenServicio }}</span></td>
-              <td class="small text-muted">{{ o.hora }}</td>
-              <td class="fw-semibold small">{{ o.cliente }}</td>
-              <td class="small text-muted">{{ o.dniCliente }}</td>
-              <td class="small">{{ o.descripcionVehiculo }}</td>
-              <td class="small text-muted">S/ {{ o.precioManoObra | number:'1.2-2' }}</td>
-              <td class="small text-muted">{{ o.tecnicos || '-' }}</td>
-              <td class="text-end fw-bold text-danger small">S/ {{ o.precioTotal | number:'1.2-2' }}</td>
+              <td class="text-center"><span class="badge bg-light text-dark border">#{{ o.idOrdenServicio }}</span></td>
+              <td class="small text-nowrap text-muted">{{ o.hora }}</td>
+              <td class="fw-semibold small text-nowrap">{{ o.cliente }}</td>
+              <td class="small text-muted text-nowrap">{{ o.dniCliente }}</td>
+              <td class="small text-nowrap">{{ o.descripcionVehiculo }}</td>
+              <td class="small text-muted" style="white-space:pre-line;">{{ formatearServicios(o.servicios) }}</td>
+              <td class="small text-muted" style="max-width:160px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;"
+                  [title]="o.tecnicos">{{ o.tecnicos || '-' }}</td>
+              <td class="text-end fw-bold text-danger small text-nowrap">S/ {{ o.precioTotal | number:'1.2-2' }}</td>
               <td class="text-center">
-                <select class="form-select form-select-sm" style="width:120px; display:inline-block;"
+                <select class="form-select form-select-sm"
+                  style="width:120px; display:inline-block; cursor:pointer;"
                   [ngClass]="badgeEstado(o.estado) === 'bg-success' ? 'text-white bg-success' : 
                               badgeEstado(o.estado) === 'bg-warning text-dark' ? 'text-dark bg-warning' : 
                               badgeEstado(o.estado) === 'bg-secondary' ? 'text-white bg-secondary' : 'bg-light text-dark border'"
