@@ -5,7 +5,8 @@
       <i class="bi bi-arrow-left me-1"></i> Volver
     </button>
     <h2 class="text-secondary fw-bold mb-0">
-      <i class="bi bi-wrench-adjustable text-danger me-2"></i>Registrar Mantenimiento
+      <i class="bi bi-wrench-adjustable text-danger me-2"></i>Registrar
+      Mantenimiento
     </h2>
   </div>
 
@@ -25,11 +26,13 @@
               [class.is-invalid]="dniBuscado && !clienteEncontrado"
               [class.is-valid]="clienteEncontrado">
             <span class="input-group-text">
-              <span *ngIf="buscandoCliente" class="spinner-border spinner-border-sm text-secondary"></span>
+              <span *ngIf="buscandoCliente"
+                class="spinner-border spinner-border-sm text-secondary"></span>
               <i *ngIf="!buscandoCliente" class="bi bi-person text-muted"></i>
             </span>
           </div>
-          <div class="text-danger small mt-1" *ngIf="dniBuscado && !buscandoCliente && !clienteEncontrado">
+          <div class="text-danger small mt-1"
+            *ngIf="dniBuscado && !buscandoCliente && !clienteEncontrado">
             <i class="bi bi-exclamation-circle me-1"></i>Cliente no encontrado
           </div>
           <div class="text-success small mt-1" *ngIf="clienteEncontrado">
@@ -61,7 +64,8 @@
               <button class="btn btn-outline-danger btn-sm text-nowrap"
                 (click)="openVehicleModal()"
                 [disabled]="!clienteEncontrado">
-                <i class="bi bi-car me-1"></i>{{ vehiculoSeleccionado ? 'Cambiar' : 'Seleccionar' }}
+                <i class="bi bi-car me-1"></i>{{ vehiculoSeleccionado ?
+                'Cambiar' : 'Seleccionar' }}
               </button>
             </div>
           </div>
@@ -87,7 +91,9 @@
 
         <div class="col-6 col-md-2">
           <label class="form-label small fw-semibold">Fecha</label>
-          <input type="date" class="form-control form-control-sm" [(ngModel)]="fechaEmision">
+          <input type="date" class="form-control form-control-sm"
+            [(ngModel)]="fechaEmision"
+            [min]="fechaMinima">
         </div>
 
         <div class="col-12 col-md-4">
@@ -110,9 +116,8 @@
           <thead class="table-light">
             <tr>
               <th style="width:32px">#</th>
-              <th style="min-width:320px">* SERVICIO</th>
-              <th style="min-width:180px">* TÉCNICO ASIGNADO</th>
-              <th style="width:90px">* CANT.</th>
+              <th style="min-width:320px">SERVICIO</th>
+              <th style="min-width:180px">TÉCNICO ASIGNADO</th>
               <th style="width:120px">PRECIO UNIT.</th>
               <th style="width:110px">SUBTOTAL</th>
               <th style="width:48px"></th>
@@ -136,21 +141,25 @@
                     autocomplete="off">
 
                   <!-- Mini-lista de coincidencias -->
-                  <div class="dropdown-producto shadow" *ngIf="item.mostrarDropdown">
+                  <div class="dropdown-producto shadow"
+                    *ngIf="item.mostrarDropdown">
                     <div class="dropdown-producto-item"
                       *ngFor="let s of item.resultados"
                       (mousedown)="seleccionarServicio(s, item)">
                       <div class="fw-semibold small">{{ s.nombre }}</div>
                     </div>
-                    <div class="dropdown-producto-empty" *ngIf="item.resultados.length === 0 && item.busqueda">
+                    <div class="dropdown-producto-empty"
+                      *ngIf="item.resultados.length === 0 && item.busqueda">
                       <i class="bi bi-search me-1"></i>Sin coincidencias
                     </div>
                   </div>
                 </ng-container>
 
                 <!-- Estado con servicio seleccionado -->
-                <div *ngIf="item.servicio.id_servicio > 0" class="d-flex align-items-center gap-2">
-                  <div class="small fw-semibold">{{ item.servicio.nombre }}</div>
+                <div *ngIf="item.servicio.id_servicio > 0"
+                  class="d-flex align-items-center gap-2">
+                  <div class="small fw-semibold">{{ item.servicio.nombre
+                    }}</div>
                   <button class="btn btn-sm p-0 text-muted ms-auto"
                     (click)="limpiarServicio(item)" title="Cambiar">
                     <i class="bi bi-x-circle"></i>
@@ -159,11 +168,14 @@
 
                 <!-- Repuestos del servicio -->
                 <div *ngIf="item.repuestos.length > 0" class="mt-2 small">
-                  <div class="text-muted mb-1"><i class="bi bi-box-seam me-1"></i>Repuestos:</div>
-                  <div *ngFor="let r of item.repuestos" class="d-flex align-items-center gap-2 mb-1">
+                  <div class="text-muted mb-1"><i
+                      class="bi bi-box-seam me-1"></i>Repuestos:</div>
+                  <div *ngFor="let r of item.repuestos"
+                    class="d-flex align-items-center gap-2 mb-1">
                     <span class="flex-grow-1">{{ r.nombre_repuesto }}</span>
-                    <input type="number" class="form-control form-control-sm text-center"
-                      style="width:65px" [(ngModel)]="r.cantidad" min="0">
+                    <input type="number"
+                      class="form-control form-control-sm text-center"
+                      style="width:65px" [value]="r.cantidad_usar" readonly>
                   </div>
                 </div>
 
@@ -171,7 +183,8 @@
 
               <!-- Técnico -->
               <td>
-                <select class="form-select form-select-sm" [(ngModel)]="item.id_trabajador">
+                <select class="form-select form-select-sm"
+                  [(ngModel)]="item.id_trabajador">
                   <option [value]="0">— Seleccionar —</option>
                   <option *ngFor="let t of tecnicos" [value]="t.id_trabajador">
                     {{ t.nombre_completo }}
@@ -179,17 +192,10 @@
                 </select>
               </td>
 
-              <!-- Cantidad -->
-              <td>
-                <input type="number" class="form-control form-control-sm text-center"
-                  [(ngModel)]="item.cantidad"
-                  (ngModelChange)="recalcularSubtotal(item)"
-                  min="1">
-              </td>
-
               <!-- Precio unitario (readonly) -->
               <td>
-                <input type="number" class="form-control form-control-sm text-end"
+                <input type="number"
+                  class="form-control form-control-sm text-end"
                   [value]="item.servicio.precio || 0"
                   readonly>
               </td>
@@ -202,9 +208,8 @@
               <!-- Eliminar -->
               <td class="text-center">
                 <button class="btn btn-sm text-danger p-1"
-                  (click)="eliminarItem(i)"
-                  [disabled]="items.length === 1"
-                  title="Eliminar fila">
+                  (click)="limpiarServicio(item)"
+                  title="Eliminar servicio">
                   <i class="bi bi-trash3"></i>
                 </button>
               </td>
@@ -214,7 +219,8 @@
         </table>
       </div>
 
-      <button class="btn btn-sm btn-outline-secondary mt-1" (click)="agregarItem()">
+      <button class="btn btn-sm btn-outline-secondary mt-1"
+        (click)="agregarItem()">
         <i class="bi bi-plus-lg me-1"></i>Agregar servicio
       </button>
 
@@ -267,7 +273,8 @@
     <button class="btn btn-danger px-4"
       (click)="confirmarMantenimiento()"
       [disabled]="guardando || !formularioValido()">
-      <span *ngIf="guardando" class="spinner-border spinner-border-sm me-2"></span>
+      <span *ngIf="guardando"
+        class="spinner-border spinner-border-sm me-2"></span>
       <i *ngIf="!guardando" class="bi bi-check-circle me-1"></i>
       {{ guardando ? 'Guardando...' : 'Registrar Orden' }}
     </button>
@@ -278,7 +285,8 @@
 <!-- ════════════════════════════════════════════════════════════════════════
      MODAL: SELECCIONAR VEHÍCULO
 ════════════════════════════════════════════════════════════════════════ -->
-<div class="modal d-block" *ngIf="showVehicleModal" style="background: rgba(0,0,0,0.5);">
+<div class="modal d-block" *ngIf="showVehicleModal"
+  style="background: rgba(0,0,0,0.5);">
   <div class="modal-dialog modal-dialog-centered">
 
     <!-- Si no está agregando vehículo nuevo: mostrar lista -->
@@ -287,7 +295,8 @@
         <h5 class="modal-title">
           <i class="bi bi-car me-2"></i>Vehículos de {{ nombreCompletoCliente }}
         </h5>
-        <button type="button" class="btn-close btn-close-white" (click)="cerrarModalVehiculo()"></button>
+        <button type="button" class="btn-close btn-close-white"
+          (click)="cerrarModalVehiculo()"></button>
       </div>
       <div class="modal-body p-3">
 
@@ -299,24 +308,28 @@
             <div class="d-flex justify-content-between align-items-center">
               <div>
                 <span class="fw-bold">{{ v.placa }}</span>
-                <span class="ms-2">{{ v.marca }} {{ v.modelo }} - {{ v.anio }}</span>
+                <span class="ms-2">{{ v.marca }} {{ v.modelo }} - {{ v.anio
+                  }}</span>
               </div>
               <i class="bi bi-chevron-right text-muted"></i>
             </div>
           </div>
         </div>
 
-        <div *ngIf="clientVehicles.length === 0" class="text-center text-muted py-4">
+        <div *ngIf="clientVehicles.length === 0"
+          class="text-center text-muted py-4">
           <i class="bi bi-inbox fs-3 d-block mb-2"></i>
           Este cliente no tiene vehículos registrados
         </div>
 
       </div>
       <div class="modal-footer d-flex justify-content-between">
-        <button class="btn btn-outline-danger" (click)="mostrandoFormVehiculo = true">
+        <button class="btn btn-outline-danger"
+          (click)="mostrandoFormVehiculo = true">
           <i class="bi bi-plus-circle me-1"></i>Agregar nuevo vehículo
         </button>
-        <button class="btn btn-secondary" (click)="cerrarModalVehiculo()">Cancelar</button>
+        <button class="btn btn-secondary"
+          (click)="cerrarModalVehiculo()">Cancelar</button>
       </div>
     </div>
 
@@ -326,24 +339,29 @@
         <h5 class="modal-title">
           <i class="bi bi-plus-circle me-2"></i>Agregar Vehículo
         </h5>
-        <button type="button" class="btn-close btn-close-white" (click)="cerrarFormVehiculo()"></button>
+        <button type="button" class="btn-close btn-close-white"
+          (click)="cerrarFormVehiculo()"></button>
       </div>
       <div class="modal-body p-3">
 
         <div class="mb-3">
-          <label class="form-label fw-semibold small">Placa <span class="text-danger">*</span></label>
+          <label class="form-label fw-semibold small">Placa <span
+              class="text-danger">*</span></label>
           <input class="form-control text-uppercase"
             [(ngModel)]="nuevoVehiculo.placa"
             (input)="formatearPlaca()"
             placeholder="Ej: ABC-123"
             maxlength="8"
             [ngClass]="{'is-invalid': errorPlaca || errorPlacaDuplicada}" />
-          <div class="invalid-feedback" *ngIf="errorPlaca">Formato inválido. Vehículos mayores: M4F-520 · Vehículos menores: AB-1234.</div>
-          <div class="invalid-feedback" *ngIf="errorPlacaDuplicada">Este cliente ya tiene un vehículo con esa placa.</div>
+          <div class="invalid-feedback" *ngIf="errorPlaca">Formato inválido.
+            Vehículos mayores: M4F-520 · Vehículos menores: AB-1234.</div>
+          <div class="invalid-feedback" *ngIf="errorPlacaDuplicada">Este cliente
+            ya tiene un vehículo con esa placa.</div>
         </div>
 
         <div class="mb-3 position-relative">
-          <label class="form-label fw-semibold small">Marca <span class="text-danger">*</span></label>
+          <label class="form-label fw-semibold small">Marca <span
+              class="text-danger">*</span></label>
           <input type="text" class="form-control"
             [(ngModel)]="marcaTexto"
             (input)="onMarcaInput()"
@@ -360,12 +378,14 @@
           </div>
           <div class="autocomplete-lista shadow-sm"
             *ngIf="mostrarSugerenciasMarca && marcaTexto.trim() && marcasSugeridas.length === 0">
-            <div class="autocomplete-item autocomplete-item--vacio">Sin coincidencias</div>
+            <div class="autocomplete-item autocomplete-item--vacio">Sin
+              coincidencias</div>
           </div>
         </div>
 
         <div class="mb-3 position-relative">
-          <label class="form-label fw-semibold small">Modelo <span class="text-danger">*</span></label>
+          <label class="form-label fw-semibold small">Modelo <span
+              class="text-danger">*</span></label>
           <input type="text" class="form-control"
             [(ngModel)]="modeloTexto"
             (input)="onModeloInput()"
@@ -383,22 +403,26 @@
           </div>
           <div class="autocomplete-lista shadow-sm"
             *ngIf="mostrarSugerenciasModelo && modeloTexto.trim() && modelosSugeridos.length === 0">
-            <div class="autocomplete-item autocomplete-item--vacio">Sin coincidencias</div>
+            <div class="autocomplete-item autocomplete-item--vacio">Sin
+              coincidencias</div>
           </div>
         </div>
 
         <div class="mb-1">
-          <label class="form-label fw-semibold small">Año <span class="text-danger">*</span></label>
+          <label class="form-label fw-semibold small">Año <span
+              class="text-danger">*</span></label>
           <select class="form-select" [(ngModel)]="nuevoVehiculo.anio"
             [disabled]="!nuevoVehiculo.modelo">
-            <option value="">{{ nuevoVehiculo.modelo ? '— Selecciona el año —' : '— Primero elige un modelo —' }}</option>
+            <option value>{{ nuevoVehiculo.modelo ? '— Selecciona el año —' :
+              '— Primero elige un modelo —' }}</option>
             <option *ngFor="let a of anios" [value]="a">{{ a }}</option>
           </select>
         </div>
 
       </div>
       <div class="modal-footer">
-        <button class="btn btn-secondary" (click)="cerrarFormVehiculo()">Cancelar</button>
+        <button class="btn btn-secondary"
+          (click)="cerrarFormVehiculo()">Cancelar</button>
         <button class="btn btn-danger" (click)="agregarYSeleccionarVehiculo()"
           [disabled]="!nuevoVehiculo.placa || !nuevoVehiculo.marca || !nuevoVehiculo.modelo || !nuevoVehiculo.anio || errorPlaca || errorPlacaDuplicada">
           <i class="bi bi-check me-1"></i>Agregar y seleccionar
@@ -412,29 +436,38 @@
 <!-- ════════════════════════════════════════════════════════════════════════
      MODAL: REGISTRAR NUEVO CLIENTE
 ════════════════════════════════════════════════════════════════════════ -->
-<div class="modal d-block" *ngIf="showRegistroModal" style="background: rgba(0,0,0,0.5);">
-  <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+<div class="modal d-block" *ngIf="showRegistroModal"
+  style="background: rgba(0,0,0,0.5);">
+  <div
+    class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
     <div class="modal-content">
-      <div class="modal-header p-3 text-white" style="background: linear-gradient(135deg, #b91c1c, #dc2626);">
-        <h5 class="modal-title"><i class="bi bi-person-plus me-2"></i>Registrar Nuevo Cliente</h5>
-        <button type="button" class="btn-close btn-close-white" (click)="cerrarRegistroModal()"></button>
+      <div class="modal-header p-3 text-white"
+        style="background: linear-gradient(135deg, #b91c1c, #dc2626);">
+        <h5 class="modal-title"><i class="bi bi-person-plus me-2"></i>Registrar
+          Nuevo Cliente</h5>
+        <button type="button" class="btn-close btn-close-white"
+          (click)="cerrarRegistroModal()"></button>
       </div>
       <div class="modal-body p-3">
 
         <!-- DNI (pre‑cargado, readonly) -->
         <div class="row g-3 mb-3">
           <div class="col-md-6">
-            <label class="form-label fw-semibold small">DNI <span class="text-danger">*</span></label>
+            <label class="form-label fw-semibold small">DNI <span
+                class="text-danger">*</span></label>
             <div class="input-group">
-              <input type="text" class="form-control bg-light" [value]="registroCliente?.dni" readonly>
+              <input type="text" class="form-control bg-light"
+                [value]="registroCliente?.dni" readonly>
               <span class="input-group-text" *ngIf="consultandoDniRegistro">
                 <span class="spinner-border spinner-border-sm"></span>
               </span>
-              <span class="input-group-text bg-success text-white" *ngIf="dniValidadoRegistro && !consultandoDniRegistro">
+              <span class="input-group-text bg-success text-white"
+                *ngIf="dniValidadoRegistro && !consultandoDniRegistro">
                 <i class="bi bi-check-lg"></i>
               </span>
             </div>
-            <div class="text-success small mt-1" *ngIf="dniValidadoRegistro">Datos obtenidos de RENIEC.</div>
+            <div class="text-success small mt-1"
+              *ngIf="dniValidadoRegistro">Datos obtenidos de RENIEC.</div>
           </div>
           <div class="col-md-6">
             <label class="form-label fw-semibold small">Estado</label>
@@ -448,18 +481,25 @@
         <div class="row g-3 mb-3">
           <div class="col-12">
             <label class="form-label fw-semibold small">Nombres *</label>
-            <input type="text" class="form-control" [(ngModel)]="registroCliente.nombre"
-              [readonly]="dniValidadoRegistro" [ngClass]="{'bg-light': dniValidadoRegistro}">
+            <input type="text" class="form-control"
+              [(ngModel)]="registroCliente.nombre"
+              [readonly]="dniValidadoRegistro"
+              [ngClass]="{'bg-light': dniValidadoRegistro}">
           </div>
           <div class="col-md-6">
-            <label class="form-label fw-semibold small">Apellido Paterno *</label>
-            <input type="text" class="form-control" [(ngModel)]="registroCliente.apellido_paterno"
-              [readonly]="dniValidadoRegistro" [ngClass]="{'bg-light': dniValidadoRegistro}">
+            <label class="form-label fw-semibold small">Apellido Paterno
+              *</label>
+            <input type="text" class="form-control"
+              [(ngModel)]="registroCliente.apellido_paterno"
+              [readonly]="dniValidadoRegistro"
+              [ngClass]="{'bg-light': dniValidadoRegistro}">
           </div>
           <div class="col-md-6">
             <label class="form-label fw-semibold small">Apellido Materno</label>
-            <input type="text" class="form-control" [(ngModel)]="registroCliente.apellido_materno"
-              [readonly]="dniValidadoRegistro" [ngClass]="{'bg-light': dniValidadoRegistro}">
+            <input type="text" class="form-control"
+              [(ngModel)]="registroCliente.apellido_materno"
+              [readonly]="dniValidadoRegistro"
+              [ngClass]="{'bg-light': dniValidadoRegistro}">
           </div>
         </div>
 
@@ -467,38 +507,49 @@
         <div class="row g-3 mb-3">
           <div class="col-md-6">
             <label class="form-label fw-semibold small">Celular *</label>
-            <input type="text" class="form-control" maxlength="9" [(ngModel)]="registroCliente.celular"
+            <input type="text" class="form-control" maxlength="9"
+              [(ngModel)]="registroCliente.celular"
               (input)="validarCelularRegistro()" placeholder="9XXXXXXXX"
               [ngClass]="{'is-invalid': errorCelularRegistro}">
-            <div class="invalid-feedback" *ngIf="errorCelularRegistro">Debe comenzar con 9 y tener 9 dígitos.</div>
+            <div class="invalid-feedback" *ngIf="errorCelularRegistro">Debe
+              comenzar con 9 y tener 9 dígitos.</div>
           </div>
           <div class="col-md-6">
-            <label class="form-label fw-semibold small">Correo <span class="text-muted fw-normal">(opcional)</span></label>
-            <input type="email" class="form-control" [(ngModel)]="registroCliente.correo" placeholder="correo@dominio.com">
+            <label class="form-label fw-semibold small">Correo <span
+                class="text-muted fw-normal">(opcional)</span></label>
+            <input type="email" class="form-control"
+              [(ngModel)]="registroCliente.correo"
+              placeholder="correo@dominio.com">
           </div>
         </div>
 
         <!-- Vehículos del cliente -->
         <div class="p-3 bg-light rounded mb-2">
           <div class="d-flex justify-content-between align-items-center mb-2">
-            <h6 class="fw-bold text-danger mb-0"><i class="bi bi-car me-1"></i>Vehículos del Cliente</h6>
+            <h6 class="fw-bold text-danger mb-0"><i
+                class="bi bi-car me-1"></i>Vehículos del Cliente</h6>
           </div>
 
           <!-- Lista de vehículos agregados -->
           <div *ngIf="registroVehiculos.length > 0">
-            <div *ngFor="let v of registroVehiculos; let i = index" class="card mb-2">
-              <div class="card-body p-2 d-flex justify-content-between align-items-center">
+            <div *ngFor="let v of registroVehiculos; let i = index"
+              class="card mb-2">
+              <div
+                class="card-body p-2 d-flex justify-content-between align-items-center">
                 <div>
                   <span class="fw-bold">{{ v.placa }}</span>
-                  <span class="ms-2 small">{{ v.marca }} {{ v.modelo }} - {{ v.anio }}</span>
+                  <span class="ms-2 small">{{ v.marca }} {{ v.modelo }} - {{
+                    v.anio }}</span>
                 </div>
-                <button class="btn btn-sm btn-outline-danger" (click)="regEliminarVehiculo(i)">
+                <button class="btn btn-sm btn-outline-danger"
+                  (click)="regEliminarVehiculo(i)">
                   <i class="bi bi-trash"></i>
                 </button>
               </div>
             </div>
           </div>
-          <div *ngIf="registroVehiculos.length === 0" class="text-center text-muted py-2 small">
+          <div *ngIf="registroVehiculos.length === 0"
+            class="text-center text-muted py-2 small">
             <i class="bi bi-car me-1"></i>Sin vehículos registrados
           </div>
 
@@ -509,20 +560,28 @@
                 <div class="col-12 col-md-3">
                   <label class="form-label fw-semibold small">Placa *</label>
                   <input class="form-control form-control-sm text-uppercase"
-                    [(ngModel)]="regVehiculo.placa" (input)="regFormatearPlaca()"
+                    [(ngModel)]="regVehiculo.placa"
+                    (input)="regFormatearPlaca()"
                     placeholder="ABC-123" maxlength="8"
                     [ngClass]="{'is-invalid': regErrorPlaca || regErrorPlacaDuplicada}">
-                  <div class="invalid-feedback" *ngIf="regErrorPlaca">Formato inválido.</div>
-                  <div class="invalid-feedback" *ngIf="regErrorPlacaDuplicada">{{ regErrorPlacaDuplicadaMensaje }}</div>
+                  <div class="invalid-feedback" *ngIf="regErrorPlaca">Formato
+                    inválido.</div>
+                  <div class="invalid-feedback"
+                    *ngIf="regErrorPlacaDuplicada">{{
+                    regErrorPlacaDuplicadaMensaje }}</div>
                 </div>
                 <div class="col-12 col-md-3 position-relative">
                   <label class="form-label fw-semibold small">Marca *</label>
                   <input type="text" class="form-control form-control-sm"
                     [(ngModel)]="regMarcaTexto" (input)="regOnMarcaInput()"
-                    (focus)="regMostrarSugerenciasMarca = true" (blur)="regOcultarSugerenciasMarca()"
+                    (focus)="regMostrarSugerenciasMarca = true"
+                    (blur)="regOcultarSugerenciasMarca()"
                     placeholder="Escribe..." autocomplete="off">
-                  <div class="autocomplete-lista shadow-sm" *ngIf="regMostrarSugerenciasMarca && regMarcasSugeridas.length > 0">
-                    <div class="autocomplete-item" *ngFor="let m of regMarcasSugeridas" (mousedown)="regSeleccionarMarca(m)">{{ m }}</div>
+                  <div class="autocomplete-lista shadow-sm"
+                    *ngIf="regMostrarSugerenciasMarca && regMarcasSugeridas.length > 0">
+                    <div class="autocomplete-item"
+                      *ngFor="let m of regMarcasSugeridas"
+                      (mousedown)="regSeleccionarMarca(m)">{{ m }}</div>
                   </div>
                 </div>
                 <div class="col-12 col-md-3 position-relative">
@@ -533,20 +592,25 @@
                     (blur)="regOcultarSugerenciasModelo()"
                     [disabled]="!regVehiculo.marca" autocomplete="off"
                     [placeholder]="regVehiculo.marca ? 'Escribe...' : 'Primero marca'">
-                  <div class="autocomplete-lista shadow-sm" *ngIf="regMostrarSugerenciasModelo && regModelosSugeridos.length > 0">
-                    <div class="autocomplete-item" *ngFor="let mod of regModelosSugeridos" (mousedown)="regSeleccionarModelo(mod)">{{ mod }}</div>
+                  <div class="autocomplete-lista shadow-sm"
+                    *ngIf="regMostrarSugerenciasModelo && regModelosSugeridos.length > 0">
+                    <div class="autocomplete-item"
+                      *ngFor="let mod of regModelosSugeridos"
+                      (mousedown)="regSeleccionarModelo(mod)">{{ mod }}</div>
                   </div>
                 </div>
                 <div class="col-12 col-md-2">
                   <label class="form-label fw-semibold small">Año *</label>
-                  <select class="form-select form-select-sm" [(ngModel)]="regVehiculo.anio"
+                  <select class="form-select form-select-sm"
+                    [(ngModel)]="regVehiculo.anio"
                     [disabled]="!regVehiculo.modelo">
-                    <option value="">—</option>
+                    <option value>—</option>
                     <option *ngFor="let a of anios" [value]="a">{{ a }}</option>
                   </select>
                 </div>
                 <div class="col-12 col-md-1">
-                  <button class="btn btn-sm btn-danger w-100" (click)="regAgregarVehiculo()"
+                  <button class="btn btn-sm btn-danger w-100"
+                    (click)="regAgregarVehiculo()"
                     [disabled]="!regVehiculo.placa || !regVehiculo.marca || !regVehiculo.modelo || !regVehiculo.anio || regErrorPlaca || regErrorPlacaDuplicada"
                     title="Agregar vehículo">
                     <i class="bi bi-plus"></i>
@@ -559,12 +623,17 @@
 
       </div>
       <div class="modal-footer">
-        <button class="btn btn-outline-secondary" (click)="cerrarRegistroModal()">Cancelar</button>
-        <button class="btn btn-danger" (click)="guardarNuevoClienteDesdeMantenimiento()"
+        <button class="btn btn-outline-secondary"
+          (click)="cerrarRegistroModal()">Cancelar</button>
+        <button class="btn btn-danger"
+          (click)="guardarNuevoClienteDesdeMantenimiento()"
           [disabled]="consultandoDniRegistro || !registroCliente?.nombre?.trim() || !registroCliente?.apellido_paterno?.trim() || !registroCliente?.celular?.trim() || errorCelularRegistro">
-          <span *ngIf="consultandoDniRegistro" class="spinner-border spinner-border-sm me-2"></span>
-          <i *ngIf="!consultandoDniRegistro" class="bi bi-person-check me-1"></i>
-          {{ consultandoDniRegistro ? 'Guardando...' : 'Registrar y seleccionar' }}
+          <span *ngIf="consultandoDniRegistro"
+            class="spinner-border spinner-border-sm me-2"></span>
+          <i *ngIf="!consultandoDniRegistro"
+            class="bi bi-person-check me-1"></i>
+          {{ consultandoDniRegistro ? 'Guardando...' : 'Registrar y seleccionar'
+          }}
         </button>
       </div>
     </div>
@@ -572,19 +641,23 @@
 </div>
 
 <!-- Modal de Repuestos del Servicio - Ventana Flotante -->
-<div class="modal fade show d-block" *ngIf="showRepuestosModal" tabindex="-1" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); z-index: 9999;">
+<div class="modal fade show d-block" *ngIf="showRepuestosModal" tabindex="-1"
+  style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); z-index: 9999;">
   <div class="modal-dialog modal-lg modal-dialog-centered">
     <div class="modal-content">
       <div class="modal-header bg-danger text-white">
         <h5 class="modal-title">
-          <i class="bi bi-tools me-2"></i>Repuestos del Servicio: {{ servicioSeleccionado?.nombre }}
+          <i class="bi bi-tools me-2"></i>Repuestos del Servicio: {{
+          servicioSeleccionado?.nombre }}
         </h5>
-        <button type="button" class="btn-close btn-close-white" (click)="cerrarModalRepuestos()"></button>
+        <button type="button" class="btn-close btn-close-white"
+          (click)="cerrarModalRepuestos()"></button>
       </div>
       <div class="modal-body">
         <div class="alert alert-info small">
           <i class="bi bi-info-circle me-2"></i>
-          Este servicio requiere los siguientes repuestos. Por favor, confirme las cantidades a usar.
+          Este servicio requiere los siguientes repuestos. Por favor, confirme
+          las cantidades a usar.
         </div>
 
         <div class="table-responsive">
@@ -602,31 +675,38 @@
               <tr *ngFor="let rep of repuestosModal">
                 <td class="fw-semibold">{{ rep.nombre_repuesto }}</td>
                 <td class="text-center">
-                  <span class="badge bg-warning text-dark">{{ rep.cantidad }}</span>
+                  <span class="badge bg-warning text-dark">{{ rep.cantidad
+                    }}</span>
                 </td>
                 <td class="text-center">
-                  <input type="number" class="form-control form-control-sm text-center" 
+                  <input type="number"
+                    class="form-control form-control-sm text-center"
                     style="width: 80px;"
                     [(ngModel)]="rep.cantidad_usar"
                     (ngModelChange)="actualizarCantidadRepuesto(rep, $event)"
                     min="1" [max]="rep.cantidad">
                 </td>
-                <td class="text-end">S/ {{ rep.precio_unitario | number:'1.2-2' }}</td>
-                <td class="text-end fw-bold text-danger">S/ {{ rep.subtotal | number:'1.2-2' }}</td>
+                <td class="text-end">S/ {{ rep.precio_unitario | number:'1.2-2'
+                  }}</td>
+                <td class="text-end fw-bold text-danger">S/ {{ rep.subtotal |
+                  number:'1.2-2' }}</td>
               </tr>
             </tbody>
             <tfoot>
               <tr class="table-light fw-bold">
                 <td colspan="4" class="text-end">Total Repuestos:</td>
-                <td class="text-end text-danger">S/ {{ getTotalRepuestos() | number:'1.2-2' }}</td>
+                <td class="text-end text-danger">S/ {{ getTotalRepuestos() |
+                  number:'1.2-2' }}</td>
               </tr>
             </tfoot>
           </table>
         </div>
       </div>
       <div class="modal-footer">
-        <button class="btn btn-outline-secondary" (click)="cerrarModalRepuestos()">Cancelar</button>
-        <button class="btn btn-danger" (click)="confirmarRepuestos(items[items.length - 1])">
+        <button class="btn btn-outline-secondary"
+          (click)="cerrarModalRepuestos()">Cancelar</button>
+        <button class="btn btn-danger"
+          (click)="confirmarRepuestos(items[items.length - 1])">
           <i class="bi bi-check-circle me-2"></i>Confirmar Repuestos
         </button>
       </div>

@@ -39,7 +39,7 @@
         </div>
         <div class="col-6 col-md-3">
           <label class="form-label small fw-semibold">Fecha de emisión</label>
-          <input type="date" class="form-control form-control-sm" [(ngModel)]="fechaEmision">
+          <input type="date" class="form-control form-control-sm" [(ngModel)]="fechaEmision" [min]="fechaEmision">
         </div>
       </div>
     </div>

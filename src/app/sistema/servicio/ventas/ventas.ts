@@ -46,6 +46,7 @@ export class Ventas implements OnInit {
   ventas: VentaResumen[] = [];
   cargandoTabla = true;
   busqueda = '';
+  fechaFiltro = '';
   paginaActual = 1;
   porPagina = 10;
   totalRegistros = 0;
@@ -126,7 +127,21 @@ export class Ventas implements OnInit {
     this.cargarVentas();
   }
 
+  get ventasFiltradas(): VentaResumen[] {
+    if (!this.fechaFiltro) return this.ventas;
+    return this.ventas.filter(v => v.fecha === this.fechaFiltro);
+  }
+
   cambiarPorPagina() { this.paginaActual = 1; this.cargarVentas(); }
 
   nuevaVenta() { this.router.navigate(['/sistema/servicio/ventas/crear']); }
+
+  get hoy(): string {
+    return new Date().toISOString().split('T')[0];
+  }
+
+  onFechaChange() {
+    this.paginaActual = 1;
+    this.cargarVentas();
+  }
 }

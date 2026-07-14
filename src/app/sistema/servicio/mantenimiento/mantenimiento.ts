@@ -5,16 +5,19 @@ import { FormsModule } from '@angular/forms';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Router, RouterOutlet, NavigationEnd } from '@angular/router';
 import { filter } from 'rxjs/operators';
+import Swal from 'sweetalert2';
 
 interface OrdenResumen {
   idOrdenServicio:     number;
   hora:                string;
+  fecha?:              string;
   cliente:             string;
   dniCliente:          string;
   descripcionVehiculo: string;
   precioManoObra:      number;
   precioTotal:         number;
   estado:              string;
+  tecnicos?:           string;
 }
 
 interface ResumenMantenimiento {
@@ -45,6 +48,7 @@ export class Mantenimiento implements OnInit {
   ordenes: OrdenResumen[] = [];
   cargandoTabla = true;
   busqueda = '';
+  fechaFiltro = '';
   paginaActual = 1;
   porPagina = 10;
   totalRegistros = 0;
@@ -74,10 +78,23 @@ export class Mantenimiento implements OnInit {
 
   cargarResumen() {
     this.cargandoResumen = true;
-    this.http.get<ResumenMantenimiento>(`${this.URL}/resumen`).subscribe({
-      next:  (r) => { this.resumen = r; this.cargandoResumen = false; },
-      error: ()  => { this.cargandoResumen = false; }
+    this.http.get<any>(`${this.URL}/listar`, { 
+      params: new HttpParams().set('pagina', 1).set('porPagina', 1000).set('busqueda', '')
+    }).subscribe({
+      next: (res) => {
+        const todasLasOrdenes = res.datos || [];
+        this.calcularResumen(todasLasOrdenes);
+        this.cargandoResumen = false;
+      },
+      error: () => { this.cargandoResumen = false; }
     });
+  }
+
+  calcularResumen(ordenes: any[]) {
+    const totalOrdenes = ordenes.length;
+    const montoTotal = ordenes.reduce((sum, o) => sum + (o.precioTotal || 0), 0);
+    const ticketPromedio = totalOrdenes > 0 ? montoTotal / totalOrdenes : 0;
+    this.resumen = { totalOrdenes, montoTotal, ticketPromedio };
   }
 
   cargarOrdenes() {
@@ -94,6 +111,7 @@ export class Mantenimiento implements OnInit {
         this.totalPaginas    = res.totalPaginas   || 0;
         this.paginaActual    = res.paginaActual   || 1;
         this.cargandoTabla   = false;
+        this.calcularResumen(this.ordenes);
         this.cdr.detectChanges();
       },
       error: () => { this.cargandoTabla = false; this.cdr.detectChanges(); }
@@ -120,9 +138,23 @@ export class Mantenimiento implements OnInit {
     this.cargarOrdenes();
   }
 
+  get ordenesFiltradas(): OrdenResumen[] {
+    if (!this.fechaFiltro) return this.ordenes;
+    return this.ordenes.filter(o => o.fecha === this.fechaFiltro);
+  }
+
   cambiarPorPagina() { this.paginaActual = 1; this.cargarOrdenes(); }
 
   nuevoMantenimiento() { this.router.navigate(['/sistema/servicio/mantenimiento/crear']); }
+
+  get hoy(): string {
+    return new Date().toISOString().split('T')[0];
+  }
+
+  onFechaChange() {
+    this.paginaActual = 1;
+    this.cargarOrdenes();
+  }
 
   badgeEstado(estado: string): string {
     switch (estado?.toLowerCase()) {
@@ -131,5 +163,47 @@ export class Mantenimiento implements OnInit {
       case 'pendiente':  return 'bg-secondary';
       default:           return 'bg-light text-dark border';
     }
+  }
+
+  cambiarEstado(orden: OrdenResumen, event: Event) {
+    const select = event.target as HTMLSelectElement;
+    const nuevoEstado = select.value;
+    const estadoAnterior = orden.estado;
+
+    Swal.fire({
+      title: '¿Cambiar estado?',
+      html: `La orden <b>#${orden.idOrdenServicio}</b> pasará de <b>${estadoAnterior}</b> a <b>${nuevoEstado}</b>`,
+      icon: 'question',
+      showCancelButton: true,
+      confirmButtonText: 'Sí, cambiar',
+      cancelButtonText: 'Cancelar',
+      confirmButtonColor: '#dc3545',
+    }).then((result) => {
+      if (!result.isConfirmed) {
+        select.value = estadoAnterior;
+        return;
+      }
+      orden.estado = nuevoEstado;
+      const usuario = JSON.parse(localStorage.getItem('currentUser') || '{}').username || 'sistema';
+      this.http.put(`${this.URL}/editar-estado`, {
+        usuario_logueado: usuario,
+        id_orden_servicio: orden.idOrdenServicio,
+        nuevo_estado: nuevoEstado
+      }).subscribe({
+        next: (res: any) => {
+          if (res.status === 'OK') {
+            Swal.fire({ icon: 'success', title: 'Estado actualizado', timer: 1500, showConfirmButton: false });
+            this.cargarOrdenes();
+          } else {
+            Swal.fire({ icon: 'error', title: 'Error', text: res.mensaje });
+            this.cargarOrdenes();
+          }
+        },
+        error: () => {
+          Swal.fire({ icon: 'error', title: 'Error', text: 'No se pudo cambiar el estado' });
+          this.cargarOrdenes();
+        }
+      });
+    });
   }
 }

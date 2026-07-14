@@ -60,12 +60,23 @@
   <!-- Tabla -->
   <div class="card border-0 shadow-sm">
     <div class="card-body p-3">
-      <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
-        <div class="input-group shadow-sm" style="max-width:320px;">
-          <span class="input-group-text bg-white"><i class="bi bi-search text-muted"></i></span>
-          <input type="text" class="form-control bg-white"
-            placeholder="Buscar cliente, DNI o N° orden..."
-            [(ngModel)]="busqueda" (input)="onBusqueda()">
+      <div class="d-flex justify-content-between align-items-center gap-2 mb-3">
+        <div class="d-flex align-items-center gap-2 text-nowrap">
+          <div class="input-group shadow-sm" style="width:auto;">
+            <span class="input-group-text bg-white"><i class="bi bi-search text-muted"></i></span>
+            <input type="text" class="form-control bg-white"
+              placeholder="Buscar cliente, DNI o N° orden..."
+              [(ngModel)]="busqueda" (input)="onBusqueda()">
+          </div>
+          <div class="input-group shadow-sm" style="width:auto;">
+            <span class="input-group-text bg-white"><i class="bi bi-calendar text-muted"></i></span>
+            <input type="date" class="form-control bg-white"
+              [(ngModel)]="fechaFiltro" (ngModelChange)="onFechaChange()"
+              [max]="hoy">
+            <button class="btn btn-outline-secondary" *ngIf="fechaFiltro" (click)="fechaFiltro=''; onFechaChange()">
+              <i class="bi bi-x"></i>
+            </button>
+          </div>
         </div>
         <div class="d-flex align-items-center gap-2 text-muted small">
           <span>Mostrar</span>
@@ -102,13 +113,13 @@
                 </td>
               </tr>
             </ng-container>
-            <tr *ngIf="!cargandoTabla && ventas.length === 0">
+            <tr *ngIf="!cargandoTabla && ventasFiltradas.length === 0">
               <td colspan="9" class="text-center py-5 text-muted">
                 <i class="bi bi-inbox fs-3 d-block mb-2"></i>
-                {{ busqueda ? 'No se encontraron resultados para "' + busqueda + '"' : 'Aún no hay ventas registradas' }}
+                {{ busqueda || fechaFiltro ? 'No se encontraron resultados' : 'Aún no hay ventas registradas' }}
               </td>
             </tr>
-            <tr *ngFor="let v of ventas">
+            <tr *ngFor="let v of ventasFiltradas">
               <td><span class="badge bg-light text-dark border">#{{ v.n_orden }}</span></td>
               <td class="small text-muted">{{ v.productos || 'Ninguno' }}</td>
               <td class="small text-muted">{{ v.fecha }}</td>

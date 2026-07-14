@@ -33,6 +33,7 @@ interface Tecnico {
   id_trabajador:   number;
   nombre_completo: string;
   cargo:           string;
+  nro_documento:   string;
 }
 
 interface ItemServicio {
@@ -84,6 +85,7 @@ export class CrearMantenimiento implements OnInit {
 
   // ── Cabecera ─────────────────────────────────────────────────────────────────
   fechaEmision: string = new Date().toISOString().split('T')[0];
+  fechaMinima: string = new Date().toISOString().split('T')[0];
   descripcionVehiculo  = '';
   precioManoObra       = 0;
   idEstado             = 1;
@@ -827,7 +829,9 @@ export class CrearMantenimiento implements OnInit {
   confirmarRepuestos(item: ItemServicio) {
     if (!this.servicioSeleccionado) return;
     item.servicio = this.servicioSeleccionado;
-    item.precio_subtotal = (this.servicioSeleccionado.precio || 0) * item.cantidad;
+    const totalRepuestos = this.getTotalRepuestos();
+    item.servicio.precio = totalRepuestos;
+    item.precio_subtotal = totalRepuestos;
     item.busqueda = '';
     item.resultados = [];
     item.mostrarDropdown = false;
@@ -910,19 +914,32 @@ export class CrearMantenimiento implements OnInit {
       return;
     }
 
+    // Obtener placa del vehículo seleccionado
+    const placa = this.vehiculoSeleccionado ? this.vehiculoSeleccionado.placa : this.descripcionVehiculo;
+
+    // Construir items en formato JSONB
+    const itemsArray = this.items
+      .filter(it => it.servicio.id_servicio > 0 && it.id_trabajador > 0)
+      .map(it => ({
+        nombre_servicio: it.servicio.nombre,
+        documento_trabajador: this.tecnicos.find(t => t.id_trabajador === it.id_trabajador)?.nro_documento || '',
+        cantidad: 1,
+        precio_unitario: it.precio_subtotal,
+        repuestos: it.repuestos.map(r => ({
+          nombre_repuesto: r.nombre_repuesto,
+          cantidad: r.cantidad_usar || r.cantidad,
+        })),
+      }));
+
+    const itemsJson = JSON.stringify(itemsArray);
+
     const payload = {
-      cliente:              { ...this.cliente },
-      descripcion_vehiculo: this.descripcionVehiculo,
-      precio_mano_obra:     this.precioManoObra,
-      precio_total:         this.total,
-      id_estado:            this.idEstado,
-      items: this.items.map(it => ({
-        id_servicio:     it.servicio.id_servicio,
-        id_trabajador:   it.id_trabajador,
-        cantidad:        it.cantidad,
-        precio_subtotal: it.precio_subtotal,
-        repuestos:       it.repuestos,
-      })),
+      cliente_dni: this.cliente.dni,
+      placa: placa,
+      estado: this.idEstado === 1 ? 'Pendiente' : this.idEstado === 2 ? 'En proceso' : 'Completado',
+      fecha: this.fechaEmision,
+      nota: this.nota ? this.nota : '',
+      items_json: itemsJson,
     };
 
     this.guardando = true;
@@ -938,7 +955,7 @@ export class CrearMantenimiento implements OnInit {
       },
       error: (err) => {
         this.guardando = false;
-        Swal.fire('Error', err.error || 'No se pudo registrar la orden', 'error');
+        Swal.fire('Error', err.error?.error || err.error?.mensaje || 'No se pudo registrar la orden', 'error');
       },
     });
   }
