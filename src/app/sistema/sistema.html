@@ -61,6 +61,9 @@
             </a>
 
             <div class="sidebar-divider"></div>
+            <a routerLink="/sistema/auditoria" class="sidebar-link" routerLinkActive="sidebar-link--active">
+                <i class="bi bi-clock-history"></i> Auditoría
+            </a>
             <a *ngIf="tieneAcceso('Configuración') || tieneAcceso('configuraciones')" routerLink="/sistema/configuracion" class="sidebar-link" routerLinkActive="sidebar-link--active">
                 <i class="bi bi-gear"></i> Configuración
             </a>
@@ -161,6 +164,9 @@
             </a>
 
             <div class="sidebar-divider"></div>
+            <a routerLink="/sistema/auditoria" data-bs-dismiss="offcanvas" class="sidebar-link" routerLinkActive="sidebar-link--active">
+                <i class="bi bi-clock-history"></i> Auditoría
+            </a>
             <a *ngIf="tieneAcceso('Configuración')" routerLink="/sistema/configuracion" data-bs-dismiss="offcanvas" class="sidebar-link" routerLinkActive="sidebar-link--active">
                 <i class="bi bi-gear"></i> Configuración
             </a>

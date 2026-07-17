@@ -37,6 +37,8 @@ import { AgregarCliente } from './sistema/cliente/agregar-cliente/agregar-client
 import { EditarCliente } from './sistema/cliente/editar-cliente/editar-cliente';
 import { Compra } from './sistema/compra/compra';
 import { NuevaCompra } from './sistema/compra/nueva-compra/nueva-compra';
+import { Auditoria } from './sistema/auditoria/auditoria';
+import { DetallesAuditoria } from './sistema/auditoria/detalles-auditoria/detalles-auditoria';
 
 export const routes: Routes = [
   { path: '', redirectTo: 'login', pathMatch: 'full' },
@@ -48,6 +50,12 @@ export const routes: Routes = [
     children: [
       { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
       { path: 'dashboard', component: Dashboard },
+      { path: 'auditoria',
+        component: Auditoria,
+        children: [
+          { path: 'detalles-auditoria', component: DetallesAuditoria },
+        ],
+      },
       {
         path: 'cliente',
         component: Cliente,

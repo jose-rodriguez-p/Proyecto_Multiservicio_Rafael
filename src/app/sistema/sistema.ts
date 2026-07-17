@@ -17,6 +17,7 @@ export class Sistema implements OnInit {
 
   private rutaNombres: { [key: string]: string } = {
     'dashboard':        'Dashboard',
+    'auditoria':        'Auditoría',
     'cliente':          'Clientes',
     'producto':         'Productos',
     'reabastecimiento': 'Reabastecimiento',
