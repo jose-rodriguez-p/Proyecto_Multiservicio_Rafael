@@ -6,8 +6,6 @@ import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
 import Swal from 'sweetalert2';
 
-// ─── Interfaces ───────────────────────────────────────────────────────────────
-
 interface RepuestoServicio {
   nombre_repuesto: string;
   cantidad:        number;
@@ -38,7 +36,6 @@ interface Tecnico {
 
 interface ItemServicio {
   servicio:        Servicio;
-  id_trabajador:   number;
   cantidad:        number;
   precio_subtotal: number;
   busqueda:        string;
@@ -64,8 +61,6 @@ interface Cliente {
   correo:            string;
 }
 
-// ─── Component ────────────────────────────────────────────────────────────────
-
 @Component({
   selector: 'app-crear-mantenimiento',
   standalone: true,
@@ -83,31 +78,27 @@ export class CrearMantenimiento implements OnInit {
   private URL         = `${API_BASE_URL}/api/mantenimiento`;
   private URL_CLIENTES = `${API_BASE_URL}/api/clientes`;
 
-  // ── Cabecera ─────────────────────────────────────────────────────────────────
   fechaEmision: string = new Date().toISOString().split('T')[0];
   fechaMinima: string = new Date().toISOString().split('T')[0];
   descripcionVehiculo  = '';
   precioManoObra       = 0;
   idEstado             = 1;
+  idTecnico            = 0;
   nota                 = '';
 
-  // ── Técnico responsable (usuario logueado) ────────────────────────────────
   tecnicoLogueado = { nombre: '', cargo: '', codigo: '' };
 
-  // ── Cliente ──────────────────────────────────────────────────────────────────
   cliente: Cliente = this.clienteVacioFactory();
   dniBusqueda       = '';
   buscandoCliente   = false;
   clienteEncontrado = false;
   dniBuscado        = false;
 
-  // ── Vehículos del cliente ────────────────────────────────────────────────────
   clientVehicles:      Vehiculo[] = [];
   showVehicleModal     = false;
   mostrandoFormVehiculo = false;
   vehiculoSeleccionado: Vehiculo | null = null;
 
-  // ── Formulario nuevo vehículo (modal selección) ──────────────────────────────
   nuevoVehiculo: Vehiculo = this.vehiculoVacioFactory();
 
   marcaTexto = '';
@@ -117,7 +108,6 @@ export class CrearMantenimiento implements OnInit {
   errorPlaca = false;
   errorPlacaDuplicada = false;
 
-  // ── Registro de nuevo cliente ────────────────────────────────────────────────
   showRegistroModal      = false;
   registroCliente: any   = null;
   dniValidadoRegistro    = false;
@@ -169,22 +159,18 @@ export class CrearMantenimiento implements OnInit {
     'GAC':           ['Empow', 'GN8', 'GS3', 'GS4', 'GS5', 'GS8', 'M6'],
   };
 
-  // ── Catálogos ────────────────────────────────────────────────────────────────
   servicios:        Servicio[] = [];
   tecnicos:         Tecnico[]  = [];
   productos:        Producto[] = [];
   cargandoCatalogos = false;
 
-  // ── Modal de repuestos del servicio ───────────────────────────────────────
   showRepuestosModal = false;
   servicioSeleccionado: Servicio | null = null;
   repuestosModal: RepuestoServicio[] = [];
   cargandoProductos = false;
 
-  // ── Ítems de la orden ────────────────────────────────────────────────────────
   items: ItemServicio[] = [];
 
-  // ── Estado UI ───────────────────────────────────────────────────────────────
   guardando = false;
 
   ngOnInit() {
@@ -195,7 +181,6 @@ export class CrearMantenimiento implements OnInit {
     }
   }
 
-  // ── Cerrar dropdowns al hacer clic fuera ────────────────────────────────────
   @HostListener('document:click', ['$event'])
   onDocumentClick(event: MouseEvent) {
     const target = event.target as HTMLElement;
@@ -204,13 +189,12 @@ export class CrearMantenimiento implements OnInit {
     }
   }
 
-  // ── Técnico logueado ─────────────────────────────────────────────────────────
   cargarTecnicoLogueado() {
     try {
       const user = JSON.parse(localStorage.getItem('currentUser') || '{}');
       this.tecnicoLogueado = {
-        nombre: user.trabajadorCompleto || user.username || 'Sin nombre',
-        cargo:  user.rolNombre || '',
+        nombre: user.nombre || user.username || 'Sin nombre',
+        cargo:  user.rolNombre || user.rol || '',
         codigo: user.username || '',
       };
     } catch {
@@ -218,12 +202,10 @@ export class CrearMantenimiento implements OnInit {
     }
   }
 
-  // ── Catálogos ────────────────────────────────────────────────────────────────
   cargarCatalogos() {
     this.cargandoCatalogos = true;
     this.http.get<any[]>(`${API_BASE_URL}/api/configuracion/servicios`).subscribe({
       next: (r) => {
-        console.log('Servicios cargados:', r);
         this.servicios = (r || []).map((s: any) => ({
           id_servicio: s.id_servicio,
           nombre: s.nombre,
@@ -233,8 +215,7 @@ export class CrearMantenimiento implements OnInit {
         }));
         this.cargandoCatalogos = false;
       },
-      error: (e) => {
-        console.error('Error cargando servicios:', e);
+      error: () => {
         this.cargandoCatalogos = false;
       },
     });
@@ -248,21 +229,17 @@ export class CrearMantenimiento implements OnInit {
     this.cargandoProductos = true;
     this.http.get<any[]>(`${API_BASE_URL}/api/productos/listar-repuestos`).subscribe({
       next: (r) => {
-        console.log('Productos cargados:', r);
         this.productos = (r || []).map((p: any) => ({
           nombre: p.nombre_repuesto || p.nombre,
           precio_venta: p.precio_venta || 0,
         }));
         this.cargandoProductos = false;
       },
-      error: (e) => {
-        console.error('Error cargando productos:', e);
+      error: () => {
         this.cargandoProductos = false;
       },
     });
   }
-
-  // ── BUSCAR CLIENTE POR DNI ──────────────────────────────────────────────────
 
   onDniInput() {
     const dni = this.dniBusqueda.replace(/\D/g, '');
@@ -379,8 +356,6 @@ export class CrearMantenimiento implements OnInit {
   validarCelularRegistro() {
     this.errorCelularRegistro = this.registroCliente?.celular && !/^9\d{8}$/.test(this.registroCliente.celular);
   }
-
-  // ── Registro: Marca/Modelo autocomplete ──────────────────────────────────
 
   get regMarcas(): string[] {
     return Object.keys(this.catalogoMarcas).sort();
@@ -603,8 +578,6 @@ export class CrearMantenimiento implements OnInit {
     });
   }
 
-  // ── MODAL VEHÍCULOS ─────────────────────────────────────────────────────────
-
   openVehicleModal() {
     this.mostrandoFormVehiculo = false;
     this.showVehicleModal = true;
@@ -626,8 +599,6 @@ export class CrearMantenimiento implements OnInit {
     this.descripcionVehiculo = `${v.marca} ${v.modelo} - ${v.placa}`;
     this.showVehicleModal = false;
   }
-
-  // ── AUTOCOMPLETE Marca / Modelo ─────────────────────────────────────────────
 
   get marcas(): string[] {
     return Object.keys(this.catalogoMarcas).sort();
@@ -774,8 +745,6 @@ export class CrearMantenimiento implements OnInit {
     return { placa: '', marca: '', modelo: '', anio: '' };
   }
 
-  // ── Helpers ──────────────────────────────────────────────────────────────────
-
   private clienteVacioFactory(): Cliente {
     return { dni: '', nombre: '', apellido_paterno: '', apellido_materno: '', celular: '', correo: '' };
   }
@@ -784,8 +753,6 @@ export class CrearMantenimiento implements OnInit {
     const parts = [this.cliente.nombre, this.cliente.apellido_paterno, this.cliente.apellido_materno];
     return parts.filter(Boolean).join(' ') || '—';
   }
-
-  // ── Filtro servicios por fila ────────────────────────────────────────────────
 
   filtrarServiciosItem(item: ItemServicio) {
     const q = item.busqueda.toLowerCase().trim();
@@ -858,12 +825,9 @@ export class CrearMantenimiento implements OnInit {
     item.repuestos       = [];
   }
 
-  // ── Items ────────────────────────────────────────────────────────────────────
-
   agregarItem() {
     this.items.push({
       servicio:        { id_servicio: 0, nombre: '', estado: '', precio: 0, repuestos: [] },
-      id_trabajador:   0,
       cantidad:        1,
       precio_subtotal: 0,
       busqueda:        '',
@@ -881,48 +845,42 @@ export class CrearMantenimiento implements OnInit {
     item.precio_subtotal = (item.servicio.precio || 0) * item.cantidad;
   }
 
-  // ── Totales ──────────────────────────────────────────────────────────────────
-
   get subtotalServicios(): number {
     return this.items.reduce((s, it) => s + it.precio_subtotal, 0);
   }
 
   get igv(): number {
-    return (this.subtotalServicios + this.precioManoObra) * 0.18;
+    const base = this.subtotalServicios + this.precioManoObra;
+    return base - (base / 1.18);
   }
 
   get total(): number {
-    return this.subtotalServicios + this.precioManoObra + this.igv;
+    return this.subtotalServicios + this.precioManoObra;
   }
-
-  // ── Validación ───────────────────────────────────────────────────────────────
 
   itemsValidos(): boolean {
     return this.items.length > 0 &&
-           this.items.every(it => it.servicio.id_servicio > 0 && it.id_trabajador > 0 && it.cantidad > 0);
+           this.items.every(it => it.servicio.id_servicio > 0 && it.cantidad > 0);
   }
 
   formularioValido(): boolean {
-    return this.clienteEncontrado && !!this.descripcionVehiculo.trim() && this.itemsValidos();
+    return this.clienteEncontrado && !!this.descripcionVehiculo.trim() && this.idTecnico > 0 && this.itemsValidos();
   }
-
-  // ── Registrar ────────────────────────────────────────────────────────────────
 
   confirmarMantenimiento() {
     if (!this.formularioValido()) {
-      Swal.fire('Datos incompletos', 'Seleccione un cliente con DNI, un vehículo y al menos un servicio con técnico asignado.', 'warning');
+      Swal.fire('Datos incompletos', 'Seleccione un cliente con DNI, un vehículo, un técnico y al menos un servicio.', 'warning');
       return;
     }
 
-    // Obtener placa del vehículo seleccionado
     const placa = this.vehiculoSeleccionado ? this.vehiculoSeleccionado.placa : this.descripcionVehiculo;
+    const documentoTecnico = this.tecnicos.find(t => t.id_trabajador === this.idTecnico)?.nro_documento || '';
 
-    // Construir items en formato JSONB
     const itemsArray = this.items
-      .filter(it => it.servicio.id_servicio > 0 && it.id_trabajador > 0)
+      .filter(it => it.servicio.id_servicio > 0)
       .map(it => ({
         nombre_servicio: it.servicio.nombre,
-        documento_trabajador: this.tecnicos.find(t => t.id_trabajador === it.id_trabajador)?.nro_documento || '',
+        documento_trabajador: documentoTecnico,
         cantidad: 1,
         precio_unitario: it.precio_subtotal,
         repuestos: it.repuestos.map(r => ({
@@ -969,6 +927,7 @@ export class CrearMantenimiento implements OnInit {
     this.vehiculoSeleccionado = null;
     this.descripcionVehiculo = '';
     this.precioManoObra      = 0;
+    this.idTecnico           = 0;
     this.nota                = '';
     this.items               = [];
     this.agregarItem();

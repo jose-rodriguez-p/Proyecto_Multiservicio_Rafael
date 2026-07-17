@@ -18,6 +18,9 @@ interface OrdenResumen {
   precioTotal:         number;
   estado:              string;
   tecnicos?:           string;
+  nota?:               string;
+  usuarioRegistro?:    string;
+  detalle?:            any[];
 }
 
 interface ResumenMantenimiento {
@@ -25,6 +28,8 @@ interface ResumenMantenimiento {
   montoTotal:     number;
   ticketPromedio: number;
 }
+
+type RangoFecha = 'hoy' | 'semana' | 'mes' | 'año' | '';
 
 @Component({
   selector: 'app-mantenimiento',
@@ -41,18 +46,28 @@ export class Mantenimiento implements OnInit {
 
   private URL = `${API_BASE_URL}/api/mantenimiento`;
 
-  resumen: ResumenMantenimiento = { totalOrdenes: 0, montoTotal: 0, ticketPromedio: 0 };
-  cargandoResumen = true;
   enCrear = false;
-
-  ordenes: OrdenResumen[] = [];
   cargandoTabla = true;
+
+  // Traemos TODAS las órdenes una sola vez; todo lo demás se filtra en el cliente.
+  // Límite de seguridad: si algún día superas ~2000 órdenes, hay que mover el filtro al backend.
+  private todasOrdenes: OrdenResumen[] = [];
+
   busqueda = '';
-  fechaFiltro = '';
+
+  // Filtro de rango de fechas
+  fechaInicio = '';
+  fechaFin = '';
+  rangoActivo: RangoFecha = 'mes';
+
   paginaActual = 1;
   porPagina = 10;
-  totalRegistros = 0;
-  totalPaginas = 0;
+
+  // Modal detalle
+  showModalDetalle = false;
+  ordenSeleccionada: OrdenResumen | null = null;
+  nuevoEstadoSeleccionado = '';
+  metodoPagoSeleccionado = 'Efectivo';
 
   constructor() {
     this.router.events.pipe(
@@ -61,7 +76,7 @@ export class Mantenimiento implements OnInit {
       this.enCrear = e.urlAfterRedirects.includes('/mantenimiento/crear');
       this.cdr.detectChanges();
       if (isPlatformBrowser(this.platformId) && !this.enCrear) {
-        this.cargarOrdenes();
+        this.cargarTodo();
       }
     });
   }
@@ -70,57 +85,88 @@ export class Mantenimiento implements OnInit {
     if (isPlatformBrowser(this.platformId)) {
       this.enCrear = this.router.url.includes('/mantenimiento/crear');
       if (!this.enCrear) {
-        this.cargarResumen();
-        this.cargarOrdenes();
+        this.setRango('mes');
+        this.cargarTodo();
       }
     }
   }
 
-  cargarResumen() {
-    this.cargandoResumen = true;
-    this.http.get<any>(`${this.URL}/listar`, { 
-      params: new HttpParams().set('pagina', 1).set('porPagina', 1000).set('busqueda', '')
-    }).subscribe({
-      next: (res) => {
-        const todasLasOrdenes = res.datos || [];
-        this.calcularResumen(todasLasOrdenes);
-        this.cargandoResumen = false;
-      },
-      error: () => { this.cargandoResumen = false; }
-    });
-  }
-
-  calcularResumen(ordenes: any[]) {
-    const totalOrdenes = ordenes.length;
-    const montoTotal = ordenes.reduce((sum, o) => sum + (o.precioTotal || 0), 0);
-    const ticketPromedio = totalOrdenes > 0 ? montoTotal / totalOrdenes : 0;
-    this.resumen = { totalOrdenes, montoTotal, ticketPromedio };
-  }
-
-  cargarOrdenes() {
+  cargarTodo() {
     this.cargandoTabla = true;
     const params = new HttpParams()
-      .set('pagina',    this.paginaActual)
-      .set('porPagina', this.porPagina)
-      .set('busqueda',  this.busqueda.trim());
+      .set('pagina', 1)
+      .set('porPagina', 2000)
+      .set('busqueda', '');
 
     this.http.get<any>(`${this.URL}/listar`, { params }).subscribe({
       next: (res) => {
-        this.ordenes         = res.datos          || [];
-        this.totalRegistros  = res.totalRegistros || 0;
-        this.totalPaginas    = res.totalPaginas   || 0;
-        this.paginaActual    = res.paginaActual   || 1;
-        this.cargandoTabla   = false;
-        this.calcularResumen(this.ordenes);
+        console.log('Datos recibidos del backend:', res);
+        this.todasOrdenes = (res.datos || []).map((orden: any) => {
+          // Parsear detalle si viene como string
+          if (orden.detalle && typeof orden.detalle === 'string') {
+            try {
+              orden.detalle = JSON.parse(orden.detalle);
+            } catch (e) {
+              console.error('Error parseando detalle:', e);
+              orden.detalle = [];
+            }
+          }
+          return orden;
+        });
+        console.log('Primera orden después de parse:', this.todasOrdenes[0]);
+        this.cargandoTabla = false;
         this.cdr.detectChanges();
       },
       error: () => { this.cargandoTabla = false; this.cdr.detectChanges(); }
     });
   }
 
+  // --- Filtrado en el cliente ---
+
+  get ordenesFiltradas(): OrdenResumen[] {
+    const texto = this.busqueda.trim().toLowerCase();
+
+    return this.todasOrdenes.filter(o => {
+      const coincideTexto = !texto ||
+        o.cliente?.toLowerCase().includes(texto) ||
+        o.dniCliente?.toLowerCase().includes(texto) ||
+        String(o.idOrdenServicio).includes(texto);
+
+      const fechaOrden = o.fecha ?? '';
+      const dentroInicio = !this.fechaInicio || fechaOrden >= this.fechaInicio;
+      const dentroFin = !this.fechaFin || fechaOrden <= this.fechaFin;
+
+      return coincideTexto && dentroInicio && dentroFin;
+    });
+  }
+
+  get ordenes(): OrdenResumen[] {
+    const inicio = (this.paginaActual - 1) * this.porPagina;
+    return this.ordenesFiltradas.slice(inicio, inicio + this.porPagina);
+  }
+
+  get totalRegistros(): number {
+    return this.ordenesFiltradas.length;
+  }
+
+  get totalPaginas(): number {
+    return Math.max(1, Math.ceil(this.totalRegistros / this.porPagina));
+  }
+
+  get resumen(): ResumenMantenimiento {
+    const lista = this.ordenesFiltradas;
+    const totalOrdenes = lista.length;
+    const montoTotal = lista.reduce((sum, o) => sum + (o.precioTotal || 0), 0);
+    const ticketPromedio = totalOrdenes > 0 ? montoTotal / totalOrdenes : 0;
+    return { totalOrdenes, montoTotal, ticketPromedio };
+  }
+
+  get cargandoResumen(): boolean {
+    return this.cargandoTabla;
+  }
+
   onBusqueda() {
     this.paginaActual = 1;
-    this.cargarOrdenes();
   }
 
   get paginas(): number[] {
@@ -135,15 +181,9 @@ export class Mantenimiento implements OnInit {
   irPagina(p: number) {
     if (p < 1 || p > this.totalPaginas || p === this.paginaActual) return;
     this.paginaActual = p;
-    this.cargarOrdenes();
   }
 
-  get ordenesFiltradas(): OrdenResumen[] {
-    if (!this.fechaFiltro) return this.ordenes;
-    return this.ordenes.filter(o => o.fecha === this.fechaFiltro);
-  }
-
-  cambiarPorPagina() { this.paginaActual = 1; this.cargarOrdenes(); }
+  cambiarPorPagina() { this.paginaActual = 1; }
 
   nuevoMantenimiento() { this.router.navigate(['/sistema/servicio/mantenimiento/crear']); }
 
@@ -151,9 +191,45 @@ export class Mantenimiento implements OnInit {
     return new Date().toISOString().split('T')[0];
   }
 
-  onFechaChange() {
+  // --- Selector de rango de fechas ---
+
+  setRango(tipo: RangoFecha) {
+    if (!tipo) return;
+    const hoy = new Date();
+    let inicio: Date, fin: Date;
+
+    if (tipo === 'hoy') {
+      inicio = new Date(hoy);
+      fin = new Date(hoy);
+    } else if (tipo === 'semana') {
+      const dia = hoy.getDay() === 0 ? 7 : hoy.getDay();
+      inicio = new Date(hoy);
+      inicio.setDate(hoy.getDate() - dia + 1);
+      fin = new Date(hoy);
+    } else if (tipo === 'mes') {
+      inicio = new Date(hoy.getFullYear(), hoy.getMonth(), 1);
+      fin = new Date(hoy);
+    } else {
+      inicio = new Date(hoy.getFullYear(), 0, 1);
+      fin = new Date(hoy);
+    }
+
+    this.fechaInicio = inicio.toISOString().split('T')[0];
+    this.fechaFin = fin.toISOString().split('T')[0];
+    this.rangoActivo = tipo;
     this.paginaActual = 1;
-    this.cargarOrdenes();
+  }
+
+  onFechaManual() {
+    this.rangoActivo = '';
+    this.paginaActual = 1;
+  }
+
+  limpiarFecha() {
+    this.fechaInicio = '';
+    this.fechaFin = '';
+    this.rangoActivo = '';
+    this.paginaActual = 1;
   }
 
   formatearServicios(servicios: string): string {
@@ -197,17 +273,73 @@ export class Mantenimiento implements OnInit {
         next: (res: any) => {
           if (res.status === 'OK') {
             Swal.fire({ icon: 'success', title: 'Estado actualizado', timer: 1500, showConfirmButton: false });
-            this.cargarOrdenes();
+            this.cargarTodo();
           } else {
             Swal.fire({ icon: 'error', title: 'Error', text: res.mensaje });
-            this.cargarOrdenes();
+            this.cargarTodo();
           }
         },
         error: () => {
           Swal.fire({ icon: 'error', title: 'Error', text: 'No se pudo cambiar el estado' });
-          this.cargarOrdenes();
+          this.cargarTodo();
         }
       });
     });
+  }
+
+  // --- Métodos para modal de detalle ---
+
+  abrirModalDetalleMantenimiento(orden: OrdenResumen) {
+    this.ordenSeleccionada = orden;
+    this.nuevoEstadoSeleccionado = orden.estado;
+    this.metodoPagoSeleccionado = 'Efectivo';
+    console.log('Orden seleccionada:', orden);
+    console.log('Detalle:', orden.detalle);
+    this.showModalDetalle = true;
+  }
+
+  cerrarModalDetalle() {
+    this.showModalDetalle = false;
+    this.ordenSeleccionada = null;
+    this.nuevoEstadoSeleccionado = '';
+  }
+
+  actualizarMantenimiento() {
+    if (!this.ordenSeleccionada || !this.nuevoEstadoSeleccionado) return;
+
+    const estadoAnterior = this.ordenSeleccionada.estado;
+    const nuevoEstado = this.nuevoEstadoSeleccionado;
+
+    if (estadoAnterior === nuevoEstado) {
+      this.cerrarModalDetalle();
+      return;
+    }
+
+    const usuario = JSON.parse(localStorage.getItem('currentUser') || '{}').username || 'sistema';
+    this.http.put(`${this.URL}/editar-estado`, {
+      usuario_logueado: usuario,
+      id_orden_servicio: this.ordenSeleccionada.idOrdenServicio,
+      nuevo_estado: nuevoEstado
+    }).subscribe({
+      next: (res: any) => {
+        if (res.status === 'OK') {
+          Swal.fire({ icon: 'success', title: 'Mantenimiento actualizado', timer: 1500, showConfirmButton: false });
+          this.cargarTodo();
+          this.cerrarModalDetalle();
+        } else {
+          Swal.fire({ icon: 'error', title: 'Error', text: res.mensaje });
+          this.cargarTodo();
+        }
+      },
+      error: () => {
+        Swal.fire({ icon: 'error', title: 'Error', text: 'No se pudo actualizar el mantenimiento' });
+        this.cargarTodo();
+      }
+    });
+  }
+
+  tieneDetalle(): boolean {
+    console.log('tieneDetalle check:', this.ordenSeleccionada?.detalle);
+    return !!(this.ordenSeleccionada?.detalle && this.ordenSeleccionada.detalle.length > 0);
   }
 }

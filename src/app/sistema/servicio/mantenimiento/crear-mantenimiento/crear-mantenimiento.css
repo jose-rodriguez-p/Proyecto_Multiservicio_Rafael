@@ -1,9 +1,7 @@
-/* ── Tabla detalle ─────────────────────────────────────────────────────────── */
 .table-responsive {
   overflow: visible !important;
 }
 
-/* ── Dropdown de repuestos (por fila) ──────────────────────────────────────── */
 .dropdown-producto {
   position: absolute;
   top: 100%;
@@ -39,7 +37,6 @@
   text-align: center;
 }
 
-/* ── Lista de clientes en panel ────────────────────────────────────────────── */
 .lista-clientes {
   max-height: 380px;
   overflow-y: auto;
@@ -59,7 +56,6 @@
   border-color: #f5c6cb;
 }
 
-/* ── Panel lateral cliente ─────────────────────────────────────────────────── */
 .panel-cliente {
   position: fixed;
   top: 0;
@@ -90,7 +86,6 @@
   z-index: 10;
 }
 
-/* ── Tabla detalle ─────────────────────────────────────────────────────────── */
 .table thead th {
   font-size: 0.75rem;
   font-weight: 600;
@@ -104,7 +99,6 @@
   vertical-align: middle;
 }
 
-/* ── Inputs numéricos ──────────────────────────────────────────────────────── */
 input[type="number"] {
   -moz-appearance: textfield;
 }
@@ -115,7 +109,6 @@ input[type="number"]::-webkit-outer-spin-button {
   margin: 0;
 }
 
-/* ── Vehículo item en modal ────────────────────────────────────────────── */
 .vehiculo-item {
   padding: 12px 14px;
   border-radius: 8px;
@@ -130,7 +123,6 @@ input[type="number"]::-webkit-outer-spin-button {
   border-color: #f5c6cb;
 }
 
-/* ── Autocomplete Marca / Modelo ───────────────────────────────────────── */
 .autocomplete-lista {
   position: absolute;
   top: 100%;
@@ -166,4 +158,55 @@ input[type="number"]::-webkit-outer-spin-button {
 .autocomplete-item--vacio:hover {
   background: transparent;
   color: #94a3b8;
+}
+
+.repuestos-mini-tabla {
+  background: #f8f9fa;
+  border: 1px solid #e9ecef;
+  border-radius: 8px;
+  padding: 8px 10px;
+  font-size: 0.8rem;
+}
+
+.repuestos-mini-header,
+.repuestos-mini-row {
+  display: grid;
+  grid-template-columns: 1fr 70px 90px 110px;
+  gap: 8px;
+  align-items: center;
+}
+
+.repuestos-mini-header span:nth-child(3),
+.repuestos-mini-row span:nth-child(3),
+.repuestos-mini-header span:nth-child(4),
+.repuestos-mini-row span:nth-child(4) {
+  text-align: right;
+  justify-self: end;
+}
+
+.repuestos-mini-header {
+  color: #6c757d;
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  padding-bottom: 6px;
+  margin-bottom: 6px;
+  border-bottom: 1px solid #dee2e6;
+}
+
+.repuestos-mini-row {
+  padding: 3px 0;
+}
+
+.repuestos-mini-row + .repuestos-mini-row {
+  border-top: 1px dashed #e9ecef;
+}
+
+.cantidad-bloqueada {
+  background-color: #f1f3f5;
+  color: #495057;
+  height: 26px;
+  padding: 0 4px;
+  font-size: 0.75rem;
 }

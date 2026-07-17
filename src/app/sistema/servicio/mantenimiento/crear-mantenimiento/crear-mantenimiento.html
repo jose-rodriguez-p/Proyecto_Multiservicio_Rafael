@@ -10,12 +10,10 @@
     </h2>
   </div>
 
-  <!-- ── CLIENTE + VEHÍCULO ──────────────────────────────────────────────── -->
   <div class="card border-0 shadow-sm mb-3">
     <div class="card-body p-4">
       <div class="row g-4">
 
-        <!-- DNI -->
         <div class="col-12 col-md-4">
           <label class="form-label small fw-semibold">DNI del Cliente *</label>
           <div class="input-group">
@@ -40,7 +38,6 @@
           </div>
         </div>
 
-        <!-- Cliente data (se muestra solo si hay cliente) -->
         <ng-container *ngIf="clienteEncontrado">
           <div class="col-12 col-md-4">
             <label class="form-label small fw-semibold">Cliente</label>
@@ -53,7 +50,6 @@
             </div>
           </div>
 
-          <!-- Vehículo seleccionado / selector -->
           <div class="col-12 col-md-4">
             <label class="form-label small fw-semibold">Vehículo *</label>
             <div class="d-flex align-items-center gap-2">
@@ -75,7 +71,6 @@
     </div>
   </div>
 
-  <!-- ── CABECERA (fecha, estado, técnico) ───────────────────────────────── -->
   <div class="card border-0 shadow-sm mb-3">
     <div class="card-body p-3">
       <div class="row g-3 align-items-end">
@@ -96,6 +91,16 @@
             [min]="fechaMinima">
         </div>
 
+        <div class="col-12 col-md-3">
+          <label class="form-label small fw-semibold">Técnico asignado *</label>
+          <select class="form-select form-select-sm" [(ngModel)]="idTecnico">
+            <option [value]="0">— Seleccionar —</option>
+            <option *ngFor="let t of tecnicos" [value]="t.id_trabajador">
+              {{ t.nombre_completo }}
+            </option>
+          </select>
+        </div>
+
         <div class="col-12 col-md-4">
           <div class="small text-muted mb-1">Registrado por:</div>
           <div class="fw-bold">{{ tecnicoLogueado.nombre }}</div>
@@ -106,7 +111,6 @@
     </div>
   </div>
 
-  <!-- ── DETALLE DE SERVICIOS ────────────────────────────────────────────── -->
   <div class="card border-0 shadow-sm mb-3">
     <div class="card-body p-3">
       <div class="fw-semibold mb-3">Detalle de servicios</div>
@@ -116,9 +120,7 @@
           <thead class="table-light">
             <tr>
               <th style="width:32px">#</th>
-              <th style="min-width:320px">SERVICIO</th>
-              <th style="min-width:180px">TÉCNICO ASIGNADO</th>
-              <th style="width:120px">PRECIO UNIT.</th>
+              <th style="min-width:360px">SERVICIO</th>
               <th style="width:110px">SUBTOTAL</th>
               <th style="width:48px"></th>
             </tr>
@@ -128,10 +130,8 @@
 
               <td class="text-muted small">{{ i + 1 }}</td>
 
-              <!-- Buscador de servicio — uno por fila -->
               <td class="celda-servicio" style="position:relative">
 
-                <!-- Estado vacío: input con dropdown -->
                 <ng-container *ngIf="item.servicio.id_servicio === 0">
                   <input type="text" class="form-control form-control-sm"
                     placeholder="Nombre del servicio..."
@@ -140,7 +140,6 @@
                     (focus)="filtrarServiciosItem(item)"
                     autocomplete="off">
 
-                  <!-- Mini-lista de coincidencias -->
                   <div class="dropdown-producto shadow"
                     *ngIf="item.mostrarDropdown">
                     <div class="dropdown-producto-item"
@@ -155,57 +154,34 @@
                   </div>
                 </ng-container>
 
-                <!-- Estado con servicio seleccionado -->
                 <div *ngIf="item.servicio.id_servicio > 0"
-                  class="d-flex align-items-center gap-2">
-                  <div class="small fw-semibold">{{ item.servicio.nombre
-                    }}</div>
-                  <button class="btn btn-sm p-0 text-muted ms-auto"
-                    (click)="limpiarServicio(item)" title="Cambiar">
-                    <i class="bi bi-x-circle"></i>
-                  </button>
-                </div>
+                  class="small fw-semibold">{{ item.servicio.nombre }}</div>
 
-                <!-- Repuestos del servicio -->
-                <div *ngIf="item.repuestos.length > 0" class="mt-2 small">
-                  <div class="text-muted mb-1"><i
-                      class="bi bi-box-seam me-1"></i>Repuestos:</div>
-                  <div *ngFor="let r of item.repuestos"
-                    class="d-flex align-items-center gap-2 mb-1">
-                    <span class="flex-grow-1">{{ r.nombre_repuesto }}</span>
-                    <input type="number"
-                      class="form-control form-control-sm text-center"
-                      style="width:65px" [value]="r.cantidad_usar" readonly>
+                <div *ngIf="item.repuestos.length > 0" class="repuestos-mini-tabla mt-2">
+                  <div class="repuestos-mini-header">
+                    <span><i class="bi bi-box-seam me-1"></i>Repuesto</span>
+                    <span class="text-center">Cant.</span>
+                    <span class="text-end">P. Unit.</span>
+                    <span class="text-end">Subtotal</span>
+                  </div>
+                  <div class="repuestos-mini-row" *ngFor="let r of item.repuestos">
+                    <span>{{ r.nombre_repuesto }}</span>
+                    <span class="text-center">
+                      <input type="number"
+                        class="form-control form-control-sm text-center cantidad-bloqueada"
+                        [value]="r.cantidad_usar" readonly>
+                    </span>
+                    <span class="text-end">S/ {{ r.precio_unitario | number:'1.2-2' }}</span>
+                    <span class="text-end fw-semibold text-danger">S/ {{ r.subtotal | number:'1.2-2' }}</span>
                   </div>
                 </div>
 
               </td>
 
-              <!-- Técnico -->
-              <td>
-                <select class="form-select form-select-sm"
-                  [(ngModel)]="item.id_trabajador">
-                  <option [value]="0">— Seleccionar —</option>
-                  <option *ngFor="let t of tecnicos" [value]="t.id_trabajador">
-                    {{ t.nombre_completo }}
-                  </option>
-                </select>
-              </td>
-
-              <!-- Precio unitario (readonly) -->
-              <td>
-                <input type="number"
-                  class="form-control form-control-sm text-end"
-                  [value]="item.servicio.precio || 0"
-                  readonly>
-              </td>
-
-              <!-- Subtotal -->
               <td class="text-end fw-semibold small">
                 S/ {{ item.precio_subtotal | number:'1.2-2' }}
               </td>
 
-              <!-- Eliminar -->
               <td class="text-center">
                 <button class="btn btn-sm text-danger p-1"
                   (click)="limpiarServicio(item)"
@@ -227,7 +203,6 @@
     </div>
   </div>
 
-  <!-- ── TOTALES + NOTA ──────────────────────────────────────────────────── -->
   <div class="row g-3">
 
     <div class="col-12 col-md-6">
@@ -251,6 +226,7 @@
             <span class="text-muted">Subtotal servicios :</span>
             <span>S/ {{ subtotalServicios | number:'1.2-2' }}</span>
           </div>
+          <hr class="my-2">
           <div class="d-flex justify-content-between small mb-1">
             <span class="text-muted">IGV (18%) :</span>
             <span>S/ {{ igv | number:'1.2-2' }}</span>
@@ -265,7 +241,6 @@
 
   </div>
 
-  <!-- Botones -->
   <div class="d-flex justify-content-end gap-2 mt-3">
     <button class="btn btn-outline-secondary px-4" (click)="limpiar()">
       <i class="bi bi-arrow-counterclockwise me-1"></i>Limpiar
@@ -282,14 +257,10 @@
 
 </div>
 
-<!-- ════════════════════════════════════════════════════════════════════════
-     MODAL: SELECCIONAR VEHÍCULO
-════════════════════════════════════════════════════════════════════════ -->
 <div class="modal d-block" *ngIf="showVehicleModal"
   style="background: rgba(0,0,0,0.5);">
   <div class="modal-dialog modal-dialog-centered">
 
-    <!-- Si no está agregando vehículo nuevo: mostrar lista -->
     <div class="modal-content" *ngIf="!mostrandoFormVehiculo">
       <div class="modal-header bg-danger text-white">
         <h5 class="modal-title">
@@ -300,7 +271,6 @@
       </div>
       <div class="modal-body p-3">
 
-        <!-- Lista de vehículos -->
         <div *ngIf="clientVehicles.length > 0">
           <div class="vehiculo-item"
             *ngFor="let v of clientVehicles"
@@ -333,7 +303,6 @@
       </div>
     </div>
 
-    <!-- Formulario agregar vehículo -->
     <div class="modal-content" *ngIf="mostrandoFormVehiculo">
       <div class="modal-header bg-danger text-white">
         <h5 class="modal-title">
@@ -433,9 +402,6 @@
   </div>
 </div>
 
-<!-- ════════════════════════════════════════════════════════════════════════
-     MODAL: REGISTRAR NUEVO CLIENTE
-════════════════════════════════════════════════════════════════════════ -->
 <div class="modal d-block" *ngIf="showRegistroModal"
   style="background: rgba(0,0,0,0.5);">
   <div
@@ -450,7 +416,6 @@
       </div>
       <div class="modal-body p-3">
 
-        <!-- DNI (pre‑cargado, readonly) -->
         <div class="row g-3 mb-3">
           <div class="col-md-6">
             <label class="form-label fw-semibold small">DNI <span
@@ -477,7 +442,6 @@
           </div>
         </div>
 
-        <!-- Nombre / Apellidos -->
         <div class="row g-3 mb-3">
           <div class="col-12">
             <label class="form-label fw-semibold small">Nombres *</label>
@@ -503,7 +467,6 @@
           </div>
         </div>
 
-        <!-- Celular / Correo -->
         <div class="row g-3 mb-3">
           <div class="col-md-6">
             <label class="form-label fw-semibold small">Celular *</label>
@@ -523,14 +486,12 @@
           </div>
         </div>
 
-        <!-- Vehículos del cliente -->
         <div class="p-3 bg-light rounded mb-2">
           <div class="d-flex justify-content-between align-items-center mb-2">
             <h6 class="fw-bold text-danger mb-0"><i
                 class="bi bi-car me-1"></i>Vehículos del Cliente</h6>
           </div>
 
-          <!-- Lista de vehículos agregados -->
           <div *ngIf="registroVehiculos.length > 0">
             <div *ngFor="let v of registroVehiculos; let i = index"
               class="card mb-2">
@@ -553,7 +514,6 @@
             <i class="bi bi-car me-1"></i>Sin vehículos registrados
           </div>
 
-          <!-- Formulario agregar vehículo -->
           <div class="card border mt-2">
             <div class="card-body p-2">
               <div class="row g-2 align-items-end">
@@ -640,7 +600,6 @@
   </div>
 </div>
 
-<!-- Modal de Repuestos del Servicio - Ventana Flotante -->
 <div class="modal fade show d-block" *ngIf="showRepuestosModal" tabindex="-1"
   style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); z-index: 9999;">
   <div class="modal-dialog modal-lg modal-dialog-centered">
