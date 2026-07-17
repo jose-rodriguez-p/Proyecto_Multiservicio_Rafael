@@ -72,16 +72,17 @@ export class Dashboard implements OnInit {
     const params = `?fechaDesde=${this.fechaDesde}&fechaHasta=${this.fechaHasta}`;
     this.http.get<any>(`${this.URL_DASHBOARD}/estadisticas${params}`).subscribe({
       next: (data) => {
-        this.construirResumen(data.resumen);
+        this.construirResumen(data.resumen || {});
+        this.granularidadTendencia = data.granularidadTendencia || 'mes';
         this.construirVentasMensuales(data.ventasMensuales);
         this.construirStockPorCategoria(data.stockPorCategoria);
         this.construirOrdenesPorEstado(data.ordenesPorEstado);
         this.construirVentasVServicios(data.ventasVServicios);
+        this.construirComparativoProductos(data.comparativoProductos);
         this.topProductos = data.topProductos || [];
         this.topServicios = data.topServicios || [];
         this.topTrabajadores = data.topTrabajadores || [];
         this.productosCriticos = data.productosStockCritico || [];
-        this.actividadReciente = data.ultimaActividad || [];
         this.cargando = false;
         this.cdr.detectChanges();
       },
@@ -146,55 +147,79 @@ export class Dashboard implements OnInit {
     ];
   }
 
+  // Comparativo mensual: Ventas vs Compras (a proveedor) vs Utilidad neta
+  // (ventas - compras). El backend debe entregar, para cada mes del rango,
+  // un objeto { mes: 'YYYY-MM-DD', ventas: number, compras: number }.
+  // Se mantiene compatibilidad con el shape viejo { mes, total } por si
+  // algún consumidor antiguo del endpoint todavía lo usa (total -> ventas).
+  granularidadTendencia: 'day' | 'week' | 'month' | string = 'month';
+
+  // Formatea la etiqueta del eje X de las gráficas de tendencia según la
+  // granularidad que decidió el backend para el rango filtrado: día
+  // ("16 jul"), semana ("sem. 13 jul") o mes ("jul. 26", como antes).
+  private formatearEtiquetaPeriodo(fechaIso: string): string {
+    const f = new Date(fechaIso + 'T00:00:00');
+    if (this.granularidadTendencia === 'day') {
+      return f.toLocaleDateString('es-PE', { day: '2-digit', month: 'short' });
+    }
+    if (this.granularidadTendencia === 'week') {
+      return 'sem. ' + f.toLocaleDateString('es-PE', { day: '2-digit', month: 'short' });
+    }
+    return f.toLocaleDateString('es-PE', { month: 'short', year: '2-digit' });
+  }
+
   private construirVentasMensuales(data: any[]) {
     if (!data || data.length === 0) {
       this.ventasChartData = { labels: [], datasets: [] };
       return;
     }
-    const labels = data.map((d) => {
-      const f = new Date(d.mes + 'T00:00:00');
-      return f.toLocaleDateString('es-PE', { month: 'short', year: '2-digit' });
-    });
-    const valores = data.map((d) => Number(d.total));
-    const tendencia = this.calcularTendencia(valores);
+    const labels = data.map((d) => this.formatearEtiquetaPeriodo(d.mes));
+    const ventas = data.map((d) => Number(d.ventas ?? d.total ?? 0));
+    const compras = data.map((d) => Number(d.compras ?? 0));
+    const utilidad = ventas.map((v, i) => Math.round((v - compras[i]) * 100) / 100);
 
     this.ventasChartData = {
       labels,
       datasets: [
         {
-          label: 'Tendencia',
-          borderColor: '#636f83',
-          borderDash: [5, 3],
+          label: 'Ventas (S/)',
+          borderColor: '#ff3b30',
+          backgroundColor: '#ff3b30',
           borderWidth: 2,
-          pointRadius: 0,
-          type: 'line',
+          pointRadius: 4,
+          pointHoverRadius: 6,
+          pointBackgroundColor: '#ff3b30',
           fill: false,
-          data: tendencia,
+          tension: 0.3,
+          data: ventas,
         },
         {
-          label: 'Ventas (S/)',
-          backgroundColor: 'rgba(255, 59, 48, 0.75)',
-          borderColor: '#ff3b30',
-          borderWidth: 1,
-          data: valores,
+          label: 'Compras (S/)',
+          borderColor: '#f9b115',
+          backgroundColor: '#f9b115',
+          borderWidth: 2,
+          pointRadius: 4,
+          pointHoverRadius: 6,
+          pointBackgroundColor: '#f9b115',
+          fill: false,
+          tension: 0.3,
+          data: compras,
+        },
+        {
+          label: 'Utilidad neta (S/)',
+          borderColor: '#2eb85c',
+          backgroundColor: '#2eb85c',
+          borderWidth: 2,
+          borderDash: [6, 3],
+          pointRadius: 3,
+          pointHoverRadius: 5,
+          pointBackgroundColor: '#2eb85c',
+          fill: false,
+          tension: 0.3,
+          data: utilidad,
         },
       ],
     };
-  }
-
-  private calcularTendencia(data: number[]): number[] {
-    const n = data.length;
-    if (n < 2) return data.slice();
-    let sumX = 0, sumY = 0, sumXY = 0, sumX2 = 0;
-    for (let i = 0; i < n; i++) {
-      sumX += i;
-      sumY += data[i];
-      sumXY += i * data[i];
-      sumX2 += i * i;
-    }
-    const pendiente = (n * sumXY - sumX * sumY) / (n * sumX2 - sumX * sumX);
-    const intercepto = (sumY - pendiente * sumX) / n;
-    return Array.from({ length: n }, (_, i) => Math.round((pendiente * i + intercepto) * 100) / 100);
   }
 
   private construirStockPorCategoria(data: any[]) {
@@ -219,7 +244,7 @@ export class Dashboard implements OnInit {
     }
     const colores: Record<string, string> = {
       'Pendiente': '#3399ff',
-      'En Proceso': '#f9b115',
+      'En proceso': '#f9b115',
       'Completado': '#2eb85c',
     };
     this.serviciosChartData = {
@@ -239,10 +264,7 @@ export class Dashboard implements OnInit {
       return;
     }
     this.ventasVServiciosData = {
-      labels: data.map((d) => {
-        const f = new Date(d.mes + 'T00:00:00');
-        return f.toLocaleDateString('es-PE', { month: 'short', year: '2-digit' });
-      }),
+      labels: data.map((d) => this.formatearEtiquetaPeriodo(d.mes)),
       datasets: [
         {
           label: 'Ventas (S/)',
@@ -264,6 +286,35 @@ export class Dashboard implements OnInit {
     };
   }
 
+  // NUEVO: comparativo de productos ingresados (compras a proveedor) vs
+  // vendidos, por mes, para ver de un vistazo si el ritmo de reabastecimiento
+  // acompaña al de ventas (o si se está comprando de más/de menos).
+  private construirComparativoProductos(data: any[]) {
+    if (!data || data.length === 0) {
+      this.comparativoProductosData = { labels: [], datasets: [] };
+      return;
+    }
+    this.comparativoProductosData = {
+      labels: data.map((d) => this.formatearEtiquetaPeriodo(d.mes)),
+      datasets: [
+        {
+          label: 'Ingresados (compras)',
+          backgroundColor: 'rgba(46, 184, 92, 0.75)',
+          borderColor: '#2eb85c',
+          borderWidth: 1,
+          data: data.map((d) => Number(d.ingresados)),
+        },
+        {
+          label: 'Vendidos',
+          backgroundColor: 'rgba(255, 59, 48, 0.75)',
+          borderColor: '#ff3b30',
+          borderWidth: 1,
+          data: data.map((d) => Number(d.vendidos)),
+        },
+      ],
+    };
+  }
+
   irAReabastecimiento() {
     this.router.navigate(['/sistema/compra/nueva-compra']);
   }
@@ -273,12 +324,12 @@ export class Dashboard implements OnInit {
   topServicios: any[] = [];
   topTrabajadores: any[] = [];
   productosCriticos: any[] = [];
-  actividadReciente: any[] = [];
 
   ventasChartData: any = { labels: [], datasets: [] };
   stockChartData: any = { labels: [], datasets: [] };
   serviciosChartData: any = { labels: [], datasets: [] };
   ventasVServiciosData: any = { labels: [], datasets: [] };
+  comparativoProductosData: any = { labels: [], datasets: [] };
 
   chartOptionsBar = {
     responsive: true,
@@ -289,6 +340,20 @@ export class Dashboard implements OnInit {
     scales: {
       x: { grid: { display: false } },
       y: { beginAtZero: true, ticks: { callback: (v: any) => 'S/ ' + Number(v).toLocaleString() } },
+    },
+  };
+
+  // Igual que chartOptionsBar pero en unidades (no soles) — para el
+  // comparativo de productos ingresados vs vendidos.
+  chartOptionsBarUnidades = {
+    responsive: true,
+    maintainAspectRatio: true,
+    aspectRatio: 2,
+    animation: { duration: 0 },
+    plugins: { legend: { display: true, position: 'bottom' as const } },
+    scales: {
+      x: { grid: { display: false } },
+      y: { beginAtZero: true, ticks: { callback: (v: any) => Number(v).toLocaleString() + ' u.' } },
     },
   };
 
@@ -318,5 +383,22 @@ export class Dashboard implements OnInit {
     aspectRatio: 1.4,
     animation: { duration: 0 },
     plugins: { legend: { display: true, position: 'right' as const } },
+  };
+
+  // Barras horizontales APILADAS: para "composición" (sin stock / bajo stock /
+  // en stock dentro de cada categoría) esto se lee mucho mejor que barras
+  // agrupadas — cada categoría es una sola barra, no tres compitiendo por
+  // espacio, y no se aprieta aunque haya varias categorías.
+  chartOptionsStock = {
+    responsive: true,
+    maintainAspectRatio: true,
+    aspectRatio: 1.1,
+    indexAxis: 'y' as const,
+    animation: { duration: 0 },
+    plugins: { legend: { display: true, position: 'bottom' as const } },
+    scales: {
+      x: { stacked: true, beginAtZero: true, ticks: { precision: 0 } },
+      y: { stacked: true, grid: { display: false } },
+    },
   };
 }
