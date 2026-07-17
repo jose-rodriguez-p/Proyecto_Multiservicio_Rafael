@@ -62,5 +62,8 @@
 
   <div class="modal-footer border-0 pt-0">
     <button type="button" class="btn btn-secondary" (click)="cerrarModal()">Cerrar</button>
+    <button *ngIf="rutaDestino" type="button" class="btn btn-danger" (click)="verRegistro()">
+      <i class="bi bi-box-arrow-up-right me-1"></i>Ver registro
+    </button>
   </div>
 </div>

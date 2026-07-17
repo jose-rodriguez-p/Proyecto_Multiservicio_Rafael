@@ -64,3 +64,55 @@ export function infoAccion(accion: string): InfoAccion {
   const clave = (accion || '').toUpperCase();
   return MAPA_ACCIONES[clave] || { etiqueta: accion, color: 'secondary' };
 }
+
+// A qué módulo pertenece cada tabla, para poder "ir al registro"
+export const RUTA_MODULO: Record<string, string> = {
+  orden_servicio: '/sistema/servicio/mantenimiento',
+  orden_venta: '/sistema/servicio/ventas',
+  cliente: '/sistema/cliente',
+  producto: '/sistema/producto',
+  repuesto: '/sistema/producto',
+  proveedor: '/sistema/proveedor',
+  trabajador: '/sistema/trabajador',
+  categorias: '/sistema/configuracion/categorias',
+  categoria: '/sistema/configuracion/categorias',
+  marcas: '/sistema/configuracion/marcas',
+  marca: '/sistema/configuracion/marcas',
+  roles: '/sistema/configuracion/rol',
+  rol: '/sistema/configuracion/rol',
+  cargo_rol: '/sistema/configuracion/rol',
+  servicio: '/sistema/configuracion/servicios',
+};
+
+export function rutaModulo(tabla: string): string | null {
+  return RUTA_MODULO[(tabla || '').toLowerCase()] || null;
+}
+
+// Saca del texto de "descripcion" un dato que el buscador del módulo destino
+// realmente entienda (n° de orden, DNI). Es un parche mientras el backend
+// no mande esta clave como campo aparte.
+export function extraerClaveBusqueda(tabla: string, descripcion: string, idRegistro: number | null): string | null {
+  const clave = (tabla || '').toLowerCase();
+  const texto = descripcion || '';
+
+  if (clave === 'orden_servicio') {
+    const porNumero = texto.match(/orden\s*#(\d+)/i);
+    if (porNumero) return porNumero[1];
+    if (idRegistro) return String(idRegistro);
+    return null;
+  }
+
+  if (clave === 'orden_venta') {
+    const porCodigo = texto.match(/venta\s+([A-Z0-9]+-\d+)/i);
+    if (porCodigo) return porCodigo[1];
+    return null;
+  }
+
+  if (clave === 'cliente') {
+    const porDni = texto.match(/DNI:?\s*(\d+)/i);
+    if (porDni) return porDni[1];
+    return null;
+  }
+
+  return null;
+}
