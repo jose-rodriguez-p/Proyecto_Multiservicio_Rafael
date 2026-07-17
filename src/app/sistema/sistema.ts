@@ -30,6 +30,7 @@ export class Sistema implements OnInit {
     'mantenimiento':    'Servicios — Mantenimiento',
     'ventas':           'Servicios — Ventas',
     'crear':            'Servicios — Nueva Venta',
+    'reporte-general':  'Servicios — Reporte General',
     'rol':              'Configuración — Roles',
     'agregar-rol':      'Configuración — Agregar Rol',
     'editar-rol':       'Configuración — Editar Rol',

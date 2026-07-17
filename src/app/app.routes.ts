@@ -19,6 +19,7 @@ import { Ventas }        from './sistema/servicio/ventas/ventas';
 import { Mantenimiento } from './sistema/servicio/mantenimiento/mantenimiento';
 import { CrearVenta } from './sistema/servicio/ventas/crear-venta/crear-venta';
 import { CrearMantenimiento } from './sistema/servicio/mantenimiento/crear-mantenimiento/crear-mantenimiento';
+import { ReporteGeneral } from './sistema/servicio/reporte-general/reporte-general';
 import { Reabastecimiento } from './sistema/reabastecimiento/reabastecimiento';
 import { authGuard } from './auth.guard';
 import { Rol } from './sistema/configuracion/rol/rol';
@@ -98,6 +99,7 @@ export const routes: Routes = [
               { path: 'crear', component: CrearMantenimiento },
             ],
           },
+          { path: 'reporte-general', component: ReporteGeneral },
         ],
       },
       {

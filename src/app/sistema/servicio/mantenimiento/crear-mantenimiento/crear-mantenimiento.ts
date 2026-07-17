@@ -720,13 +720,40 @@ export class CrearMantenimiento implements OnInit {
       return;
     }
 
-    const nuevo = { ...this.nuevoVehiculo };
-    this.clientVehicles.push(nuevo);
-    this.vehiculoSeleccionado = nuevo;
-    this.descripcionVehiculo = `${nuevo.marca} ${nuevo.modelo} - ${nuevo.placa}`;
-    this.limpiarFormVehiculo();
-    this.mostrandoFormVehiculo = false;
-    this.showVehicleModal = false;
+    const body = {
+      dni: this.cliente.dni,
+      placa: this.nuevoVehiculo.placa,
+      marca: this.nuevoVehiculo.marca,
+      modelo: this.nuevoVehiculo.modelo,
+      anio: this.nuevoVehiculo.anio,
+    };
+
+    this.http.post<any>(`${this.URL}/agregar-vehiculo`, body).subscribe({
+      next: () => {
+        const vehiculoAgregado = { ...this.nuevoVehiculo };
+        this.limpiarFormVehiculo();
+        this.mostrandoFormVehiculo = false;
+        this.showVehicleModal = false;
+        Swal.fire({
+          title: 'Vehículo agregado',
+          text: `Placa ${vehiculoAgregado.placa} registrada correctamente.`,
+          icon: 'success',
+          timer: 2000,
+          showConfirmButton: false,
+        });
+        this.vehiculoSeleccionado = vehiculoAgregado;
+        this.descripcionVehiculo = `${vehiculoAgregado.marca} ${vehiculoAgregado.modelo} - ${vehiculoAgregado.placa}`;
+        this.http.get<any>(`${this.URL}/buscar-cliente/${this.cliente.dni}`).subscribe({
+          next: (res) => {
+            this.clientVehicles = (res.carros || []) as Vehiculo[];
+          },
+        });
+      },
+      error: (err) => {
+        const msg = err.error?.error || 'No se pudo agregar el vehículo.';
+        Swal.fire('Error', msg, 'error');
+      },
+    });
   }
 
   private limpiarFormVehiculo() {

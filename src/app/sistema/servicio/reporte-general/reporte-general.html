@@ -1,0 +1,197 @@
+<div class="container-fluid p-4">
+
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <h2 class="text-secondary fw-bold"><i class="bi bi-bar-chart-steps text-danger me-2"></i>Reporte General</h2>
+      <p class="text-muted small mb-0">Historial combinado de ventas y mantenimiento</p>
+    </div>
+  </div>
+
+  <!-- Tarjetas resumen -->
+  <div class="row g-3 mb-4">
+    <div class="col-12 col-sm-4">
+      <div class="card border-0 shadow-sm h-100">
+        <div class="card-body d-flex align-items-center gap-3 p-3">
+          <div class="icono-stat bg-danger bg-opacity-10 text-danger rounded-3 p-3">
+            <i class="bi bi-receipt fs-4"></i>
+          </div>
+          <div>
+            <div class="text-muted small">Total registros</div>
+            <div *ngIf="!cargandoResumen" class="fw-bold fs-4">{{ resumen.totalRegistros }}</div>
+            <div *ngIf="cargandoResumen" class="placeholder-glow"><span class="placeholder col-6"></span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-12 col-sm-4">
+      <div class="card border-0 shadow-sm h-100">
+        <div class="card-body d-flex align-items-center gap-3 p-3">
+          <div class="bg-success bg-opacity-10 text-success rounded-3 p-3">
+            <i class="bi bi-cash-coin fs-4"></i>
+          </div>
+          <div>
+            <div class="text-muted small">Monto total</div>
+            <div *ngIf="!cargandoResumen" class="fw-bold fs-4">S/ {{ resumen.montoTotal | number:'1.2-2' }}</div>
+            <div *ngIf="cargandoResumen" class="placeholder-glow"><span class="placeholder col-8"></span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-12 col-sm-4">
+      <div class="card border-0 shadow-sm h-100">
+        <div class="card-body d-flex align-items-center gap-3 p-3">
+          <div class="bg-primary bg-opacity-10 text-primary rounded-3 p-3">
+            <i class="bi bi-graph-up fs-4"></i>
+          </div>
+          <div>
+            <div class="text-muted small">Ticket promedio</div>
+            <div *ngIf="!cargandoResumen" class="fw-bold fs-4">S/ {{ resumen.ticketPromedio | number:'1.2-2' }}</div>
+            <div *ngIf="cargandoResumen" class="placeholder-glow"><span class="placeholder col-7"></span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tabla -->
+  <div class="card border-0 shadow-sm">
+    <div class="card-body p-3">
+      <div class="d-flex justify-content-between align-items-center gap-2 mb-3 flex-wrap">
+        <div class="d-flex align-items-center gap-2 flex-wrap">
+          <div class="input-group shadow-sm" style="width:auto;">
+            <span class="input-group-text bg-white"><i class="bi bi-search text-muted"></i></span>
+            <input type="text" class="form-control bg-white"
+              placeholder="Buscar cliente, DNI o tipo..."
+              [(ngModel)]="busqueda" (input)="onBusqueda()">
+          </div>
+
+          <!-- Selector de rango de fechas -->
+          <div class="btn-group btn-group-sm" role="group">
+            <button type="button" class="btn"
+              [ngClass]="rangoActivo==='hoy' ? 'btn-danger' : 'btn-outline-secondary'"
+              (click)="setRango('hoy')">Hoy</button>
+            <button type="button" class="btn"
+              [ngClass]="rangoActivo==='semana' ? 'btn-danger' : 'btn-outline-secondary'"
+              (click)="setRango('semana')">Semana</button>
+            <button type="button" class="btn"
+              [ngClass]="rangoActivo==='mes' ? 'btn-danger' : 'btn-outline-secondary'"
+              (click)="setRango('mes')">Mes</button>
+            <button type="button" class="btn"
+              [ngClass]="rangoActivo==='año' ? 'btn-danger' : 'btn-outline-secondary'"
+              (click)="setRango('año')">Año</button>
+          </div>
+
+          <input type="date" class="form-control form-control-sm" style="width:145px"
+            [(ngModel)]="fechaInicio" [max]="fechaFin || hoy" (ngModelChange)="onFechaManual()">
+          <span class="text-muted small">a</span>
+          <input type="date" class="form-control form-control-sm" style="width:145px"
+            [(ngModel)]="fechaFin" [min]="fechaInicio" [max]="hoy" (ngModelChange)="onFechaManual()">
+
+          <button class="btn btn-outline-secondary btn-sm" *ngIf="fechaInicio || fechaFin" (click)="limpiarFecha()">
+            <i class="bi bi-x"></i>
+          </button>
+        </div>
+
+        <div class="d-flex align-items-center gap-2 text-muted small">
+          <span>Mostrar</span>
+          <select class="form-select form-select-sm" style="width:70px"
+            [(ngModel)]="porPagina" (change)="cambiarPorPagina()">
+            <option [value]="10">10</option>
+            <option [value]="20">20</option>
+            <option [value]="50">50</option>
+          </select>
+          <span>por página</span>
+        </div>
+
+        <div class="btn-group btn-group-sm">
+          <button class="btn btn-outline-dark btn-sm" (click)="exportarExcel()"><i class="bi bi-file-earmark-excel me-1"></i> Excel</button>
+          <button class="btn btn-outline-dark btn-sm" (click)="exportarPDF()"><i class="bi bi-file-earmark-pdf me-1"></i> PDF</button>
+        </div>
+      </div>
+
+      <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+          <thead class="table-light">
+            <tr>
+              <th class="text-muted small">N°</th>
+              <th class="text-muted small">FECHA</th>
+              <th class="text-muted small">HORA</th>
+              <th class="text-muted small">TIPO</th>
+              <th class="text-muted small">CLIENTE</th>
+              <th class="text-muted small">DNI</th>
+              <th class="text-muted small">CARRO</th>
+              <th class="text-muted small">REPUESTO</th>
+              <th class="text-muted small">MECÁNICO</th>
+              <th class="text-muted small">VENDEDOR</th>
+              <th class="text-muted small text-end">TOTAL</th>
+            </tr>
+          </thead>
+          <tbody>
+            <ng-container *ngIf="cargandoTabla">
+              <tr *ngFor="let i of [1,2,3,4,5]">
+                <td colspan="11" class="placeholder-glow py-2">
+                  <span class="placeholder col-12 rounded" style="height:18px"></span>
+                </td>
+              </tr>
+            </ng-container>
+            <tr *ngIf="!cargandoTabla && registros.length === 0">
+              <td colspan="11" class="text-center py-5 text-muted">
+                <i class="bi bi-inbox fs-3 d-block mb-2"></i>
+                {{ busqueda || fechaInicio || fechaFin ? 'No se encontraron resultados' : 'No hay registros disponibles. Conecte el backend para ver los datos.' }}
+              </td>
+            </tr>
+            <tr *ngFor="let r of registros">
+              <td><span class="badge bg-light text-dark border">#{{ r.nOrden }}</span></td>
+              <td class="small text-muted">{{ r.fecha }}</td>
+              <td class="small text-muted">{{ r.hora || '-' }}</td>
+              <td>
+                <span class="badge" [ngClass]="r.tipo === 'Venta' ? 'bg-success' : 'bg-warning text-dark'">
+                  {{ r.tipo }}
+                </span>
+              </td>
+              <td class="fw-semibold small">{{ r.cliente }}</td>
+              <td class="small text-muted">{{ r.dni }}</td>
+              <td class="small text-muted">{{ r.carro || '-' }}</td>
+              <td class="small text-muted">{{ r.repuesto || '-' }}</td>
+              <td class="small text-muted">{{ r.mecanico || '-' }}</td>
+              <td class="small">{{ r.vendedor || '-' }}</td>
+              <td class="text-end fw-bold text-danger small">S/ {{ (r.total || 0) | number:'1.2-2' }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mt-3"
+           *ngIf="!cargandoTabla && totalRegistros > 0">
+        <div class="text-muted small">
+          Mostrando {{ (paginaActual-1)*porPagina+1 }}–{{ paginaActual*porPagina < totalRegistros ? paginaActual*porPagina : totalRegistros }} de {{ totalRegistros }} registros
+        </div>
+        <nav>
+          <ul class="pagination pagination-sm mb-0">
+            <li class="page-item" [class.disabled]="paginaActual===1">
+              <button class="page-link" (click)="irPagina(paginaActual-1)"><i class="bi bi-chevron-left"></i></button>
+            </li>
+            <li class="page-item" *ngIf="paginas[0]>1">
+              <button class="page-link" (click)="irPagina(1)">1</button>
+            </li>
+            <li class="page-item disabled" *ngIf="paginas[0]>2">
+              <span class="page-link">…</span>
+            </li>
+            <li class="page-item" *ngFor="let p of paginas" [class.active]="p===paginaActual">
+              <button class="page-link" (click)="irPagina(p)">{{ p }}</button>
+            </li>
+            <li class="page-item disabled" *ngIf="paginas[paginas.length-1]<totalPaginas-1">
+              <span class="page-link">…</span>
+            </li>
+            <li class="page-item" *ngIf="paginas[paginas.length-1]<totalPaginas">
+              <button class="page-link" (click)="irPagina(totalPaginas)">{{ totalPaginas }}</button>
+            </li>
+            <li class="page-item" [class.disabled]="paginaActual===totalPaginas">
+              <button class="page-link" (click)="irPagina(paginaActual+1)"><i class="bi bi-chevron-right"></i></button>
+            </li>
+          </ul>
+        </nav>
+      </div>
+    </div>
+  </div>
+</div>

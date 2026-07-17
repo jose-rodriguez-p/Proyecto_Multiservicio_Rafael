@@ -1,0 +1,23 @@
+.icono-stat {
+  width: 54px;
+  height: 54px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.card {
+  border-radius: 12px;
+}
+
+.table {
+  font-size: 0.875rem;
+}
+
+.pagination {
+  cursor: pointer;
+}
+
+.btn-group .btn {
+  font-size: 0.8rem;
+}

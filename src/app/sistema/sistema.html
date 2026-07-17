@@ -37,6 +37,9 @@
                 <a *ngIf="tieneAcceso('Mantenimiento')" routerLink="/sistema/servicio/mantenimiento" class="sidebar-link sidebar-link--sub" routerLinkActive="sidebar-link--active">
                     Mantenimiento
                 </a>
+                <a routerLink="/sistema/servicio/reporte-general" class="sidebar-link sidebar-link--sub" routerLinkActive="sidebar-link--active">
+                    Reporte General
+                </a>
             </div>
             <a *ngIf="tieneAcceso('Reabastecimiento')" routerLink="/sistema/reabastecimiento" class="sidebar-link" routerLinkActive="sidebar-link--active">
                 <i class="bi bi-cart-plus"></i> Reabastecimiento
@@ -139,6 +142,7 @@
             <div class="collapse" id="menuServiciosMovil">
                 <a *ngIf="tieneAcceso('Venta')" routerLink="/sistema/servicio/ventas" data-bs-dismiss="offcanvas" class="sidebar-link sidebar-link--sub" routerLinkActive="sidebar-link--active">Venta</a>
                 <a *ngIf="tieneAcceso('Mantenimiento')" routerLink="/sistema/servicio/mantenimiento" data-bs-dismiss="offcanvas" class="sidebar-link sidebar-link--sub" routerLinkActive="sidebar-link--active">Mantenimiento</a>
+                <a routerLink="/sistema/servicio/reporte-general" data-bs-dismiss="offcanvas" class="sidebar-link sidebar-link--sub" routerLinkActive="sidebar-link--active">Reporte General</a>
             </div>
 
             <a *ngIf="tieneAcceso('Productos')" routerLink="/sistema/producto" data-bs-dismiss="offcanvas" class="sidebar-link" routerLinkActive="sidebar-link--active">
