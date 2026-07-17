@@ -228,6 +228,11 @@
 
         </div>
 
+        <div class="btn-group btn-group-sm">
+          <button class="btn btn-outline-dark btn-sm" (click)="exportarExcel()"><i class="bi bi-file-earmark-excel me-1"></i> Excel</button>
+          <button class="btn btn-outline-dark btn-sm" (click)="exportarPDF()"><i class="bi bi-file-earmark-pdf me-1"></i> PDF</button>
+        </div>
+
       </div>
 
 
@@ -502,14 +507,9 @@
 
             <label class="form-label small fw-semibold">Estado</label>
 
-            <select class="form-select" [(ngModel)]="nuevoEstadoSeleccionado"
-              [disabled]="ordenSeleccionada?.estado === 'Completado'">
-
-              <option value="En proceso">En proceso</option>
-
-              <option value="Completado">Completado</option>
-
-            </select>
+            <div class="form-control bg-light">
+              <span class="badge" [ngClass]="badgeEstado(ordenSeleccionada?.estado || '')">{{ ordenSeleccionada?.estado }}</span>
+            </div>
 
           </div>
 
@@ -599,6 +599,14 @@
 
           </div>
 
+          <div class="col-md-6">
+
+            <label class="form-label small fw-semibold">Mano de obra</label>
+
+            <div class="form-control bg-light">S/ {{ (ordenSeleccionada?.precioManoObra || 0) | number:'1.2-2' }}</div>
+
+          </div>
+
         </div>
 
       </div>
@@ -607,7 +615,7 @@
 
         <button class="btn btn-outline-secondary" (click)="cerrarModalDetalle()">Cancelar</button>
 
-        <button class="btn btn-danger" (click)="actualizarMantenimiento()"
+        <button class="btn btn-danger" (click)="cerrarServicio()"
           [disabled]="ordenSeleccionada?.estado === 'Completado'">
 
           <i class="bi bi-check-circle me-1"></i>Cerrar servicio

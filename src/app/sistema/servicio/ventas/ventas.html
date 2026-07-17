@@ -105,6 +105,12 @@
           </select>
           <span>por página</span>
         </div>
+
+        <div class="btn-group btn-group-sm">
+          <button class="btn btn-outline-dark btn-sm" (click)="exportarExcel()"><i class="bi bi-file-earmark-excel me-1"></i> Excel</button>
+          <button class="btn btn-outline-dark btn-sm" (click)="exportarPDF()"><i class="bi bi-file-earmark-pdf me-1"></i> PDF</button>
+        </div>
+
       </div>
 
       <div class="table-responsive">

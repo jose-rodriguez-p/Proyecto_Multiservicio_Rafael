@@ -35,13 +35,14 @@ interface Tecnico {
 }
 
 interface ItemServicio {
-  servicio:        Servicio;
-  cantidad:        number;
-  precio_subtotal: number;
-  busqueda:        string;
-  resultados:      Servicio[];
-  mostrarDropdown: boolean;
-  repuestos:      RepuestoServicio[];
+  servicio:         Servicio;
+  cantidad:         number;
+  precio_mano_obra: number;
+  precio_subtotal:  number;
+  busqueda:         string;
+  resultados:       Servicio[];
+  mostrarDropdown:  boolean;
+  repuestos:       RepuestoServicio[];
 }
 
 interface Vehiculo {
@@ -81,8 +82,7 @@ export class CrearMantenimiento implements OnInit {
   fechaEmision: string = new Date().toISOString().split('T')[0];
   fechaMinima: string = new Date().toISOString().split('T')[0];
   descripcionVehiculo  = '';
-  precioManoObra       = 0;
-  idEstado             = 1;
+  estadoSeleccionado = 'En proceso';
   idTecnico            = 0;
   nota                 = '';
 
@@ -809,6 +809,7 @@ export class CrearMantenimiento implements OnInit {
       precio_unitario: r.precio_unitario,
       subtotal: r.subtotal,
     }));
+    this.recalcularSubtotal(item);
     this.cerrarModalRepuestos();
   }
 
@@ -817,23 +818,25 @@ export class CrearMantenimiento implements OnInit {
   }
 
   limpiarServicio(item: ItemServicio) {
-    item.servicio        = { id_servicio: 0, nombre: '', estado: '', precio: 0, repuestos: [] };
-    item.busqueda        = '';
-    item.resultados      = [];
-    item.mostrarDropdown = false;
-    item.precio_subtotal = 0;
-    item.repuestos       = [];
+    item.servicio         = { id_servicio: 0, nombre: '', estado: '', precio: 0, repuestos: [] };
+    item.busqueda         = '';
+    item.resultados       = [];
+    item.mostrarDropdown  = false;
+    item.precio_mano_obra = 0;
+    item.precio_subtotal  = 0;
+    item.repuestos        = [];
   }
 
   agregarItem() {
     this.items.push({
-      servicio:        { id_servicio: 0, nombre: '', estado: '', precio: 0, repuestos: [] },
-      cantidad:        1,
-      precio_subtotal: 0,
-      busqueda:        '',
-      resultados:      [],
-      mostrarDropdown: false,
-      repuestos:      [],
+      servicio:         { id_servicio: 0, nombre: '', estado: '', precio: 0, repuestos: [] },
+      cantidad:         1,
+      precio_mano_obra: 0,
+      precio_subtotal:  0,
+      busqueda:         '',
+      resultados:       [],
+      mostrarDropdown:  false,
+      repuestos:       [],
     });
   }
 
@@ -842,7 +845,7 @@ export class CrearMantenimiento implements OnInit {
   }
 
   recalcularSubtotal(item: ItemServicio) {
-    item.precio_subtotal = (item.servicio.precio || 0) * item.cantidad;
+    item.precio_subtotal = ((item.servicio.precio || 0) + item.precio_mano_obra) * item.cantidad;
   }
 
   get subtotalServicios(): number {
@@ -850,12 +853,12 @@ export class CrearMantenimiento implements OnInit {
   }
 
   get igv(): number {
-    const base = this.subtotalServicios + this.precioManoObra;
+    const base = this.subtotalServicios;
     return base - (base / 1.18);
   }
 
   get total(): number {
-    return this.subtotalServicios + this.precioManoObra;
+    return this.subtotalServicios;
   }
 
   itemsValidos(): boolean {
@@ -874,7 +877,7 @@ export class CrearMantenimiento implements OnInit {
     }
 
     const placa = this.vehiculoSeleccionado ? this.vehiculoSeleccionado.placa : this.descripcionVehiculo;
-    const documentoTecnico = this.tecnicos.find(t => t.id_trabajador === this.idTecnico)?.nro_documento || '';
+    const documentoTecnico = this.tecnicos.find(t => t.id_trabajador === this.idTecnico)?.id_trabajador || '';
 
     const itemsArray = this.items
       .filter(it => it.servicio.id_servicio > 0)
@@ -883,22 +886,27 @@ export class CrearMantenimiento implements OnInit {
         documento_trabajador: documentoTecnico,
         cantidad: 1,
         precio_unitario: it.precio_subtotal,
+        precio_mano_obra: it.precio_mano_obra,
         repuestos: it.repuestos.map(r => ({
           nombre_repuesto: r.nombre_repuesto,
           cantidad: r.cantidad_usar || r.cantidad,
         })),
       }));
 
-    const itemsJson = JSON.stringify(itemsArray);
+    const totalManoObra = this.items.reduce((s, it) => s + (it.precio_mano_obra || 0) * it.cantidad, 0);
 
     const payload = {
-      cliente_dni: this.cliente.dni,
+      cliente: {
+        dni: this.cliente.dni,
+      },
       placa: placa,
-      estado: this.idEstado === 1 ? 'Pendiente' : this.idEstado === 2 ? 'En proceso' : 'Completado',
+      estado: this.estadoSeleccionado,
       fecha: this.fechaEmision,
-      nota: this.nota ? this.nota : '',
-      items_json: itemsJson,
+      nota: this.nota || '',
+      precio_mano_obra: totalManoObra,
+      items: itemsArray,
     };
+    console.log('PAYLOAD ENVIADO:', JSON.stringify(payload));
 
     this.guardando = true;
     this.http.post<any>(`${this.URL}/registrar`, payload).subscribe({
@@ -913,23 +921,26 @@ export class CrearMantenimiento implements OnInit {
       },
       error: (err) => {
         this.guardando = false;
-        Swal.fire('Error', err.error?.error || err.error?.mensaje || 'No se pudo registrar la orden', 'error');
+        console.error('ERROR COMPLETO:', err);
+        console.error('err.error:', err.error);
+        const msg = typeof err.error === 'string' ? err.error : err.error?.error || err.error?.mensaje || err.message || 'No se pudo registrar la orden';
+        Swal.fire('Error', msg, 'error');
       },
     });
   }
 
   limpiar() {
-    this.cliente             = this.clienteVacioFactory();
-    this.dniBusqueda         = '';
-    this.clienteEncontrado   = false;
-    this.dniBuscado          = false;
-    this.clientVehicles      = [];
+    this.cliente              = this.clienteVacioFactory();
+    this.dniBusqueda          = '';
+    this.clienteEncontrado    = false;
+    this.dniBuscado           = false;
+    this.clientVehicles       = [];
     this.vehiculoSeleccionado = null;
-    this.descripcionVehiculo = '';
-    this.precioManoObra      = 0;
-    this.idTecnico           = 0;
-    this.nota                = '';
-    this.items               = [];
+    this.descripcionVehiculo  = '';
+    this.estadoSeleccionado   = 'En proceso';
+    this.idTecnico            = 0;
+    this.nota                 = '';
+    this.items                = [];
     this.agregarItem();
   }
 

@@ -15,6 +15,7 @@ interface OrdenResumen {
   dniCliente:          string;
   descripcionVehiculo: string;
   servicios:           string;
+  precioManoObra?:     number;
   precioTotal:         number;
   estado:              string;
   tecnicos?:           string;
@@ -66,7 +67,6 @@ export class Mantenimiento implements OnInit {
   // Modal detalle
   showModalDetalle = false;
   ordenSeleccionada: OrdenResumen | null = null;
-  nuevoEstadoSeleccionado = '';
   metodoPagoSeleccionado = 'Efectivo';
 
   constructor() {
@@ -291,7 +291,6 @@ export class Mantenimiento implements OnInit {
 
   abrirModalDetalleMantenimiento(orden: OrdenResumen) {
     this.ordenSeleccionada = orden;
-    this.nuevoEstadoSeleccionado = orden.estado;
     this.metodoPagoSeleccionado = 'Efectivo';
     console.log('Orden seleccionada:', orden);
     console.log('Detalle:', orden.detalle);
@@ -301,19 +300,18 @@ export class Mantenimiento implements OnInit {
   cerrarModalDetalle() {
     this.showModalDetalle = false;
     this.ordenSeleccionada = null;
-    this.nuevoEstadoSeleccionado = '';
   }
 
-  actualizarMantenimiento() {
-    if (!this.ordenSeleccionada || !this.nuevoEstadoSeleccionado) return;
+  cerrarServicio() {
+    if (!this.ordenSeleccionada) return;
 
     const estadoAnterior = this.ordenSeleccionada.estado;
-    const nuevoEstado = this.nuevoEstadoSeleccionado;
-
-    if (estadoAnterior === nuevoEstado) {
+    if (estadoAnterior === 'Completado') {
       this.cerrarModalDetalle();
       return;
     }
+
+    const nuevoEstado = 'Completado';
 
     const usuario = JSON.parse(localStorage.getItem('currentUser') || '{}').username || 'sistema';
     this.http.put(`${this.URL}/editar-estado`, {
@@ -341,5 +339,73 @@ export class Mantenimiento implements OnInit {
   tieneDetalle(): boolean {
     console.log('tieneDetalle check:', this.ordenSeleccionada?.detalle);
     return !!(this.ordenSeleccionada?.detalle && this.ordenSeleccionada.detalle.length > 0);
+  }
+
+  exportarExcel() {
+    const payload = this.ordenesFiltradas.map(o => ({
+      idOrdenServicio: o.idOrdenServicio,
+      fecha: o.fecha,
+      hora: o.hora,
+      cliente: o.cliente,
+      dniCliente: o.dniCliente,
+      descripcionVehiculo: o.descripcionVehiculo,
+      servicios: o.servicios,
+      tecnicos: o.tecnicos || '',
+      precioTotal: o.precioTotal,
+      estado: o.estado,
+    }));
+    if (!payload || payload.length === 0) {
+      Swal.fire('Atención', 'No hay registros en la tabla para exportar', 'info');
+      return;
+    }
+    this.http.post(`${this.URL}/export/excel`, payload, { responseType: 'blob' }).subscribe({
+      next: (blob: Blob) => {
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        const timestamp = new Date().getTime();
+        link.download = `Reporte_Mantenimiento_${timestamp}.xlsx`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        window.URL.revokeObjectURL(url);
+        Swal.fire('¡Éxito!', 'El reporte de Excel se ha descargado', 'success');
+      },
+      error: () => Swal.fire('Error', 'El servidor no pudo procesar la descarga de Excel', 'error'),
+    });
+  }
+
+  exportarPDF() {
+    const payload = this.ordenesFiltradas.map(o => ({
+      idOrdenServicio: o.idOrdenServicio,
+      fecha: o.fecha,
+      hora: o.hora,
+      cliente: o.cliente,
+      dniCliente: o.dniCliente,
+      descripcionVehiculo: o.descripcionVehiculo,
+      servicios: o.servicios,
+      tecnicos: o.tecnicos || '',
+      precioTotal: o.precioTotal,
+      estado: o.estado,
+    }));
+    if (!payload || payload.length === 0) {
+      Swal.fire('Atención', 'No hay registros en la tabla para exportar', 'info');
+      return;
+    }
+    this.http.post(`${this.URL}/export/pdf`, payload, { responseType: 'blob' }).subscribe({
+      next: (blob: Blob) => {
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        const timestamp = new Date().getTime();
+        link.download = `Reporte_Mantenimiento_${timestamp}.pdf`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        window.URL.revokeObjectURL(url);
+        Swal.fire('¡Éxito!', 'El reporte PDF se ha descargado', 'success');
+      },
+      error: () => Swal.fire('Error', 'El servidor no pudo procesar la descarga del PDF', 'error'),
+    });
   }
 }

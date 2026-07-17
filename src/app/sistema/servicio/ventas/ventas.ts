@@ -5,6 +5,7 @@ import { FormsModule } from '@angular/forms';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Router, RouterOutlet, NavigationEnd } from '@angular/router';
 import { filter } from 'rxjs/operators';
+import Swal from 'sweetalert2';
 
 interface VentaResumen {
   n_orden: number;
@@ -212,5 +213,71 @@ export class Ventas implements OnInit {
   obtenerPrimerNombre(nombreCompleto: string): string {
     if (!nombreCompleto) return '';
     return nombreCompleto.trim().split(' ')[0];
+  }
+
+  exportarExcel() {
+    const payload = this.ventasFiltradas.map(v => ({
+      n_orden: v.n_orden,
+      productos: v.productos,
+      fecha: v.fecha,
+      hora: v.hora,
+      cliente: v.cliente,
+      dni: v.dni,
+      vendedor: v.vendedor,
+      metodo_pago: v.metodo_pago,
+      total: v.total,
+    }));
+    if (!payload || payload.length === 0) {
+      Swal.fire('Atención', 'No hay registros en la tabla para exportar', 'info');
+      return;
+    }
+    this.http.post(`${this.URL}/export/excel`, payload, { responseType: 'blob' }).subscribe({
+      next: (blob: Blob) => {
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        const timestamp = new Date().getTime();
+        link.download = `Reporte_Ventas_${timestamp}.xlsx`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        window.URL.revokeObjectURL(url);
+        Swal.fire('¡Éxito!', 'El reporte de Excel se ha descargado', 'success');
+      },
+      error: () => Swal.fire('Error', 'El servidor no pudo procesar la descarga de Excel', 'error'),
+    });
+  }
+
+  exportarPDF() {
+    const payload = this.ventasFiltradas.map(v => ({
+      n_orden: v.n_orden,
+      productos: v.productos,
+      fecha: v.fecha,
+      hora: v.hora,
+      cliente: v.cliente,
+      dni: v.dni,
+      vendedor: v.vendedor,
+      metodo_pago: v.metodo_pago,
+      total: v.total,
+    }));
+    if (!payload || payload.length === 0) {
+      Swal.fire('Atención', 'No hay registros en la tabla para exportar', 'info');
+      return;
+    }
+    this.http.post(`${this.URL}/export/pdf`, payload, { responseType: 'blob' }).subscribe({
+      next: (blob: Blob) => {
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        const timestamp = new Date().getTime();
+        link.download = `Reporte_Ventas_${timestamp}.pdf`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        window.URL.revokeObjectURL(url);
+        Swal.fire('¡Éxito!', 'El reporte PDF se ha descargado', 'success');
+      },
+      error: () => Swal.fire('Error', 'El servidor no pudo procesar la descarga del PDF', 'error'),
+    });
   }
 }
