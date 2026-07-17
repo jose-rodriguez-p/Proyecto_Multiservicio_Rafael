@@ -98,11 +98,7 @@ export class Compra implements OnInit {
 
   exportarExcel() {
     const payload = this.comprasFiltradas.map((c) => ({
-      fecha: c.fec_compra || '',
-      proveedor: c.nombre_proveedor || '',
-      ruc: c.ruc_proveedor || '',
-      productos: c.cantidad_items || 0,
-      total: c.tot_pago || 0,
+      id_oper_compra: c.id_oper_compra,
     }));
     if (!payload || payload.length === 0) {
       Swal.fire('Atención', 'No hay registros en la tabla para exportar', 'info');
@@ -129,11 +125,7 @@ export class Compra implements OnInit {
 
   exportarPDF() {
     const payload = this.comprasFiltradas.map((c) => ({
-      fecha: c.fec_compra || '',
-      proveedor: c.nombre_proveedor || '',
-      ruc: c.ruc_proveedor || '',
-      productos: c.cantidad_items || 0,
-      total: c.tot_pago || 0,
+      id_oper_compra: c.id_oper_compra,
     }));
     if (!payload || payload.length === 0) {
       Swal.fire('Atención', 'No hay registros en la tabla para exportar', 'info');
