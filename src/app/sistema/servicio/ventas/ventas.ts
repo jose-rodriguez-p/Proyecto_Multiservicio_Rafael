@@ -41,9 +41,15 @@ export class Ventas implements OnInit {
   private cdr        = inject(ChangeDetectorRef);
 
   private URL = `${API_BASE_URL}/api/ventas`;
+  private URL_CAJA = `${API_BASE_URL}/api/caja`;
 
   enCrear = false;
   cargandoTabla = true;
+
+  // --- Estado de caja (apertura/cierre para cuadre) ---
+  cargandoCaja = true;
+  cajaAbierta = false;
+  cajaActual: { id_cierre_caja: number, fec_apertura: string, saldo_inicial: number } | null = null;
 
   // Traemos TODAS las ventas una sola vez; búsqueda, fechas y paginación se filtran en el cliente.
   // Límite de seguridad: si algún día superas ~2000 ventas, hay que mover el filtro al backend.
@@ -66,6 +72,7 @@ export class Ventas implements OnInit {
       this.enCrear = e.urlAfterRedirects.includes('/ventas/crear');
       if (isPlatformBrowser(this.platformId) && !this.enCrear) {
         this.cargarTodo();
+        this.cargarEstadoCaja();
       }
     });
   }
@@ -74,7 +81,110 @@ export class Ventas implements OnInit {
     if (isPlatformBrowser(this.platformId)) {
       this.setRango('mes');
       this.cargarTodo();
+      this.cargarEstadoCaja();
     }
+  }
+
+  cargarEstadoCaja() {
+    this.cargandoCaja = true;
+    this.http.get<any>(`${this.URL_CAJA}/estado`).subscribe({
+      next: (res) => {
+        this.cajaAbierta = !!res?.abierta;
+        this.cajaActual = res?.caja || null;
+        this.cargandoCaja = false;
+        this.cdr.detectChanges();
+      },
+      error: () => { this.cargandoCaja = false; this.cdr.detectChanges(); },
+    });
+  }
+
+  abrirCaja() {
+    Swal.fire({
+      title: 'Abrir caja',
+      html: `<p class="text-muted small mb-2">Ingresa el monto en efectivo con el que inicias el turno.</p>`,
+      input: 'number',
+      inputLabel: 'Saldo inicial (S/)',
+      inputValue: 0,
+      inputAttributes: { min: '0', step: '0.10' },
+      showCancelButton: true,
+      confirmButtonText: 'Abrir caja',
+      confirmButtonColor: '#dc3545',
+      cancelButtonText: 'Cancelar',
+      inputValidator: (value) => (value === '' || Number(value) < 0) ? 'Ingresa un monto válido' : undefined,
+    }).then((res) => {
+      if (!res.isConfirmed) return;
+      const saldoInicial = Number(res.value);
+      this.http.post<any>(`${this.URL_CAJA}/abrir`, { saldo_inicial: saldoInicial }).subscribe({
+        next: () => {
+          Swal.fire({ icon: 'success', title: 'Caja abierta', timer: 1500, showConfirmButton: false });
+          this.cargarEstadoCaja();
+        },
+        error: (err) => Swal.fire('Error', err.error?.message || 'No se pudo abrir la caja', 'error'),
+      });
+    });
+  }
+
+  cerrarCaja() {
+    if (!this.cajaActual) return;
+    const idCierreCaja = this.cajaActual.id_cierre_caja;
+
+    this.http.get<any>(`${this.URL_CAJA}/${idCierreCaja}/resumen`).subscribe({
+      next: (resumen) => {
+        const totSistema: number = resumen.tot_ventas_sistema || 0;
+        Swal.fire({
+          title: 'Cerrar caja',
+          html: `
+            <div class="text-start small">
+              <p class="mb-1">Ventas contabilizadas: <b>${resumen.cantidad_ventas || 0}</b></p>
+              <p class="mb-3">Total según sistema: <b>S/ ${totSistema.toFixed(2)}</b></p>
+              <label class="form-label small mb-1">Efectivo contado en caja (S/)</label>
+            </div>`,
+          input: 'number',
+          inputValue: totSistema.toFixed(2),
+          inputAttributes: { min: '0', step: '0.10' },
+          showCancelButton: true,
+          confirmButtonText: 'Cerrar caja',
+          confirmButtonColor: '#dc3545',
+          cancelButtonText: 'Cancelar',
+          inputValidator: (value) => (value === '' || Number(value) < 0) ? 'Ingresa un monto válido' : undefined,
+        }).then((res) => {
+          if (!res.isConfirmed) return;
+          const totCajero = Number(res.value);
+          this.http.post<any>(`${this.URL_CAJA}/${idCierreCaja}/cerrar`, { tot_ventas_cajero: totCajero }).subscribe({
+            next: () => {
+              const diferencia = totCajero - totSistema;
+              const cuadrada = Math.abs(diferencia) < 0.01;
+              Swal.fire({
+                icon: cuadrada ? 'success' : 'warning',
+                title: cuadrada ? 'Caja cuadrada' : (diferencia > 0 ? 'Hay sobrante' : 'Hay faltante'),
+                text: cuadrada ? 'El monto contado coincide con el sistema.' : `Diferencia: S/ ${Math.abs(diferencia).toFixed(2)}`,
+                confirmButtonText: 'Descargar comprobante',
+                confirmButtonColor: '#dc3545',
+              }).then(() => this.descargarComprobanteCierre(idCierreCaja));
+              this.cargarEstadoCaja();
+            },
+            error: (err) => Swal.fire('Error', err.error?.message || 'No se pudo cerrar la caja', 'error'),
+          });
+        });
+      },
+      error: () => Swal.fire('Error', 'No se pudo obtener el resumen de caja', 'error'),
+    });
+  }
+
+  descargarComprobanteCierre(idCierreCaja: number) {
+    this.http.get(`${this.URL_CAJA}/${idCierreCaja}/comprobante`, { responseType: 'blob' }).subscribe({
+      next: (blob: Blob) => {
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `Cierre_Caja_${idCierreCaja}.pdf`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        window.URL.revokeObjectURL(url);
+      },
+      error: () => Swal.fire('Error', 'No se pudo generar el comprobante de cierre', 'error'),
+    });
   }
 
   cargarTodo() {
@@ -163,7 +273,13 @@ export class Ventas implements OnInit {
 
   cambiarPorPagina() { this.paginaActual = 1; }
 
-  nuevaVenta() { this.router.navigate(['/sistema/servicio/ventas/crear']); }
+  nuevaVenta() {
+    if (!this.cajaAbierta) {
+      Swal.fire('Caja cerrada', 'Debes abrir caja antes de registrar ventas.', 'warning');
+      return;
+    }
+    this.router.navigate(['/sistema/servicio/ventas/crear']);
+  }
 
   get hoy(): string {
     return new Date().toISOString().split('T')[0];
