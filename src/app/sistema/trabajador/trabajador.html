@@ -43,36 +43,34 @@
             <table class="table table-hover align-middle mb-0">
                 <thead class="table-dark">
                     <tr>
-                        <th class="ps-4">Documento</th>
-                        <th>Nombre</th>
-                        <th>Apellido Paterno</th>
-                        <th>Apellido Materno</th>
-                        <th>Cargo</th>
-                        <th>Contacto</th>
-                        <th>Dirección</th>
-                        <th class="text-center">Estado</th>
-                        <th class="text-center">fecha registro</th>
-                        <th class="text-center">Acciones</th>
+                        <th class="ps-3">DOCUMENTO</th>
+                        <th>NOMBRE COMPLETO</th>
+                        <th>CARGO</th>
+                        <th>CONTACTO</th>
+                        <th>DIRECCIÓN</th>
+                        <th class="text-center">ESTADO</th>
+                        <th class="text-center">FECHA REGISTRO</th>
+                        <th class="text-center">ACCIONES</th>
                     </tr>
                 </thead>
                 <tbody>
                     <tr *ngFor="let trab of filteredList">
-                        <td class="ps-4 fw-bold">{{ trab.numeroDocumento }}</td>
-                        <td class="ps-4 fw-bold">{{ trab.nombre }}</td>
-                        <td>{{ trab.apellido_paterno }}</td>
-                        <td>{{ trab.apellido_materno }}</td>
+                        <td class="ps-3 fw-bold font-monospace">{{ trab.numeroDocumento }}</td>
                         <td>
-                            <span class="badge bg-light text-dark border">{{ trab.cargo }}</span>
+                            <div class="fw-bold text-dark">{{ trab.nombre }} {{ trab.apellido_paterno }} {{ trab.apellido_materno }}</div>
                         </td>
                         <td>
-                            <div class="small"><i class="bi bi-telephone me-1"></i>{{ trab.celular }}</div>
-                            <div class="small text-muted"><i class="bi bi-envelope me-1"></i>{{ trab.correo }}</div>
+                            <span class="badge bg-light text-dark border"><i class="bi bi-person-badge me-1"></i>{{ trab.cargo }}</span>
+                        </td>
+                        <td class="text-nowrap">
+                            <div class="small"><i class="bi bi-telephone me-1 text-secondary"></i>{{ trab.celular }}</div>
+                            <div class="small text-muted"><i class="bi bi-envelope me-1 text-secondary"></i>{{ trab.correo }}</div>
                         </td>
                         <td>
-                            <div class="small">{{ trab.direccion || '-' }}</div>
+                            <div class="small text-muted">{{ trab.direccion || '-' }}</div>
                         </td>
                         <td class="text-center">
-                            <span class="badge" [class.bg-success]="trab.estado === 'Activo'" [class.bg-secondary]="trab.estado !== 'Activo'">
+                            <span class="badge px-3 py-2 rounded-pill fw-bold" [ngClass]="trab.estado === 'Activo' ? 'bg-success text-white' : 'bg-secondary text-white'">
                                 {{ trab.estado }}
                             </span>
                         </td>

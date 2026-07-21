@@ -92,6 +92,18 @@ export class NuevaCompra implements OnInit {
   }
 
   agregarItem() {
+    if (this.items.length > 0) {
+      const ultimoItem = this.items[this.items.length - 1];
+      if (!ultimoItem.nombre_repuesto && !ultimoItem.busqueda) {
+        Swal.fire({
+          icon: 'warning',
+          title: 'Producto anterior incompleto',
+          text: 'Debe seleccionar un producto en la fila actual antes de agregar uno nuevo.',
+          confirmButtonColor: '#dc3545'
+        });
+        return;
+      }
+    }
     this.items.push(this.nuevoItem());
   }
 

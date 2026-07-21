@@ -1,1 +1,87 @@
-/* You can add global styles to this file, and also import other style files */
+/* Estilos Globales Unificados para Tablas y Componentes de Multiservicio Rafael */
+
+/* Estilos de Tabla Unificados */
+.table {
+  vertical-align: middle;
+  font-size: 0.875rem;
+}
+
+.table thead th {
+  background-color: #f8f9fa !important;
+  font-weight: 600;
+  text-transform: uppercase;
+  font-size: 0.75rem;
+  letter-spacing: 0.5px;
+  color: #6c757d !important;
+  padding: 12px 10px;
+  border-bottom: 2px solid #dee2e6 !important;
+}
+
+.table tbody tr {
+  transition: all 0.15s ease-in-out;
+}
+
+.table tbody tr:hover {
+  background-color: rgba(0, 0, 0, 0.025) !important;
+}
+
+/* Tarjetas y Contenedores */
+.card {
+  border-radius: 0.5rem;
+  border: none !important;
+}
+
+.card-header {
+  border-bottom: 1px solid #f0f0f0;
+}
+
+/* Filas de Ítems (Servicios y Repuestos/Productos uno debajo de otro) */
+.lista-items-col {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  max-width: 240px;
+}
+
+.item-servicio-row {
+  display: flex;
+  align-items: center;
+  font-size: 0.8125rem;
+  color: #212529;
+  line-height: 1.25;
+}
+
+.item-repuesto-row {
+  display: flex;
+  align-items: center;
+  font-size: 0.78125rem;
+  color: #495057;
+  line-height: 1.25;
+  background-color: #f1f3f5;
+  padding: 3px 8px;
+  border-radius: 4px;
+}
+
+/* Iconos Estadísticos */
+.icono-stat {
+  width: 46px;
+  height: 46px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.bg-danger-sutil { background-color: rgba(220, 53, 69, 0.1) !important; }
+.bg-success-sutil { background-color: rgba(25, 135, 84, 0.1) !important; }
+.bg-primary-sutil { background-color: rgba(13, 110, 253, 0.1) !important; }
+.bg-warning-sutil { background-color: rgba(255, 193, 7, 0.15) !important; }
+
+/* Utilidades adicionales */
+.cursor-pointer {
+  cursor: pointer;
+}
+
+.extra-small {
+  font-size: 0.725rem;
+}

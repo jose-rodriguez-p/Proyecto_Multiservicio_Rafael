@@ -388,6 +388,18 @@ export class CrearVenta implements OnInit {
   }
 
   agregarItem() {
+    if (this.items.length > 0) {
+      const ultimoItem = this.items[this.items.length - 1];
+      if (!ultimoItem.repuesto || !ultimoItem.repuesto.nombre) {
+        Swal.fire({
+          icon: 'warning',
+          title: 'Producto anterior incompleto',
+          text: 'Debe seleccionar un producto en la fila actual antes de agregar uno nuevo.',
+          confirmButtonColor: '#dc3545'
+        });
+        return;
+      }
+    }
     this.items.push({ repuesto: this.repuestoVacioFactory(), descripcion: '', cantidad: 1,
       precio_unit: 0, descuento: 0, busqueda: '', resultados: [], mostrarDropdown: false });
   }
@@ -423,6 +435,47 @@ export class CrearVenta implements OnInit {
       !!it.repuesto.nombre && it.cantidad > 0 && it.cantidad <= (it.repuesto.stock || 0));
   }
 
+  showModalVoucher = false;
+  voucherDatos: any = null;
+
+  cerrarVoucher() {
+    this.showModalVoucher = false;
+    this.volver();
+  }
+
+  descargarVoucherPDF() {
+    const printContent = document.getElementById('voucher-imprimir')?.innerHTML;
+    if (!printContent) return;
+    const printWindow = window.open('', '_blank', 'width=800,height=900');
+    if (printWindow) {
+      printWindow.document.write(`
+        <!DOCTYPE html>
+        <html>
+          <head>
+            <title>Voucher_Venta_${this.voucherDatos?.nOrden || 'Pago'}</title>
+            <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+            <style>
+              body { font-family: 'Segoe UI', Arial, sans-serif; background: #fff; color: #222; padding: 20px; }
+              .voucher-box { border: 2px solid #dc3545; border-radius: 12px; padding: 30px; background: #fff; max-width: 750px; margin: auto; }
+              .badge-tipo { background: #dc3545; color: #fff; font-size: 14px; padding: 4px 12px; border-radius: 20px; }
+              .total-highlight { font-size: 24px; font-weight: bold; color: #dc3545; }
+              @media print {
+                body { padding: 0; }
+                .voucher-box { border: none; padding: 0; }
+              }
+            </style>
+          </head>
+          <body onload="window.print();">
+            <div class="voucher-box">
+              ${printContent}
+            </div>
+          </body>
+        </html>
+      `);
+      printWindow.document.close();
+    }
+  }
+
   confirmarVenta() {
     if (!this.itemsValidos()) { Swal.fire('Sin ítems válidos', 'Agregue al menos un repuesto con cantidad válida.', 'warning'); return; }
     let idUsuario = '';
@@ -453,12 +506,30 @@ export class CrearVenta implements OnInit {
     this.http.post<any>(`${this.URL_VENTAS}/registrar`, payload).subscribe({
       next: (res) => {
         this.guardando = false;
-        Swal.fire({ 
-          title: '¡Venta registrada!',
-          html: `<b>Total: S/ ${this.total.toFixed(2)}</b><br>Cliente: ${this.nombreCompletoCliente}`,
-          icon: 'success', 
-          confirmButtonColor: '#dc3545' 
-        }).then(() => this.volver());
+        this.voucherDatos = {
+          nOrden: res.id_orden_venta || res.n_orden || Math.floor(1000 + Math.random() * 9000),
+          tipoComprobante: this.tipoComprobante,
+          serie: this.serie,
+          fecha: new Date().toLocaleDateString('es-PE'),
+          hora: new Date().toLocaleTimeString('es-PE', { hour: '2-digit', minute: '2-digit', hour12: true }),
+          clienteNombre: this.nombreCompletoCliente,
+          clienteDni: this.cliente.dni,
+          clienteCelular: this.cliente.celular,
+          metodoPago: this.metodoPago,
+          items: this.items.map(it => ({
+            nombre: it.repuesto.nombre,
+            cantidad: it.cantidad,
+            precio_unit: it.precio_unit,
+            importe: this.importeItem(it)
+          })),
+          subtotal: this.subtotal,
+          descuentoMonto: this.descuentoMonto,
+          valorVenta: this.valorVenta,
+          igv: this.igv,
+          total: this.total
+        };
+        this.showModalVoucher = true;
+        this.cdr.detectChanges();
       },
       error: (err) => { 
         this.guardando = false; 

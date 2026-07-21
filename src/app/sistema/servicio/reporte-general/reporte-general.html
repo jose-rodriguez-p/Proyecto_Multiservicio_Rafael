@@ -142,7 +142,7 @@
             </tr>
             <tr *ngFor="let r of registros">
               <td><span class="badge bg-light text-dark border">#{{ r.nOrden }}</span></td>
-              <td class="small text-muted">{{ r.fecha }}</td>
+              <td class="small text-muted">{{ r.fecha || r.fechaRegistro || r.fechaServicio || '-' }}</td>
               <td class="small text-muted">{{ r.hora || '-' }}</td>
               <td>
                 <span class="badge" [ngClass]="r.tipo === 'Venta' ? 'bg-success' : 'bg-warning text-dark'">

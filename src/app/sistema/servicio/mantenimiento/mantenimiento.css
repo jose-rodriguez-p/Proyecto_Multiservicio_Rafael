@@ -1,0 +1,98 @@
+/* Estilos personalizados para Mantenimiento */
+
+.tabla-mantenimiento {
+  vertical-align: middle;
+  font-size: 0.875rem;
+}
+
+.tabla-mantenimiento thead th {
+  background-color: #f8f9fa;
+  font-weight: 600;
+  text-transform: uppercase;
+  font-size: 0.75rem;
+  letter-spacing: 0.5px;
+  color: #6c757d;
+  padding: 12px 10px;
+  border-bottom: 2px solid #dee2e6;
+}
+
+.tabla-mantenimiento tbody tr {
+  transition: all 0.15s ease-in-out;
+}
+
+.tabla-mantenimiento tbody tr:hover {
+  background-color: #f8f9fa;
+}
+
+.lista-items-col {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  max-width: 220px;
+}
+
+.item-servicio-row {
+  display: flex;
+  align-items: center;
+  font-size: 0.8125rem;
+  color: #212529;
+  line-height: 1.25;
+}
+
+.item-repuesto-row {
+  display: flex;
+  align-items: center;
+  font-size: 0.78125rem;
+  color: #495057;
+  line-height: 1.25;
+  background-color: #f1f3f5;
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+.badge-estado-completado {
+  background-color: #d1e7dd !important;
+  color: #0f5132 !important;
+  border: 1px solid #badbcc !important;
+}
+
+.badge-estado-proceso {
+  background-color: #fff3cd !important;
+  color: #664d03 !important;
+  border: 1px solid #ffecb5 !important;
+}
+
+.badge-estado-pendiente {
+  background-color: #e2e3e5 !important;
+  color: #41464b !important;
+  border: 1px solid #d3d6d8 !important;
+}
+
+.icono-stat {
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.bg-danger-sutil {
+  background-color: rgba(220, 53, 69, 0.1);
+}
+
+.bg-success-sutil {
+  background-color: rgba(25, 135, 84, 0.1);
+}
+
+.bg-primary-sutil {
+  background-color: rgba(13, 110, 253, 0.1);
+}
+
+.cursor-pointer {
+  cursor: pointer;
+}
+
+.extra-small {
+  font-size: 0.72rem;
+}

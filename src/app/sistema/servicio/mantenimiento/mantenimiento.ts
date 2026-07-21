@@ -10,6 +10,9 @@ import Swal from 'sweetalert2';
 interface OrdenResumen {
   idOrdenServicio:     number;
   hora:                string;
+  fechaRegistro:       string;
+  fechaServicio:       string;
+  fechaCulminacion:    string;
   fecha?:              string;
   cliente:             string;
   dniCliente:          string;
@@ -50,13 +53,11 @@ export class Mantenimiento implements OnInit {
   enCrear = false;
   cargandoTabla = true;
 
-  // Traemos TODAS las órdenes una sola vez; todo lo demás se filtra en el cliente.
-  // Límite de seguridad: si algún día superas ~2000 órdenes, hay que mover el filtro al backend.
   private todasOrdenes: OrdenResumen[] = [];
 
   busqueda = '';
+  estadoFiltro = 'Todos';
 
-  // Filtro de rango de fechas
   fechaInicio = '';
   fechaFin = '';
   rangoActivo: RangoFecha = 'mes';
@@ -64,10 +65,15 @@ export class Mantenimiento implements OnInit {
   paginaActual = 1;
   porPagina = 10;
 
-  // Modal detalle
   showModalDetalle = false;
   ordenSeleccionada: OrdenResumen | null = null;
   metodoPagoSeleccionado = 'Efectivo';
+  tipoComprobanteSeleccionado = 'Boleta';
+  serieSeleccionada = 'B001';
+
+  onTipoComprobanteChange() {
+    this.serieSeleccionada = this.tipoComprobanteSeleccionado === 'Boleta' ? 'B001' : 'F001';
+  }
 
   constructor() {
     this.router.events.pipe(
@@ -85,7 +91,6 @@ export class Mantenimiento implements OnInit {
     if (isPlatformBrowser(this.platformId)) {
       this.enCrear = this.router.url.includes('/mantenimiento/crear');
       if (!this.enCrear) {
-        this.setRango('mes');
         this.cargarTodo();
       }
     }
@@ -100,28 +105,56 @@ export class Mantenimiento implements OnInit {
 
     this.http.get<any>(`${this.URL}/listar`, { params }).subscribe({
       next: (res) => {
-        console.log('Datos recibidos del backend:', res);
-        this.todasOrdenes = (res.datos || []).map((orden: any) => {
-          // Parsear detalle si viene como string
+        const listaBruta = Array.isArray(res) ? res : (res?.datos || res?.content || []);
+        this.todasOrdenes = listaBruta.map((orden: any) => {
+          orden.idOrdenServicio = orden.idOrdenServicio || orden.id_orden_servicio;
+          orden.fechaServicio = orden.fechaServicio || orden.fecha || orden.fecha_servicio || orden.fechaRegistro;
+          orden.fechaRegistro = orden.fechaRegistro || orden.fecha_registro || orden.fecha || orden.fechaServicio;
+          orden.fecha = orden.fecha || orden.fechaServicio || orden.fechaRegistro;
+          orden.dniCliente = orden.dniCliente || orden.dni;
+          orden.descripcionVehiculo = orden.descripcionVehiculo || orden.vehiculo;
+          orden.precioManoObra = orden.precioManoObra !== undefined ? orden.precioManoObra : (orden.mano_obra || 0);
+          orden.precioTotal = orden.precioTotal !== undefined ? orden.precioTotal : (orden.total || 0);
+
           if (orden.detalle && typeof orden.detalle === 'string') {
             try {
               orden.detalle = JSON.parse(orden.detalle);
             } catch (e) {
-              console.error('Error parseando detalle:', e);
               orden.detalle = [];
             }
           }
           return orden;
         });
-        console.log('Primera orden después de parse:', this.todasOrdenes[0]);
         this.cargandoTabla = false;
         this.cdr.detectChanges();
       },
-      error: () => { this.cargandoTabla = false; this.cdr.detectChanges(); }
+      error: () => {
+        this.cargandoTabla = false;
+        this.cdr.detectChanges();
+      }
     });
   }
 
-  // --- Filtrado en el cliente ---
+  private extraerYYYYMMDD(val: any): string {
+    if (!val) return '';
+    if (typeof val === 'number') {
+      const d = new Date(val);
+      if (!isNaN(d.getTime())) return d.toISOString().split('T')[0];
+    }
+    const str = String(val).trim();
+    if (str.length >= 10 && str.includes('-')) {
+      return str.substring(0, 10);
+    }
+    const d = new Date(str);
+    if (!isNaN(d.getTime())) {
+      try {
+        return d.toISOString().split('T')[0];
+      } catch {
+        return '';
+      }
+    }
+    return '';
+  }
 
   get ordenesFiltradas(): OrdenResumen[] {
     const texto = this.busqueda.trim().toLowerCase();
@@ -130,13 +163,20 @@ export class Mantenimiento implements OnInit {
       const coincideTexto = !texto ||
         o.cliente?.toLowerCase().includes(texto) ||
         o.dniCliente?.toLowerCase().includes(texto) ||
+        o.descripcionVehiculo?.toLowerCase().includes(texto) ||
+        o.tecnicos?.toLowerCase().includes(texto) ||
         String(o.idOrdenServicio).includes(texto);
 
-      const fechaOrden = o.fecha ?? '';
-      const dentroInicio = !this.fechaInicio || fechaOrden >= this.fechaInicio;
-      const dentroFin = !this.fechaFin || fechaOrden <= this.fechaFin;
+      const coincideEstado = !this.estadoFiltro || this.estadoFiltro === 'Todos' ||
+        o.estado?.toLowerCase() === this.estadoFiltro.toLowerCase();
 
-      return coincideTexto && dentroInicio && dentroFin;
+      const fechaBase = o.fechaRegistro || o.fechaServicio || o.fecha;
+      const fechaOrden = this.extraerYYYYMMDD(fechaBase);
+
+      const dentroInicio = !this.fechaInicio || !fechaOrden || fechaOrden >= this.fechaInicio;
+      const dentroFin = !this.fechaFin || !fechaOrden || fechaOrden <= this.fechaFin;
+
+      return coincideTexto && coincideEstado && dentroInicio && dentroFin;
     });
   }
 
@@ -191,8 +231,6 @@ export class Mantenimiento implements OnInit {
     return new Date().toISOString().split('T')[0];
   }
 
-  // --- Selector de rango de fechas ---
-
   setRango(tipo: RangoFecha) {
     if (!tipo) return;
     const hoy = new Date();
@@ -232,8 +270,78 @@ export class Mantenimiento implements OnInit {
     this.paginaActual = 1;
   }
 
+  getServiciosList(servicios: string): string[] {
+    if (!servicios) return [];
+    return servicios.split(', ').map(s => s.trim()).filter(Boolean);
+  }
+
+  getRepuestosList(detalle: any[] | undefined): { nombre_repuesto: string; cantidad: number; precio_total?: number }[] {
+    if (!detalle || !Array.isArray(detalle) || detalle.length === 0) return [];
+    const repuestos: { nombre_repuesto: string; cantidad: number; precio_total?: number }[] = [];
+    detalle.forEach((item: any) => {
+      if (item && item.repuestos && Array.isArray(item.repuestos)) {
+        item.repuestos.forEach((rep: any) => {
+          if (rep && rep.nombre_repuesto) {
+            repuestos.push({
+              nombre_repuesto: rep.nombre_repuesto,
+              cantidad: rep.cantidad || 1,
+              precio_total: rep.precio_total
+            });
+          }
+        });
+      }
+    });
+    return repuestos;
+  }
+
+  getPlaca(descripcionVehiculo: string): string {
+    if (!descripcionVehiculo) return '';
+    const partes = descripcionVehiculo.split(' - ');
+    return partes.length > 1 ? partes[partes.length - 1] : descripcionVehiculo;
+  }
+
+  getModeloMarca(descripcionVehiculo: string): string {
+    if (!descripcionVehiculo) return '';
+    const partes = descripcionVehiculo.split(' - ');
+    return partes.length > 1 ? partes.slice(0, partes.length - 1).join(' - ') : '';
+  }
+
   formatearServicios(servicios: string): string {
     return servicios ? servicios.split(', ').join('\n') : '-';
+  }
+
+  formatearFecha(fecha: any): string {
+    if (!fecha) return '-';
+    if (typeof fecha === 'string') {
+      const date = new Date(fecha);
+      return isNaN(date.getTime()) ? fecha : date.toLocaleDateString('es-PE');
+    }
+    if (fecha instanceof Date) {
+      return fecha.toLocaleDateString('es-PE');
+    }
+    return '-';
+  }
+
+  formatearHora(fechaStr: any): string {
+    if (!fechaStr) return '';
+    try {
+      const date = new Date(fechaStr);
+      if (isNaN(date.getTime())) {
+        if (typeof fechaStr === 'string' && fechaStr.includes(':')) {
+          return fechaStr.substring(0, 5);
+        }
+        return '';
+      }
+      return date.toLocaleTimeString('es-PE', { hour: '2-digit', minute: '2-digit', hour12: true });
+    } catch {
+      return '';
+    }
+  }
+
+  formatearRepuestos(detalle: any[] | undefined): string {
+    const list = this.getRepuestosList(detalle);
+    if (list.length === 0) return '';
+    return list.map(r => `${r.nombre_repuesto} (x${r.cantidad})`).join('\n');
   }
 
   badgeEstado(estado: string): string {
@@ -287,19 +395,54 @@ export class Mantenimiento implements OnInit {
     });
   }
 
-  // --- Métodos para modal de detalle ---
-
   abrirModalDetalleMantenimiento(orden: OrdenResumen) {
     this.ordenSeleccionada = orden;
     this.metodoPagoSeleccionado = 'Efectivo';
-    console.log('Orden seleccionada:', orden);
-    console.log('Detalle:', orden.detalle);
     this.showModalDetalle = true;
   }
 
   cerrarModalDetalle() {
     this.showModalDetalle = false;
     this.ordenSeleccionada = null;
+  }
+
+  showModalVoucher = false;
+  voucherDatos: any = null;
+
+  cerrarVoucher() {
+    this.showModalVoucher = false;
+  }
+
+  descargarVoucherPDF() {
+    const printContent = document.getElementById('voucher-mantenimiento-imprimir')?.innerHTML;
+    if (!printContent) return;
+    const printWindow = window.open('', '_blank', 'width=800,height=900');
+    if (printWindow) {
+      printWindow.document.write(`
+        <!DOCTYPE html>
+        <html>
+          <head>
+            <title>Voucher_Mantenimiento_${this.voucherDatos?.idOrdenServicio || 'Servicio'}</title>
+            <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+            <style>
+              body { font-family: 'Segoe UI', Arial, sans-serif; background: #fff; color: #222; padding: 20px; }
+              .voucher-box { border: 2px solid #dc3545; border-radius: 12px; padding: 30px; background: #fff; max-width: 750px; margin: auto; }
+              .total-highlight { font-size: 24px; font-weight: bold; color: #dc3545; }
+              @media print {
+                body { padding: 0; }
+                .voucher-box { border: none; padding: 0; }
+              }
+            </style>
+          </head>
+          <body onload="window.print();">
+            <div class="voucher-box">
+              ${printContent}
+            </div>
+          </body>
+        </html>
+      `);
+      printWindow.document.close();
+    }
   }
 
   cerrarServicio() {
@@ -321,9 +464,31 @@ export class Mantenimiento implements OnInit {
     }).subscribe({
       next: (res: any) => {
         if (res.status === 'OK') {
-          Swal.fire({ icon: 'success', title: 'Mantenimiento actualizado', timer: 1500, showConfirmButton: false });
+          const total = this.ordenSeleccionada?.precioTotal || 0;
+          const valorVenta = total / 1.18;
+          const igv = total - valorVenta;
+
+          this.voucherDatos = {
+            idOrdenServicio: this.ordenSeleccionada?.idOrdenServicio,
+            tipoComprobante: this.tipoComprobanteSeleccionado,
+            serie: this.serieSeleccionada,
+            cliente: this.ordenSeleccionada?.cliente,
+            dniCliente: this.ordenSeleccionada?.dniCliente,
+            descripcionVehiculo: this.ordenSeleccionada?.descripcionVehiculo,
+            fechaServicio: this.ordenSeleccionada?.fechaServicio || this.ordenSeleccionada?.fecha,
+            fechaCulminacion: new Date().toLocaleDateString('es-PE') + ' ' + new Date().toLocaleTimeString('es-PE', { hour: '2-digit', minute: '2-digit', hour12: true }),
+            tecnicos: this.ordenSeleccionada?.tecnicos,
+            metodoPago: this.metodoPagoSeleccionado,
+            precioManoObra: this.ordenSeleccionada?.precioManoObra || 0,
+            valorVenta: valorVenta,
+            igv: igv,
+            precioTotal: total,
+            detalle: this.ordenSeleccionada?.detalle || []
+          };
           this.cargarTodo();
           this.cerrarModalDetalle();
+          this.showModalVoucher = true;
+          this.cdr.detectChanges();
         } else {
           Swal.fire({ icon: 'error', title: 'Error', text: res.mensaje });
           this.cargarTodo();
@@ -337,14 +502,14 @@ export class Mantenimiento implements OnInit {
   }
 
   tieneDetalle(): boolean {
-    console.log('tieneDetalle check:', this.ordenSeleccionada?.detalle);
     return !!(this.ordenSeleccionada?.detalle && this.ordenSeleccionada.detalle.length > 0);
   }
 
   exportarExcel() {
     const payload = this.ordenesFiltradas.map(o => ({
       idOrdenServicio: o.idOrdenServicio,
-      fecha: o.fecha,
+      fechaRegistro: o.fechaRegistro,
+      fechaServicio: o.fechaServicio,
       hora: o.hora,
       cliente: o.cliente,
       dniCliente: o.dniCliente,
@@ -378,7 +543,8 @@ export class Mantenimiento implements OnInit {
   exportarPDF() {
     const payload = this.ordenesFiltradas.map(o => ({
       idOrdenServicio: o.idOrdenServicio,
-      fecha: o.fecha,
+      fechaRegistro: o.fechaRegistro,
+      fechaServicio: o.fechaServicio,
       hora: o.hora,
       cliente: o.cliente,
       dniCliente: o.dniCliente,

@@ -6,17 +6,20 @@ import { HttpClient } from '@angular/common/http';
 import Swal from 'sweetalert2';
 
 interface ReporteItem {
-  nOrden:   number;
-  fecha:    string;
-  hora:     string;
-  tipo:     string;
-  cliente:  string;
-  dni:      string;
-  carro:    string;
-  repuesto: string;
-  mecanico: string;
-  vendedor: string;
-  total:    number;
+  nOrden:          number;
+  fecha:           string;
+  fechaRegistro?:  string;
+  fechaCulminacion?: string;
+  fechaServicio?:  string;
+  hora:            string;
+  tipo:            string;
+  cliente:         string;
+  dni:             string;
+  carro:           string;
+  repuesto:        string;
+  mecanico:        string;
+  vendedor:        string;
+  total:           number;
 }
 
 interface ResumenReporte {
@@ -53,7 +56,6 @@ export class ReporteGeneral implements OnInit {
   porPagina = 10;
 
   ngOnInit() {
-    this.setRango('mes');
     this.cargarRegistros();
   }
 
@@ -85,9 +87,11 @@ export class ReporteGeneral implements OnInit {
         r.repuesto?.toLowerCase().includes(texto) ||
         r.mecanico?.toLowerCase().includes(texto) ||
         r.vendedor?.toLowerCase().includes(texto);
-      const fecha = r.fecha ?? '';
-      const dentroInicio = !this.fechaInicio || fecha >= this.fechaInicio;
-      const dentroFin = !this.fechaFin || fecha <= this.fechaFin;
+
+      const fechaVal = r.fechaRegistro || r.fecha || r.fechaServicio || '';
+      const fecha = fechaVal.length >= 10 ? fechaVal.substring(0, 10) : fechaVal;
+      const dentroInicio = !this.fechaInicio || !fecha || fecha >= this.fechaInicio;
+      const dentroFin = !this.fechaFin || !fecha || fecha <= this.fechaFin;
       return coincideTexto && dentroInicio && dentroFin;
     });
   }
@@ -184,7 +188,7 @@ export class ReporteGeneral implements OnInit {
       return;
     }
     const payload = this.registrosFiltrados.map(r => ({
-      nOrden: r.nOrden, fecha: r.fecha, hora: r.hora, tipo: r.tipo, cliente: r.cliente, dni: r.dni,
+      nOrden: r.nOrden, fecha: r.fecha || r.fechaRegistro, hora: r.hora, tipo: r.tipo, cliente: r.cliente, dni: r.dni,
       carro: r.carro, repuesto: r.repuesto, mecanico: r.mecanico,
       vendedor: r.vendedor, total: r.total,
     }));
@@ -210,7 +214,7 @@ export class ReporteGeneral implements OnInit {
       return;
     }
     const payload = this.registrosFiltrados.map(r => ({
-      nOrden: r.nOrden, fecha: r.fecha, hora: r.hora, tipo: r.tipo, cliente: r.cliente, dni: r.dni,
+      nOrden: r.nOrden, fecha: r.fecha || r.fechaRegistro, hora: r.hora, tipo: r.tipo, cliente: r.cliente, dni: r.dni,
       carro: r.carro, repuesto: r.repuesto, mecanico: r.mecanico,
       vendedor: r.vendedor, total: r.total,
     }));

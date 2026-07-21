@@ -210,6 +210,11 @@ export class Ventas implements OnInit {
     this.paginaActual = 1;
   }
 
+  getProductosList(productos: string): string[] {
+    if (!productos) return [];
+    return productos.split(', ').map(p => p.trim()).filter(Boolean);
+  }
+
   obtenerPrimerNombre(nombreCompleto: string): string {
     if (!nombreCompleto) return '';
     return nombreCompleto.trim().split(' ')[0];

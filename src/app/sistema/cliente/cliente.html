@@ -38,36 +38,36 @@
                 <thead class="table-dark">
                     <tr>
                         <th class="ps-4">DNI</th>
-                        <th>Nombre Completo</th>
-                        <th>Contacto</th>
-                        <th>Vehículos</th>
-                        <th class="text-center">Estado</th>
-                        <th class="text-center">Acciones</th>
+                        <th>NOMBRE COMPLETO</th>
+                        <th>CONTACTO</th>
+                        <th>VEHÍCULOS</th>
+                        <th class="text-center">ESTADO</th>
+                        <th class="text-center">ACCIONES</th>
                     </tr>
                 </thead>
                 <tbody>
                     <tr *ngFor="let cliente of clientesFiltrados">
-                        <td class="ps-4 fw-bold">{{ cliente.dni }}</td>
+                        <td class="ps-4 fw-bold font-monospace">{{ cliente.dni }}</td>
                         <td>
-                            <div class="fw-bold">{{ cliente.nombre }} {{ cliente.apellido_paterno }} {{ cliente.apellido_materno }}</div>
+                            <div class="fw-bold text-dark">{{ cliente.nombre }} {{ cliente.apellido_paterno }} {{ cliente.apellido_materno }}</div>
                         </td>
                         <td class="text-nowrap">
-                            <div class="small"><i class="bi bi-phone me-1"></i>{{ cliente.celular }}</div>
-                            <div class="small text-muted"><i class="bi bi-envelope me-1"></i>{{ cliente.correo }}</div>
+                            <div class="small"><i class="bi bi-phone me-1 text-secondary"></i>{{ cliente.celular }}</div>
+                            <div class="small text-muted"><i class="bi bi-envelope me-1 text-secondary"></i>{{ cliente.correo }}</div>
                         </td>
                         <td>
-                            <div *ngIf="cliente.vehiculos && cliente.vehiculos.length > 0">
-                                <div *ngFor="let veh of cliente.vehiculos" class="small mb-1">
-                                    <span class="badge bg-light text-dark border">{{ veh.placa }}</span>
+                            <div *ngIf="cliente.vehiculos && cliente.vehiculos.length > 0" class="d-flex flex-column gap-1">
+                                <div *ngFor="let veh of cliente.vehiculos" class="small">
+                                    <span class="badge bg-danger-subtle text-danger border border-danger-subtle me-1">{{ veh.placa }}</span>
                                     <span class="text-muted"> {{ veh.marca }} {{ veh.modelo }}</span>
                                 </div>
                             </div>
-                            <div *ngIf="!cliente.vehiculos || cliente.vehiculos.length === 0" class="text-muted small">
+                            <div *ngIf="!cliente.vehiculos || cliente.vehiculos.length === 0" class="text-muted extra-small fst-italic">
                                 Sin vehículos
                             </div>
                         </td>
                         <td class="text-center">
-                            <span class="badge" [class.bg-success]="cliente.estado === 'Activo'" [class.bg-secondary]="cliente.estado !== 'Activo'">
+                            <span class="badge px-3 py-2 rounded-pill fw-bold" [ngClass]="cliente.estado === 'Activo' ? 'bg-success text-white' : 'bg-secondary text-white'">
                                 {{ cliente.estado }}
                             </span>
                         </td>

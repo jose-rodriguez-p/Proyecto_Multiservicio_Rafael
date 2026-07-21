@@ -855,6 +855,18 @@ export class CrearMantenimiento implements OnInit {
   }
 
   agregarItem() {
+    if (this.items.length > 0) {
+      const ultimoItem = this.items[this.items.length - 1];
+      if (!ultimoItem.servicio || ultimoItem.servicio.id_servicio === 0 || !ultimoItem.servicio.nombre) {
+        Swal.fire({
+          icon: 'warning',
+          title: 'Renglón anterior incompleto',
+          text: 'Debe seleccionar un servicio en la fila actual antes de agregar una nueva.',
+          confirmButtonColor: '#dc3545'
+        });
+        return;
+      }
+    }
     this.items.push({
       servicio:         { id_servicio: 0, nombre: '', estado: '', precio: 0, repuestos: [] },
       cantidad:         1,
