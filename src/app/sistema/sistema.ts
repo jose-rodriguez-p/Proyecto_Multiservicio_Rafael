@@ -83,6 +83,34 @@ export class Sistema implements OnInit {
     return this.nombreRutaActual;
   }
 
+  getNombreUsuario(): string {
+    if (!this.usuarioActual) return 'Usuario';
+    const nombre = this.usuarioActual.nombre;
+    const apellido = this.usuarioActual.apellido_paterno || '';
+    if (nombre) {
+      return `${nombre} ${apellido}`.trim();
+    }
+    return this.usuarioActual.rol || this.usuarioActual.username || 'Usuario';
+  }
+
+  getRolUsuario(): string {
+    if (!this.usuarioActual) return 'Rol no definido';
+    return this.usuarioActual.rol || 'Usuario';
+  }
+
+  getInicialUsuario(): string {
+    if (!this.usuarioActual) return 'U';
+    const nombre = this.usuarioActual.nombre;
+    if (nombre && nombre.length > 0) {
+      return nombre.charAt(0).toUpperCase();
+    }
+    const username = this.usuarioActual.username;
+    if (username && username.length > 0) {
+      return username.charAt(0).toUpperCase();
+    }
+    return 'U';
+  }
+
   cerrarSesion() {
     if (isPlatformBrowser(this.platformId)) {
       localStorage.removeItem('currentUser');
