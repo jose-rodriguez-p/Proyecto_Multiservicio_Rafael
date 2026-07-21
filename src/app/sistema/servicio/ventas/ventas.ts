@@ -98,94 +98,9 @@ export class Ventas implements OnInit {
     });
   }
 
-  abrirCaja() {
-    Swal.fire({
-      title: 'Abrir caja',
-      html: `<p class="text-muted small mb-2">Ingresa el monto en efectivo con el que inicias el turno.</p>`,
-      input: 'number',
-      inputLabel: 'Saldo inicial (S/)',
-      inputValue: 0,
-      inputAttributes: { min: '0', step: '0.10' },
-      showCancelButton: true,
-      confirmButtonText: 'Abrir caja',
-      confirmButtonColor: '#dc3545',
-      cancelButtonText: 'Cancelar',
-      inputValidator: (value) => (value === '' || Number(value) < 0) ? 'Ingresa un monto válido' : undefined,
-    }).then((res) => {
-      if (!res.isConfirmed) return;
-      const saldoInicial = Number(res.value);
-      this.http.post<any>(`${this.URL_CAJA}/abrir`, { saldo_inicial: saldoInicial }).subscribe({
-        next: () => {
-          Swal.fire({ icon: 'success', title: 'Caja abierta', timer: 1500, showConfirmButton: false });
-          this.cargarEstadoCaja();
-        },
-        error: (err) => Swal.fire('Error', err.error?.message || 'No se pudo abrir la caja', 'error'),
-      });
-    });
-  }
-
-  cerrarCaja() {
-    if (!this.cajaActual) return;
-    const idCierreCaja = this.cajaActual.id_cierre_caja;
-
-    this.http.get<any>(`${this.URL_CAJA}/${idCierreCaja}/resumen`).subscribe({
-      next: (resumen) => {
-        const totSistema: number = resumen.tot_ventas_sistema || 0;
-        Swal.fire({
-          title: 'Cerrar caja',
-          html: `
-            <div class="text-start small">
-              <p class="mb-1">Ventas contabilizadas: <b>${resumen.cantidad_ventas || 0}</b></p>
-              <p class="mb-3">Total según sistema: <b>S/ ${totSistema.toFixed(2)}</b></p>
-              <label class="form-label small mb-1">Efectivo contado en caja (S/)</label>
-            </div>`,
-          input: 'number',
-          inputValue: totSistema.toFixed(2),
-          inputAttributes: { min: '0', step: '0.10' },
-          showCancelButton: true,
-          confirmButtonText: 'Cerrar caja',
-          confirmButtonColor: '#dc3545',
-          cancelButtonText: 'Cancelar',
-          inputValidator: (value) => (value === '' || Number(value) < 0) ? 'Ingresa un monto válido' : undefined,
-        }).then((res) => {
-          if (!res.isConfirmed) return;
-          const totCajero = Number(res.value);
-          this.http.post<any>(`${this.URL_CAJA}/${idCierreCaja}/cerrar`, { tot_ventas_cajero: totCajero }).subscribe({
-            next: () => {
-              const diferencia = totCajero - totSistema;
-              const cuadrada = Math.abs(diferencia) < 0.01;
-              Swal.fire({
-                icon: cuadrada ? 'success' : 'warning',
-                title: cuadrada ? 'Caja cuadrada' : (diferencia > 0 ? 'Hay sobrante' : 'Hay faltante'),
-                text: cuadrada ? 'El monto contado coincide con el sistema.' : `Diferencia: S/ ${Math.abs(diferencia).toFixed(2)}`,
-                confirmButtonText: 'Descargar comprobante',
-                confirmButtonColor: '#dc3545',
-              }).then(() => this.descargarComprobanteCierre(idCierreCaja));
-              this.cargarEstadoCaja();
-            },
-            error: (err) => Swal.fire('Error', err.error?.message || 'No se pudo cerrar la caja', 'error'),
-          });
-        });
-      },
-      error: () => Swal.fire('Error', 'No se pudo obtener el resumen de caja', 'error'),
-    });
-  }
-
-  descargarComprobanteCierre(idCierreCaja: number) {
-    this.http.get(`${this.URL_CAJA}/${idCierreCaja}/comprobante`, { responseType: 'blob' }).subscribe({
-      next: (blob: Blob) => {
-        const url = window.URL.createObjectURL(blob);
-        const link = document.createElement('a');
-        link.href = url;
-        link.download = `Cierre_Caja_${idCierreCaja}.pdf`;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        window.URL.revokeObjectURL(url);
-      },
-      error: () => Swal.fire('Error', 'No se pudo generar el comprobante de cierre', 'error'),
-    });
-  }
+  // Nota: la apertura y cierre de caja se maneja de forma centralizada en
+  // /sistema/servicio (ver Servicio -> servicio.ts / servicio.html), ya que
+  // es una caja general compartida entre Ventas y Mantenimiento.
 
   cargarTodo() {
     this.cargandoTabla = true;
@@ -275,7 +190,17 @@ export class Ventas implements OnInit {
 
   nuevaVenta() {
     if (!this.cajaAbierta) {
-      Swal.fire('Caja cerrada', 'Debes abrir caja antes de registrar ventas.', 'warning');
+      Swal.fire({
+        icon: 'warning',
+        title: 'Caja cerrada',
+        text: 'Debes abrir caja antes de registrar ventas.',
+        confirmButtonText: 'Ir a abrir caja',
+        confirmButtonColor: '#dc3545',
+        showCancelButton: true,
+        cancelButtonText: 'Cancelar',
+      }).then((res) => {
+        if (res.isConfirmed) this.router.navigate(['/sistema/servicio']);
+      });
       return;
     }
     this.router.navigate(['/sistema/servicio/ventas/crear']);

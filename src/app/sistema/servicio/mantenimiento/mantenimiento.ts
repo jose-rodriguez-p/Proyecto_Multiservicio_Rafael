@@ -225,7 +225,29 @@ export class Mantenimiento implements OnInit {
 
   cambiarPorPagina() { this.paginaActual = 1; }
 
-  nuevoMantenimiento() { this.router.navigate(['/sistema/servicio/mantenimiento/crear']); }
+  nuevoMantenimiento() {
+    // La caja es general (ver /sistema/servicio): se valida antes de crear la orden.
+    this.http.get<any>(`${API_BASE_URL}/api/caja/estado`).subscribe({
+      next: (res) => {
+        if (!res?.abierta) {
+          Swal.fire({
+            icon: 'warning',
+            title: 'Caja cerrada',
+            text: 'Debes abrir caja antes de registrar mantenimientos.',
+            confirmButtonText: 'Ir a abrir caja',
+            confirmButtonColor: '#dc3545',
+            showCancelButton: true,
+            cancelButtonText: 'Cancelar',
+          }).then((r) => {
+            if (r.isConfirmed) this.router.navigate(['/sistema/servicio']);
+          });
+          return;
+        }
+        this.router.navigate(['/sistema/servicio/mantenimiento/crear']);
+      },
+      error: () => Swal.fire('Error', 'No se pudo verificar el estado de caja', 'error'),
+    });
+  }
 
   get hoy(): string {
     return new Date().toISOString().split('T')[0];
