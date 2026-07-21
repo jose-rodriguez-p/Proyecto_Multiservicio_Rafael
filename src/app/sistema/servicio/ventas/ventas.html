@@ -124,18 +124,19 @@
               <th>VENDEDOR</th>
               <th class="text-center">MÉTODO PAGO</th>
               <th class="text-end" style="width: 110px;">TOTAL</th>
+              <th class="text-center" style="width: 100px;">COMPROBANTE</th>
             </tr>
           </thead>
           <tbody>
             <ng-container *ngIf="cargandoTabla">
               <tr *ngFor="let i of [1,2,3,4,5]">
-                <td colspan="7" class="placeholder-glow py-3">
+                <td colspan="8" class="placeholder-glow py-3">
                   <span class="placeholder col-12 rounded" style="height:20px"></span>
                 </td>
               </tr>
             </ng-container>
             <tr *ngIf="!cargandoTabla && ventas.length === 0">
-              <td colspan="7" class="text-center py-5 text-muted">
+              <td colspan="8" class="text-center py-5 text-muted">
                 <i class="bi bi-inbox fs-3 d-block mb-2"></i>
                 {{ busqueda || fechaInicio || fechaFin ? 'No se encontraron resultados' : 'Aún no hay ventas registradas' }}
               </td>
@@ -171,6 +172,11 @@
               </td>
               <td class="text-end">
                 <span class="fw-bold text-danger fs-6 text-nowrap">S/ {{ v.total | number:'1.2-2' }}</span>
+              </td>
+              <td class="text-center">
+                <button class="btn btn-sm btn-outline-danger shadow-sm" (click)="descargarComprobante(v.n_orden)" title="Descargar PDF del Comprobante">
+                  <i class="bi bi-file-earmark-pdf me-1"></i>PDF
+                </button>
               </td>
             </tr>
           </tbody>

@@ -102,6 +102,22 @@ export class Ventas implements OnInit {
   // /sistema/servicio (ver Servicio -> servicio.ts / servicio.html), ya que
   // es una caja general compartida entre Ventas y Mantenimiento.
 
+  descargarComprobante(idOrdenVenta: number) {
+    this.http.get(`${this.URL}/${idOrdenVenta}/comprobante`, { responseType: 'blob' }).subscribe({
+      next: (blob: Blob) => {
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `Comprobante_Venta_${idOrdenVenta}.pdf`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        window.URL.revokeObjectURL(url);
+      },
+      error: () => Swal.fire('Error', 'No se pudo generar el comprobante de venta', 'error'),
+    });
+  }
+
   cargarTodo() {
     this.cargandoTabla = true;
 
