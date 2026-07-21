@@ -79,9 +79,9 @@
 
         <!-- Tarjeta usuario -->
         <div class="sidebar-user" (click)="cerrarSesion()">
-            <div class="sidebar-avatar">A</div>
+            <div class="sidebar-avatar">{{ getInicialUsuario() }}</div>
             <div class="sidebar-user-info">
-                <div class="sidebar-user-name">Administrador</div>
+                <div class="sidebar-user-name">{{ getNombreUsuario() }}</div>
                 <div class="sidebar-user-role">Cerrar sesión</div>
             </div>
             <i class="bi bi-box-arrow-right sidebar-user-exit"></i>
@@ -103,10 +103,10 @@
                 <span class="top-navbar-breadcrumb-current">{{ getNombreRuta() }}</span>
             </div>
             <div class="top-navbar-profile ms-auto">
-                <div class="top-navbar-avatar">A</div>
+                <div class="top-navbar-avatar">{{ getInicialUsuario() }}</div>
                 <div class="d-none d-sm-block">
-                    <div class="top-navbar-name">Administrador</div>
-                    <div class="top-navbar-role">admin@rafael.pe</div>
+                    <div class="top-navbar-name">{{ getNombreUsuario() }}</div>
+                    <div class="top-navbar-role">{{ getRolUsuario() }}</div>
                 </div>
             </div>
         </nav>
@@ -187,9 +187,9 @@
         </nav>
 
         <div class="sidebar-user mt-3" (click)="cerrarSesion()">
-            <div class="sidebar-avatar">A</div>
+            <div class="sidebar-avatar">{{ getInicialUsuario() }}</div>
             <div class="sidebar-user-info">
-                <div class="sidebar-user-name">Administrador</div>
+                <div class="sidebar-user-name">{{ getNombreUsuario() }}</div>
                 <div class="sidebar-user-role">Cerrar sesión</div>
             </div>
             <i class="bi bi-box-arrow-right sidebar-user-exit"></i>
