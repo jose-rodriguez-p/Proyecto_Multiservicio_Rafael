@@ -75,6 +75,8 @@ export class Mantenimiento implements OnInit {
     this.serieSeleccionada = this.tipoComprobanteSeleccionado === 'Boleta' ? 'B001' : 'F001';
   }
 
+  private inicializado = false;
+
   constructor() {
     this.router.events.pipe(
       filter((e): e is NavigationEnd => e instanceof NavigationEnd)
@@ -82,17 +84,40 @@ export class Mantenimiento implements OnInit {
       this.enCrear = e.urlAfterRedirects.includes('/mantenimiento/crear');
       this.cdr.detectChanges();
       if (isPlatformBrowser(this.platformId) && !this.enCrear) {
-        this.cargarTodo();
+        if (this.inicializado) {
+          this.cargarTodo();
+        }
+      }
+    });
+  }
+
+  validarCaja() {
+    this.http.get<any>(`${API_BASE_URL}/api/caja/estado`).subscribe({
+      next: (res) => {
+        const abierta = !!res?.abierta;
+        if (!abierta) {
+          Swal.fire({
+            icon: 'warning',
+            title: 'Caja cerrada',
+            text: 'Debes abrir caja antes de acceder a Mantenimiento.',
+            confirmButtonText: 'Entendido',
+            confirmButtonColor: '#dc3545'
+          }).then(() => {
+            this.router.navigate(['/sistema/servicio']);
+          });
+        }
       }
     });
   }
 
   ngOnInit() {
     if (isPlatformBrowser(this.platformId)) {
+      this.validarCaja();
       this.enCrear = this.router.url.includes('/mantenimiento/crear');
       if (!this.enCrear) {
         this.cargarTodo();
       }
+      this.inicializado = true;
     }
   }
 

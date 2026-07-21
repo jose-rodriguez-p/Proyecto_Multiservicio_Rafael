@@ -31,12 +31,16 @@ export class Servicio implements OnInit {
   cajaAbierta = false;
   cajaActual: CajaActual | null = null;
 
+  private inicializado = false;
+
   constructor() {
     this.router.events.pipe(
       filter((e): e is NavigationEnd => e instanceof NavigationEnd),
     ).subscribe(() => {
       if (isPlatformBrowser(this.platformId) && !this.hasChildRoute()) {
-        this.cargarEstadoCaja();
+        if (this.inicializado) {
+          this.cargarEstadoCaja();
+        }
       }
     });
   }
@@ -44,6 +48,7 @@ export class Servicio implements OnInit {
   ngOnInit() {
     if (isPlatformBrowser(this.platformId)) {
       this.cargarEstadoCaja();
+      this.inicializado = true;
     }
   }
 

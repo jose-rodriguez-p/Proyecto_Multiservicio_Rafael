@@ -65,14 +65,18 @@ export class Ventas implements OnInit {
   paginaActual = 1;
   porPagina = 10;
 
+  private inicializado = false;
+
   constructor() {
     this.router.events.pipe(
       filter((e): e is NavigationEnd => e instanceof NavigationEnd)
     ).subscribe((e) => {
       this.enCrear = e.urlAfterRedirects.includes('/ventas/crear');
       if (isPlatformBrowser(this.platformId) && !this.enCrear) {
-        this.cargarTodo();
-        this.cargarEstadoCaja();
+        if (this.inicializado) {
+          this.cargarTodo();
+          this.cargarEstadoCaja();
+        }
       }
     });
   }
@@ -82,6 +86,7 @@ export class Ventas implements OnInit {
       this.setRango('mes');
       this.cargarTodo();
       this.cargarEstadoCaja();
+      this.inicializado = true;
     }
   }
 
