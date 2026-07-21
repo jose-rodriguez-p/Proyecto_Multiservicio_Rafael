@@ -56,6 +56,10 @@ export class CrearVenta implements OnInit {
   private URL_VENTAS   = `${API_BASE_URL}/api/ventas`;
   private URL_CLIENTES = `${API_BASE_URL}/api/clientes`;
   private URL_PRODUCTOS = `${API_BASE_URL}/api/productos`;
+  private URL_CAJA     = `${API_BASE_URL}/api/caja`;
+
+  cajaAbierta = false;
+  verificandoCaja = true;
 
   tipoComprobante = 'Boleta';
   serie           = 'B001';
@@ -108,7 +112,29 @@ export class CrearVenta implements OnInit {
       this.cargarVendedor();
       this.cargarRepuestos();
       this.agregarItem();
+      this.verificarCaja();
     }
+  }
+
+  verificarCaja() {
+    this.verificandoCaja = true;
+    this.http.get<any>(`${this.URL_CAJA}/estado`).subscribe({
+      next: (res) => {
+        this.cajaAbierta = !!res?.abierta;
+        this.verificandoCaja = false;
+        if (!this.cajaAbierta) {
+          Swal.fire({
+            icon: 'warning',
+            title: 'No tienes una caja abierta',
+            text: 'Debes abrir caja antes de registrar ventas.',
+            confirmButtonText: 'Volver a Ventas',
+            confirmButtonColor: '#dc3545',
+            allowOutsideClick: false,
+          }).then(() => this.volver());
+        }
+      },
+      error: () => { this.verificandoCaja = false; },
+    });
   }
 
   cargarVendedor() {
@@ -425,6 +451,7 @@ export class CrearVenta implements OnInit {
 
   confirmarVenta() {
     if (!this.itemsValidos()) { Swal.fire('Sin ítems válidos', 'Agregue al menos un repuesto con cantidad válida.', 'warning'); return; }
+    if (!this.cajaAbierta) { Swal.fire('Caja cerrada', 'Debes abrir caja antes de registrar ventas.', 'warning'); return; }
     let idUsuario = '';
     try { const user = JSON.parse(localStorage.getItem('currentUser') || '{}'); idUsuario = user.username || ''; } catch {}
 
@@ -453,18 +480,43 @@ export class CrearVenta implements OnInit {
     this.http.post<any>(`${this.URL_VENTAS}/registrar`, payload).subscribe({
       next: (res) => {
         this.guardando = false;
-        Swal.fire({ 
+        const idOrdenVenta = res?.id_orden_venta;
+        Swal.fire({
           title: '¡Venta registrada!',
           html: `<b>Total: S/ ${this.total.toFixed(2)}</b><br>Cliente: ${this.nombreCompletoCliente}`,
-          icon: 'success', 
-          confirmButtonColor: '#dc3545' 
-        }).then(() => this.volver());
+          icon: 'success',
+          confirmButtonText: 'Descargar comprobante',
+          confirmButtonColor: '#dc3545',
+          showCancelButton: true,
+          cancelButtonText: 'Volver a Ventas',
+        }).then((resultado) => {
+          if (resultado.isConfirmed && idOrdenVenta) {
+            this.descargarComprobante(idOrdenVenta);
+          }
+          this.volver();
+        });
       },
       error: (err) => { 
         this.guardando = false; 
         let errorMsg = err.error?.message || 'No se pudo registrar la venta';
         Swal.fire('Error', errorMsg, 'error'); 
       },
+    });
+  }
+
+  descargarComprobante(idOrdenVenta: number) {
+    this.http.get(`${this.URL_VENTAS}/${idOrdenVenta}/comprobante`, { responseType: 'blob' }).subscribe({
+      next: (blob: Blob) => {
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `Comprobante_Venta_${idOrdenVenta}.pdf`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        window.URL.revokeObjectURL(url);
+      },
+      error: () => Swal.fire('Error', 'No se pudo generar el comprobante', 'error'),
     });
   }
 
