@@ -77,9 +77,8 @@
 
         <div class="col-6 col-md-2">
           <label class="form-label small fw-semibold">Estado</label>
-          <select class="form-select form-select-sm" [(ngModel)]="estadoSeleccionado">
+          <select class="form-select form-select-sm bg-light" [(ngModel)]="estadoSeleccionado" [disabled]="true">
             <option value="En proceso">En proceso</option>
-            <option value="Completado">Completado</option>
           </select>
         </div>
 
@@ -191,7 +190,7 @@
 
               <td class="text-center">
                 <button class="btn btn-sm text-danger p-1"
-                  (click)="limpiarServicio(item)"
+                  (click)="eliminarItem(i)"
                   title="Eliminar servicio">
                   <i class="bi bi-trash3"></i>
                 </button>

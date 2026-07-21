@@ -75,7 +75,6 @@
             <option value="Todos">Todos los estados</option>
             <option value="En proceso">En proceso</option>
             <option value="Completado">Completado</option>
-            <option value="Pendiente">Pendiente</option>
           </select>
 
           <div class="btn-group btn-group-sm" role="group">
@@ -382,8 +381,7 @@
 
           <div class="col-md-3">
             <label class="form-label small text-muted fw-semibold">Comprobante</label>
-            <select class="form-select" [(ngModel)]="tipoComprobanteSeleccionado" (change)="onTipoComprobanteChange()"
-              [disabled]="ordenSeleccionada?.estado === 'Completado'">
+            <select class="form-select" [(ngModel)]="tipoComprobanteSeleccionado" (change)="onTipoComprobanteChange()">
               <option value="Boleta">Boleta</option>
               <option value="Factura">Factura</option>
             </select>
@@ -391,8 +389,7 @@
 
           <div class="col-md-3">
             <label class="form-label small text-muted fw-semibold">Método de Pago</label>
-            <select class="form-select" [(ngModel)]="metodoPagoSeleccionado"
-              [disabled]="ordenSeleccionada?.estado === 'Completado'">
+            <select class="form-select" [(ngModel)]="metodoPagoSeleccionado">
               <option value="Efectivo">Efectivo</option>
               <option value="Tarjeta">Tarjeta</option>
               <option value="Transferencia">Transferencia</option>
@@ -413,12 +410,22 @@
         </div>
       </div>
 
-      <div class="modal-footer bg-light">
-        <button class="btn btn-outline-secondary px-4" (click)="cerrarModalDetalle()">Cerrar</button>
-        <button class="btn btn-danger px-4" (click)="cerrarServicio()"
-          [disabled]="ordenSeleccionada?.estado === 'Completado'">
-          <i class="bi bi-check-circle me-1"></i>Completar y cerrar servicio
-        </button>
+      <div class="modal-footer bg-light d-flex justify-content-between">
+        <div>
+          <button class="btn btn-outline-danger px-4 shadow-sm"
+            *ngIf="ordenSeleccionada?.estado === 'Completado'"
+            (click)="descargarComprobanteDirecto(ordenSeleccionada?.idOrdenServicio)"
+            title="Descargar comprobante en PDF">
+            <i class="bi bi-file-earmark-pdf-fill me-1"></i>Descargar PDF
+          </button>
+        </div>
+        <div>
+          <button class="btn btn-outline-secondary px-4 me-2" (click)="cerrarModalDetalle()">Cerrar</button>
+          <button class="btn btn-danger px-4" (click)="cerrarServicio()"
+            *ngIf="ordenSeleccionada?.estado !== 'Completado'">
+            <i class="bi bi-check-circle me-1"></i>Completar y cerrar servicio
+          </button>
+        </div>
       </div>
     </div>
   </div>
@@ -537,8 +544,13 @@
         <button class="btn btn-outline-secondary px-4 me-auto" (click)="cerrarVoucher()">
           <i class="bi bi-x-lg me-1"></i>Cerrar
         </button>
-        <button class="btn btn-danger px-4 shadow-sm" (click)="descargarVoucherPDF()">
-          <i class="bi bi-file-earmark-pdf-fill me-2"></i>Descargar PDF
+        <button class="btn btn-outline-secondary px-3 me-2" (click)="imprimirVoucherHTML()" title="Abrir ventana de impresión">
+          <i class="bi bi-printer-fill me-1"></i>Imprimir
+        </button>
+        <button class="btn btn-danger px-4 shadow-sm" (click)="descargarVoucherPDF()" [disabled]="descargandoPDF">
+          <span *ngIf="descargandoPDF" class="spinner-border spinner-border-sm me-2"></span>
+          <i *ngIf="!descargandoPDF" class="bi bi-file-earmark-pdf-fill me-2"></i>
+          {{ descargandoPDF ? 'Generando PDF...' : 'Descargar PDF' }}
         </button>
       </div>
     </div>

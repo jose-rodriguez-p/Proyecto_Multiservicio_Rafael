@@ -408,17 +408,33 @@ export class Mantenimiento implements OnInit {
 
   showModalVoucher = false;
   voucherDatos: any = null;
+  descargandoPDF = false;
 
   cerrarVoucher() {
     this.showModalVoucher = false;
   }
 
-  descargarVoucherPDF() {
+  imprimirVoucherHTML() {
     const printContent = document.getElementById('voucher-mantenimiento-imprimir')?.innerHTML;
     if (!printContent) return;
-    const printWindow = window.open('', '_blank', 'width=800,height=900');
-    if (printWindow) {
-      printWindow.document.write(`
+
+    let iframe = document.getElementById('print-iframe-voucher-mant') as HTMLIFrameElement;
+    if (!iframe) {
+      iframe = document.createElement('iframe');
+      iframe.id = 'print-iframe-voucher-mant';
+      iframe.style.position = 'fixed';
+      iframe.style.right = '0';
+      iframe.style.bottom = '0';
+      iframe.style.width = '0';
+      iframe.style.height = '0';
+      iframe.style.border = '0';
+      document.body.appendChild(iframe);
+    }
+
+    const doc = iframe.contentWindow?.document || iframe.contentDocument;
+    if (doc) {
+      doc.open();
+      doc.write(`
         <!DOCTYPE html>
         <html>
           <head>
@@ -434,15 +450,49 @@ export class Mantenimiento implements OnInit {
               }
             </style>
           </head>
-          <body onload="window.print();">
+          <body>
             <div class="voucher-box">
               ${printContent}
             </div>
+            <script>
+              window.onload = function() {
+                window.focus();
+                window.print();
+              };
+            </script>
           </body>
         </html>
       `);
-      printWindow.document.close();
+      doc.close();
     }
+  }
+
+  descargarVoucherPDF() {
+    const id = this.voucherDatos?.idOrdenServicio;
+    this.descargandoPDF = true;
+
+    // Intentar obtener PDF del backend si está disponible o usar ventana/impresión HTML
+    this.http.get(`${this.URL}/${id}/comprobante`, { responseType: 'blob' }).subscribe({
+      next: (blob: Blob) => {
+        this.descargandoPDF = false;
+        const pdfBlob = new Blob([blob], { type: 'application/pdf' });
+        const url = window.URL.createObjectURL(pdfBlob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `Voucher_Mantenimiento_${id || 'Servicio'}.pdf`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        window.URL.revokeObjectURL(url);
+        this.cdr.detectChanges();
+      },
+      error: () => {
+        this.descargandoPDF = false;
+        // Fallback a impresión HTML si el endpoint dinámico no responde
+        this.imprimirVoucherHTML();
+        this.cdr.detectChanges();
+      }
+    });
   }
 
   cerrarServicio() {
@@ -452,6 +502,35 @@ export class Mantenimiento implements OnInit {
     if (estadoAnterior === 'Completado') {
       this.cerrarModalDetalle();
       return;
+    }
+
+    const fechaServicioStr = this.ordenSeleccionada?.fechaServicio || this.ordenSeleccionada?.fecha;
+    if (fechaServicioStr) {
+      const hoy = new Date();
+      hoy.setHours(0, 0, 0, 0);
+
+      let fechaServ: Date | null = null;
+      if (typeof fechaServicioStr === 'string' && fechaServicioStr.includes('-')) {
+        const partes = fechaServicioStr.split('T')[0].split('-');
+        if (partes.length === 3) {
+          fechaServ = new Date(Number(partes[0]), Number(partes[1]) - 1, Number(partes[2]));
+        }
+      }
+      if (!fechaServ) {
+        fechaServ = new Date(fechaServicioStr);
+      }
+      if (fechaServ && !isNaN(fechaServ.getTime())) {
+        fechaServ.setHours(0, 0, 0, 0);
+        if (hoy.getTime() < fechaServ.getTime()) {
+          Swal.fire({
+            icon: 'warning',
+            title: 'Fecha de servicio no alcanzada',
+            text: 'No se puede culminar el servicio antes de la fecha programada de atención.',
+            confirmButtonColor: '#dc3545'
+          });
+          return;
+        }
+      }
     }
 
     const nuevoEstado = 'Completado';
@@ -572,6 +651,26 @@ export class Mantenimiento implements OnInit {
         Swal.fire('¡Éxito!', 'El reporte PDF se ha descargado', 'success');
       },
       error: () => Swal.fire('Error', 'El servidor no pudo procesar la descarga del PDF', 'error'),
+    });
+  }
+
+  descargarComprobanteDirecto(idOrdenServicio?: number) {
+    if (!idOrdenServicio) return;
+    const tipo = this.tipoComprobanteSeleccionado || 'Boleta';
+    const metodo = this.metodoPagoSeleccionado || 'Efectivo';
+    this.http.get(`${this.URL}/${idOrdenServicio}/comprobante?tipoComprobante=${tipo}&metodoPago=${metodo}`, { responseType: 'blob' }).subscribe({
+      next: (blob: Blob) => {
+        const pdfBlob = new Blob([blob], { type: 'application/pdf' });
+        const url = window.URL.createObjectURL(pdfBlob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `Comprobante_Mantenimiento_${idOrdenServicio}.pdf`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        window.URL.revokeObjectURL(url);
+      },
+      error: () => Swal.fire('Error', 'No se pudo descargar el comprobante en PDF', 'error'),
     });
   }
 }

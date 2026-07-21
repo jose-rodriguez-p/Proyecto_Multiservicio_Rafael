@@ -174,7 +174,8 @@ export class Ventas implements OnInit {
   descargarComprobanteCierre(idCierreCaja: number) {
     this.http.get(`${this.URL_CAJA}/${idCierreCaja}/comprobante`, { responseType: 'blob' }).subscribe({
       next: (blob: Blob) => {
-        const url = window.URL.createObjectURL(blob);
+        const pdfBlob = new Blob([blob], { type: 'application/pdf' });
+        const url = window.URL.createObjectURL(pdfBlob);
         const link = document.createElement('a');
         link.href = url;
         link.download = `Cierre_Caja_${idCierreCaja}.pdf`;
@@ -190,7 +191,8 @@ export class Ventas implements OnInit {
   descargarComprobante(idOrdenVenta: number) {
     this.http.get(`${this.URL}/${idOrdenVenta}/comprobante`, { responseType: 'blob' }).subscribe({
       next: (blob: Blob) => {
-        const url = window.URL.createObjectURL(blob);
+        const pdfBlob = new Blob([blob], { type: 'application/pdf' });
+        const url = window.URL.createObjectURL(pdfBlob);
         const link = document.createElement('a');
         link.href = url;
         link.download = `Comprobante_Venta_${idOrdenVenta}.pdf`;

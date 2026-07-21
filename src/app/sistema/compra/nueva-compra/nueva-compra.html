@@ -51,6 +51,7 @@
               [(ngModel)]="item.busqueda"
               (input)="buscarProducto(item, $event)"
               (focus)="buscarProducto(item, $event)"
+              (click)="buscarProducto(item, $event)"
               (blur)="cerrarDropdown(item)"
               [ngClass]="{'is-valid': item.nombre_repuesto}">
             <div class="list-group shadow-sm dropdown-productos"

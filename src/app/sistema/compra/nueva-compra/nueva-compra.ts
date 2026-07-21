@@ -115,20 +115,34 @@ export class NuevaCompra implements OnInit {
   buscarProducto(item: ItemCompra, event?: Event) {
     item.nombre_repuesto = '';
     const q = item.busqueda.trim().toLowerCase();
-    if (!q) {
-      item.resultados = [];
-      item.mostrarDropdown = false;
-      return;
+
+    let filtrados = this.productosDisponibles.filter((p: any) => p.estado === 'Activo' || !p.estado);
+
+    if (this.rucProveedor) {
+      const provSel = this.proveedores.find(p => p.ruc === this.rucProveedor);
+      const nombreProv = provSel ? (provSel.nombre_empresa || '').toLowerCase().trim() : '';
+      filtrados = filtrados.filter((p: any) => {
+        const provProd = (p.nombre_proveedor || p.proveedor || p.ruc_proveedor || '').toLowerCase().trim();
+        return provProd === nombreProv || provProd === this.rucProveedor.toLowerCase().trim();
+      });
     }
-    item.resultados = this.productosDisponibles.filter((p) =>
-      p.nombre_repuesto.toLowerCase().includes(q),
-    );
+
+    if (q) {
+      item.resultados = filtrados.filter((p) =>
+        p.nombre_repuesto.toLowerCase().includes(q)
+      );
+    } else {
+      item.resultados = [...filtrados];
+    }
+
     if (item.resultados.length > 0 && event) {
       const input = event.target as HTMLInputElement;
-      const rect = input.getBoundingClientRect();
-      item.dropdownTop = rect.bottom + 2;
-      item.dropdownLeft = rect.left;
-      item.dropdownWidth = rect.width;
+      if (input && typeof input.getBoundingClientRect === 'function') {
+        const rect = input.getBoundingClientRect();
+        item.dropdownTop = rect.bottom + 2;
+        item.dropdownLeft = rect.left;
+        item.dropdownWidth = rect.width;
+      }
     }
     item.mostrarDropdown = item.resultados.length > 0;
   }

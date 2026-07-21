@@ -206,7 +206,7 @@ export class CrearMantenimiento implements OnInit {
     this.cargandoCatalogos = true;
     this.http.get<any[]>(`${API_BASE_URL}/api/configuracion/servicios`).subscribe({
       next: (r) => {
-        this.servicios = (r || []).map((s: any) => ({
+        this.servicios = (r || []).filter((s: any) => s.estado === 'Activo').map((s: any) => ({
           id_servicio: s.id_servicio,
           nombre: s.nombre,
           estado: s.estado,
@@ -229,7 +229,7 @@ export class CrearMantenimiento implements OnInit {
     this.cargandoProductos = true;
     this.http.get<any[]>(`${API_BASE_URL}/api/productos/listar-repuestos`).subscribe({
       next: (r) => {
-        this.productos = (r || []).map((p: any) => ({
+        this.productos = (r || []).filter((p: any) => p.estado === 'Activo').map((p: any) => ({
           nombre: p.nombre_repuesto || p.nombre,
           precio_venta: p.precio_venta || 0,
         }));
@@ -260,6 +260,21 @@ export class CrearMantenimiento implements OnInit {
     this.http.get<any>(`${this.URL}/buscar-cliente/${dni}`).subscribe({
       next: (res) => {
         this.buscandoCliente   = false;
+        if (res && res.estado === 'Inactivo') {
+          Swal.fire({
+            icon: 'warning',
+            title: 'Cliente inactivo',
+            text: 'El cliente consultado se encuentra inactivo en el sistema.',
+            confirmButtonColor: '#dc3545'
+          });
+          this.clienteEncontrado = false;
+          this.cliente = this.clienteVacioFactory();
+          this.clientVehicles = [];
+          this.vehiculoSeleccionado = null;
+          this.descripcionVehiculo = '';
+          this.cdr.detectChanges();
+          return;
+        }
         this.clienteEncontrado = true;
         this.cliente = {
           dni:              res.dni,
@@ -881,6 +896,9 @@ export class CrearMantenimiento implements OnInit {
 
   eliminarItem(idx: number) {
     this.items.splice(idx, 1);
+    if (this.items.length === 0) {
+      this.agregarItem();
+    }
   }
 
   recalcularSubtotal(item: ItemServicio) {

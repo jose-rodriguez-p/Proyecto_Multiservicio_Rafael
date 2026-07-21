@@ -211,7 +211,7 @@ export class CrearVenta implements OnInit {
     this.cargandoLista = true;
     this.http.get<any[]>(`${this.URL_CLIENTES}/listar`).subscribe({
       next: (data) => { 
-        this.listaClientes = data || []; 
+        this.listaClientes = (data || []).filter((c: any) => c.estado === 'Activo'); 
         this.aplicarFiltroLista(); 
         this.cargandoLista = false; 
       },
@@ -364,7 +364,7 @@ export class CrearVenta implements OnInit {
     this.cargandoRepuestos = true;
     this.http.get<any[]>(`${this.URL_PRODUCTOS}/listar-repuestos`).subscribe({ // Changed to /listar-repuestos!
       next: (data) => {
-        this.repuestos = (data || []).map(p => ({
+        this.repuestos = (data || []).filter(p => p.estado === 'Activo').map(p => ({
           id_repuesto: 0,
           codigo: p.nombre_repuesto || '',
           nombre: p.nombre_repuesto || '',
@@ -484,7 +484,8 @@ export class CrearVenta implements OnInit {
     this.http.get(`${this.URL_VENTAS}/${id}/comprobante`, { responseType: 'blob' }).subscribe({
       next: (blob: Blob) => {
         this.descargandoPDF = false;
-        const url = window.URL.createObjectURL(blob);
+        const pdfBlob = new Blob([blob], { type: 'application/pdf' });
+        const url = window.URL.createObjectURL(pdfBlob);
         const link = document.createElement('a');
         link.href = url;
         link.download = `Comprobante_Venta_${id}.pdf`;
