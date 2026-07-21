@@ -119,6 +119,8 @@ Para la evaluación del proyecto bajo los criterios de rigurosidad académica y 
 ## 👥 Equipo de Desarrollo
 
 - **José Rodríguez** - *Lead Developer / Fullstack Engineer* - [jose-rodriguez-p](https://github.com/jose-rodriguez-p)
+- **Robert Zegarra** - *Developer* - [ZegarraRobert](https://github.com/ZegarraRobert)
+- **Yhomar Cruz** - *Developer* - [imPERION66](https://github.com/imPERION66)
 
 ---
 *Documentación oficial generada para el proyecto Multiservicio Rafael.*
