@@ -62,7 +62,16 @@ export class CrearVenta implements OnInit {
   serie           = 'B001';
   estado          = 'Pagado';
   metodoPago      = 'Efectivo';
-  fechaEmision: string = new Date().toISOString().split('T')[0];
+  fechaEmision: string = this.getFechaActualLocal();
+
+  private getFechaActualLocal(): string {
+    const d = new Date();
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  }
+
   private get fechaEmisionCompleta(): string {
     const ahora = new Date();
     const hh = String(ahora.getHours()).padStart(2, '0');
@@ -457,6 +466,7 @@ export class CrearVenta implements OnInit {
 
   showModalVoucher = false;
   voucherDatos: any = null;
+  descargandoPDF = false;
 
   cerrarVoucher() {
     this.showModalVoucher = false;
@@ -464,11 +474,56 @@ export class CrearVenta implements OnInit {
   }
 
   descargarVoucherPDF() {
+    const id = this.voucherDatos?.id_orden_venta || this.voucherDatos?.nOrden;
+    if (!id) {
+      this.imprimirVoucherHTML();
+      return;
+    }
+
+    this.descargandoPDF = true;
+    this.http.get(`${this.URL_VENTAS}/${id}/comprobante`, { responseType: 'blob' }).subscribe({
+      next: (blob: Blob) => {
+        this.descargandoPDF = false;
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `Comprobante_Venta_${id}.pdf`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        window.URL.revokeObjectURL(url);
+        this.cdr.detectChanges();
+      },
+      error: (err) => {
+        this.descargandoPDF = false;
+        console.warn('Backend PDF error, usando impresión estándar HTML:', err);
+        this.imprimirVoucherHTML();
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
+  imprimirVoucherHTML() {
     const printContent = document.getElementById('voucher-imprimir')?.innerHTML;
     if (!printContent) return;
-    const printWindow = window.open('', '_blank', 'width=800,height=900');
-    if (printWindow) {
-      printWindow.document.write(`
+
+    let iframe = document.getElementById('print-iframe-voucher') as HTMLIFrameElement;
+    if (!iframe) {
+      iframe = document.createElement('iframe');
+      iframe.id = 'print-iframe-voucher';
+      iframe.style.position = 'fixed';
+      iframe.style.right = '0';
+      iframe.style.bottom = '0';
+      iframe.style.width = '0';
+      iframe.style.height = '0';
+      iframe.style.border = '0';
+      document.body.appendChild(iframe);
+    }
+
+    const doc = iframe.contentWindow?.document || iframe.contentDocument;
+    if (doc) {
+      doc.open();
+      doc.write(`
         <!DOCTYPE html>
         <html>
           <head>
@@ -485,14 +540,18 @@ export class CrearVenta implements OnInit {
               }
             </style>
           </head>
-          <body onload="window.print();">
+          <body>
             <div class="voucher-box">
               ${printContent}
             </div>
           </body>
         </html>
       `);
-      printWindow.document.close();
+      doc.close();
+      setTimeout(() => {
+        iframe.contentWindow?.focus();
+        iframe.contentWindow?.print();
+      }, 500);
     }
   }
 
@@ -526,8 +585,10 @@ export class CrearVenta implements OnInit {
     this.http.post<any>(`${this.URL_VENTAS}/registrar`, payload).subscribe({
       next: (res) => {
         this.guardando = false;
+        const idOrden = res.id_orden_venta || res.n_orden || Math.floor(1000 + Math.random() * 9000);
         this.voucherDatos = {
-          nOrden: res.id_orden_venta || res.n_orden || Math.floor(1000 + Math.random() * 9000),
+          id_orden_venta: idOrden,
+          nOrden: idOrden,
           tipoComprobante: this.tipoComprobante,
           serie: this.serie,
           fecha: new Date().toLocaleDateString('es-PE'),
@@ -562,7 +623,7 @@ export class CrearVenta implements OnInit {
   limpiar() {
     this.cliente = { ...this.clienteVarios }; this.items = []; this.descuentoGlobal = 0;
     this.descuentoTipo = '%'; this.nota = ''; this.metodoPago = 'Efectivo';
-    this.fechaEmision = new Date().toISOString().split('T')[0];
+    this.fechaEmision = this.getFechaActualLocal();
     this.tipoComprobante = 'Boleta'; this.serie = 'B001';
     this.agregarItem();
   }

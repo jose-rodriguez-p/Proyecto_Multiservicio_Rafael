@@ -47,7 +47,7 @@
         </div>
         <div class="col-6 col-md-3">
           <label class="form-label small fw-semibold">Fecha de emisión</label>
-          <input type="date" class="form-control form-control-sm" [(ngModel)]="fechaEmision" [min]="fechaEmision">
+          <input type="date" class="form-control form-control-sm bg-light" [(ngModel)]="fechaEmision" readonly disabled title="La fecha de emisión es predefinida (fecha actual)">
         </div>
       </div>
     </div>
@@ -450,8 +450,13 @@
         <button class="btn btn-outline-secondary px-4 me-auto" (click)="cerrarVoucher()">
           <i class="bi bi-x-lg me-1"></i>Cerrar
         </button>
-        <button class="btn btn-danger px-4 shadow-sm" (click)="descargarVoucherPDF()">
-          <i class="bi bi-file-earmark-pdf-fill me-2"></i>Descargar PDF
+        <button class="btn btn-outline-secondary px-3 me-2" (click)="imprimirVoucherHTML()" title="Abrir ventana de impresión">
+          <i class="bi bi-printer-fill me-1"></i>Imprimir
+        </button>
+        <button class="btn btn-danger px-4 shadow-sm" (click)="descargarVoucherPDF()" [disabled]="descargandoPDF">
+          <span *ngIf="descargandoPDF" class="spinner-border spinner-border-sm me-2"></span>
+          <i *ngIf="!descargandoPDF" class="bi bi-file-earmark-pdf-fill me-2"></i>
+          {{ descargandoPDF ? 'Generando PDF...' : 'Descargar PDF' }}
         </button>
       </div>
     </div>
