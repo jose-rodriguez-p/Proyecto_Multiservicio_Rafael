@@ -1,5 +1,5 @@
-import { Component, computed, effect, inject } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, computed, effect, inject, PLATFORM_ID } from '@angular/core';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterOutlet, NavigationEnd } from '@angular/router';
 import { toSignal } from '@angular/core/rxjs-interop';
@@ -14,6 +14,22 @@ import Swal from 'sweetalert2';
 })
 export class Configuracion {
   public router = inject(Router);
+  private platformId = inject(PLATFORM_ID);
+
+  esAdministrador(): boolean {
+    if (!isPlatformBrowser(this.platformId)) {
+      return false;
+    }
+    try {
+      const userStr = localStorage.getItem('currentUser');
+      if (userStr) {
+        const user = JSON.parse(userStr);
+        const rol = (user.rolNombre || user.rol || '').toLowerCase();
+        return rol === 'administrador';
+      }
+    } catch (e) {}
+    return false;
+  }
 
   // Señal reactiva con la URL actual: arranca con this.router.url y se actualiza
   // en cada NavigationEnd. A diferencia de una suscripción manual + asignación de
