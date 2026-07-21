@@ -1,0 +1,138 @@
+<div class="modal-header bg-danger text-white border-0 py-3 py-md-4">
+  <h5 class="modal-title fw-bold">
+    <i class="bi bi-box-seam-fill me-2"></i> Nuevo Producto
+  </h5>
+  <button type="button" class="btn-close btn-close-white" (click)="cerrarModal()"></button>
+</div>
+
+<div class="modal-body p-4 p-md-5">
+  <div class="row g-3 g-md-4">
+
+    <!-- Nombre -->
+    <div class="col-md-6">
+      <label class="form-label fw-bold small mb-2">
+        Nombre <span class="text-danger">*</span>
+      </label>
+      <input type="text"
+        class="form-control form-control-sm"
+        [(ngModel)]="nuevoProducto.nombre"
+        (input)="validarNombre()"
+        [ngClass]="{'is-invalid': errorNombre, 'is-valid': !errorNombre && nuevoProducto.nombre?.trim()}"
+        placeholder="Ej: Aceite Motor 10W40"
+        maxlength="100">
+      <div class="invalid-feedback">El nombre debe tener al menos 2 caracteres.</div>
+    </div>
+
+    <!-- Categoría -->
+    <div class="col-md-6">
+      <label class="form-label fw-bold small mb-2">Categoría</label>
+      <select class="form-select form-select-sm"
+        [(ngModel)]="nuevoProducto.nombre_categoria"
+        (change)="onCategoriaChange()">
+        <option value="" disabled>— Selecciona una categoría —</option>
+        <option *ngFor="let cat of categorias" [value]="cat">{{ cat }}</option>
+      </select>
+    </div>
+
+    <!-- Marca -->
+    <div class="col-md-6">
+      <label class="form-label fw-bold small mb-2">Marca</label>
+      <select class="form-select form-select-sm"
+        [(ngModel)]="nuevoProducto.marca"
+        [disabled]="marcasDisponibles.length === 0">
+        <option value="" disabled>— Selecciona una marca —</option>
+        <option *ngFor="let marca of marcasDisponibles" [value]="marca">{{ marca }}</option>
+      </select>
+      <small class="text-muted" *ngIf="marcasDisponibles.length === 0">
+        Selecciona una categoría para ver las marcas disponibles
+      </small>
+    </div>
+
+    <!-- Proveedor -->
+    <div class="col-12">
+      <label class="form-label fw-bold small mb-2">Proveedor</label>
+      <select class="form-select form-select-sm" [(ngModel)]="nuevoProducto.nombre_proveedor">
+        <option value="">— Seleccione un proveedor —</option>
+        <option *ngFor="let prov of proveedores" [value]="prov.nombre_empresa">
+          {{ prov.nombre_empresa }}
+        </option>
+      </select>
+    </div>
+
+    <!-- Cantidad -->
+    <div class="col-md-4">
+      <label class="form-label fw-bold small mb-2">
+        Cantidad Inicial <span class="text-danger">*</span>
+      </label>
+      <input type="number" min="0" step="1" max="999"
+        class="form-control form-control-sm"
+        [(ngModel)]="nuevoProducto.cantidad"
+        (input)="validarCantidad()"
+        [ngClass]="{'is-invalid': errorCantidad, 'is-valid': !errorCantidad && nuevoProducto.cantidad !== null}">
+      <div class="invalid-feedback">Ingresa un número entero mayor a 0.</div>
+    </div>
+
+    <!-- Precio Compra -->
+    <div class="col-md-4">
+      <label class="form-label fw-bold small mb-2">
+        Precio Compra (S/) <span class="text-danger">*</span>
+      </label>
+      <input type="number" min="0.01" step="0.01" max="999.99"
+        class="form-control form-control-sm"
+        [(ngModel)]="nuevoProducto.precio_compra"
+        (input)="validarPrecioCompra()"
+        [ngClass]="{'is-invalid': errorPrecioCompra, 'is-valid': !errorPrecioCompra && nuevoProducto.precio_compra}">
+      <div class="invalid-feedback">El precio de compra debe ser mayor a cero.</div>
+    </div>
+
+    <!-- Precio Venta -->
+    <div class="col-md-4">
+      <label class="form-label fw-bold small mb-2">
+        Precio Venta (S/) <span class="text-danger">*</span>
+      </label>
+      <input type="number" min="0.01" step="0.01" max="9999.99"
+        class="form-control form-control-sm"
+        [(ngModel)]="nuevoProducto.precio_venta"
+        (input)="validarPrecioVenta()"
+        [ngClass]="{'is-invalid': errorPrecioVenta || errorPrecioVentaMenor, 'is-valid': !errorPrecioVenta && !errorPrecioVentaMenor && nuevoProducto.precio_venta}">
+      <div class="invalid-feedback" *ngIf="errorPrecioVenta">
+        El precio de venta debe ser mayor a cero.
+      </div>
+      <div class="invalid-feedback" *ngIf="errorPrecioVentaMenor">
+        El precio de venta debe ser mayor al precio de compra.
+      </div>
+    </div>
+
+    <!-- Stock Mínimo -->
+    <div class="col-md-6">
+      <label class="form-label fw-bold small mb-2">Stock Mínimo</label>
+      <input type="number" min="0" step="1" max="999"
+        class="form-control form-control-sm"
+        [(ngModel)]="nuevoProducto.stock_minimo"
+        (input)="validarStockMinimo()"
+        [ngClass]="{'is-invalid': errorStockMinimo, 'is-valid': !errorStockMinimo && nuevoProducto.stock_minimo >= 0}">
+      <div class="invalid-feedback">
+        El stock mínimo no puede ser negativo ni mayor a la cantidad inicial.
+      </div>
+    </div>
+
+    <!-- Estado -->
+    <div class="col-md-6">
+      <label class="form-label fw-bold small mb-2">Estado</label>
+      <select class="form-select form-select-sm" [(ngModel)]="nuevoProducto.estado">
+        <option value="Activo">Activo</option>
+        <option value="Inactivo">Inactivo</option>
+      </select>
+    </div>
+
+  </div>
+</div>
+
+<div class="modal-footer border-0 p-4 p-md-5">
+  <button type="button" class="btn btn-outline-secondary px-4" (click)="cerrarModal()">Cancelar</button>
+  <button type="button" class="btn btn-danger px-4"
+    (click)="guardarProducto()"
+    [disabled]="!datosValidos()">
+    Registrar Producto
+  </button>
+</div>

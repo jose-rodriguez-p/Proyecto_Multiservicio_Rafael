@@ -1,0 +1,23 @@
+:host {
+  display: block;
+}
+
+.card {
+  transition: transform 0.15s ease;
+}
+
+.card:hover {
+  transform: translateY(-1px);
+}
+
+.table th {
+  font-weight: 600;
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.badge {
+  font-weight: 600;
+  min-width: 2rem;
+}

@@ -1,0 +1,188 @@
+<div class="contenedor_general">
+
+    <!-- SIDEBAR DESKTOP -->
+    <div class="sidebar d-none d-lg-flex flex-column flex-shrink-0">
+
+        <!-- Logo y nombre -->
+        <div class="sidebar-brand">
+            <div class="sidebar-brand-logo">
+                <img src="/logo/Logo.png" alt="Logo Rafael" class="sidebar-brand-img">
+            </div>
+            <div>
+                <div class="sidebar-brand-name">Multiservicio</div>
+                <div class="sidebar-brand-sub">"Rafael"</div>
+            </div>
+        </div>
+
+        <!-- Nav -->
+        <nav class="sidebar-nav">
+
+            <div class="sidebar-section-label">Principal</div>
+            <a *ngIf="tieneAcceso('Dashboard')" routerLink="/sistema/dashboard" class="sidebar-link" routerLinkActive="sidebar-link--active">
+                <i class="bi bi-speedometer2"></i> Dashboard
+            </a>
+
+            <div class="sidebar-section-label">Operaciones</div>
+            <a *ngIf="tieneAcceso('Servicios')" class="sidebar-link sidebar-link--collapsible"
+                data-bs-toggle="collapse"
+                href="#menuServicios"
+                aria-expanded="false">
+                <i class="bi bi-tools"></i> Servicios
+                <i class="bi bi-chevron-down sidebar-chevron ms-auto"></i>
+            </a>
+            <div class="collapse" id="menuServicios">
+                <a *ngIf="tieneAcceso('Venta')" routerLink="/sistema/servicio/ventas" class="sidebar-link sidebar-link--sub" routerLinkActive="sidebar-link--active">
+                    Venta
+                </a>
+                <a *ngIf="tieneAcceso('Mantenimiento')" routerLink="/sistema/servicio/mantenimiento" class="sidebar-link sidebar-link--sub" routerLinkActive="sidebar-link--active">
+                    Mantenimiento
+                </a>
+                <a routerLink="/sistema/servicio/reporte-general" class="sidebar-link sidebar-link--sub" routerLinkActive="sidebar-link--active">
+                    Reporte General
+                </a>
+            </div>
+            <a *ngIf="tieneAcceso('Reabastecimiento')" routerLink="/sistema/reabastecimiento" class="sidebar-link" routerLinkActive="sidebar-link--active">
+                <i class="bi bi-cart-plus"></i> Reabastecimiento
+            </a>
+
+            <a routerLink="/sistema/compra" class="sidebar-link" routerLinkActive="sidebar-link--active">
+                <i class="bi bi-cart-check"></i> Compras
+            </a>
+
+            <div class="sidebar-section-label">Gestión</div>
+            <a *ngIf="tieneAcceso('Productos')" routerLink="/sistema/producto" class="sidebar-link" routerLinkActive="sidebar-link--active">
+                <i class="bi bi-box-seam"></i> Productos
+            </a>
+            <a *ngIf="tieneAcceso('Proveedores')" routerLink="/sistema/proveedor" class="sidebar-link" routerLinkActive="sidebar-link--active">
+                <i class="bi bi-truck"></i> Proveedores
+            </a>
+            <a *ngIf="tieneAcceso('Clientes')" routerLink="/sistema/cliente" class="sidebar-link" routerLinkActive="sidebar-link--active">
+                <i class="bi bi-people"></i> Clientes
+            </a>
+            <a *ngIf="tieneAcceso('Trabajadores')" routerLink="/sistema/trabajador" class="sidebar-link" routerLinkActive="sidebar-link--active">
+                <i class="bi bi-person-badge"></i> Trabajadores
+            </a>
+
+            <div class="sidebar-divider"></div>
+            <a routerLink="/sistema/auditoria" class="sidebar-link" routerLinkActive="sidebar-link--active">
+                <i class="bi bi-clock-history"></i> Auditoría
+            </a>
+            <a *ngIf="tieneAcceso('Configuración') || tieneAcceso('configuraciones')" routerLink="/sistema/configuracion" class="sidebar-link" routerLinkActive="sidebar-link--active">
+                <i class="bi bi-gear"></i> Configuración
+            </a>
+
+        </nav>
+
+        <!-- Tarjeta usuario -->
+        <div class="sidebar-user" (click)="cerrarSesion()">
+            <div class="sidebar-avatar">A</div>
+            <div class="sidebar-user-info">
+                <div class="sidebar-user-name">Administrador</div>
+                <div class="sidebar-user-role">Cerrar sesión</div>
+            </div>
+            <i class="bi bi-box-arrow-right sidebar-user-exit"></i>
+        </div>
+
+    </div>
+    <div class="contenedor_informacion">
+
+        <nav class="top-navbar">
+            <button class="btn-hamburger d-lg-none"
+                data-bs-toggle="offcanvas"
+                data-bs-target="#menuMovil"
+                aria-label="Abrir menú">
+                <i class="bi bi-list"></i>
+            </button>
+            <div class="top-navbar-breadcrumb d-none d-lg-flex">
+                <span>Sistema</span>
+                <i class="bi bi-chevron-right"></i>
+                <span class="top-navbar-breadcrumb-current">{{ getNombreRuta() }}</span>
+            </div>
+            <div class="top-navbar-profile ms-auto">
+                <div class="top-navbar-avatar">A</div>
+                <div class="d-none d-sm-block">
+                    <div class="top-navbar-name">Administrador</div>
+                    <div class="top-navbar-role">admin@rafael.pe</div>
+                </div>
+            </div>
+        </nav>
+        <div class="modulo-contenido">
+            <router-outlet></router-outlet>
+        </div>
+
+    </div>
+</div>
+
+<!-- MENÚ MÓVIL (offcanvas) -->
+<div class="offcanvas offcanvas-start offcanvas-movil" tabindex="-1" id="menuMovil">
+    <div class="offcanvas-header">
+        <div class="sidebar-brand" style="padding:0;border:none;margin:0">
+            <div class="sidebar-brand-logo">
+                <img src="/logo/Logo.png" alt="Logo Rafael" class="sidebar-brand-img">
+            </div>
+            <div>
+                <div class="sidebar-brand-name">Multiservicio</div>
+                <div class="sidebar-brand-sub">"Rafael"</div>
+            </div>
+        </div>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas"></button>
+    </div>
+    <div class="offcanvas-body">
+        <nav class="sidebar-nav">
+            <div class="sidebar-section-label">Principal</div>
+            <a *ngIf="tieneAcceso('Dashboard')" routerLink="/sistema/dashboard" data-bs-dismiss="offcanvas" class="sidebar-link" routerLinkActive="sidebar-link--active">
+                <i class="bi bi-speedometer2"></i> Dashboard
+            </a>
+
+            <div class="sidebar-section-label">Operaciones</div>
+            <a *ngIf="tieneAcceso('Servicios')" class="sidebar-link sidebar-link--collapsible" data-bs-toggle="collapse" href="#menuServiciosMovil">
+                <i class="bi bi-tools"></i> Servicios
+                <i class="bi bi-chevron-down sidebar-chevron ms-auto"></i>
+            </a>
+            <div class="collapse" id="menuServiciosMovil">
+                <a *ngIf="tieneAcceso('Venta')" routerLink="/sistema/servicio/ventas" data-bs-dismiss="offcanvas" class="sidebar-link sidebar-link--sub" routerLinkActive="sidebar-link--active">Venta</a>
+                <a *ngIf="tieneAcceso('Mantenimiento')" routerLink="/sistema/servicio/mantenimiento" data-bs-dismiss="offcanvas" class="sidebar-link sidebar-link--sub" routerLinkActive="sidebar-link--active">Mantenimiento</a>
+                <a routerLink="/sistema/servicio/reporte-general" data-bs-dismiss="offcanvas" class="sidebar-link sidebar-link--sub" routerLinkActive="sidebar-link--active">Reporte General</a>
+            </div>
+
+            <a *ngIf="tieneAcceso('Productos')" routerLink="/sistema/producto" data-bs-dismiss="offcanvas" class="sidebar-link" routerLinkActive="sidebar-link--active">
+                <i class="bi bi-box-seam"></i> Productos
+            </a>
+            <a *ngIf="tieneAcceso('Reabastecimiento')" routerLink="/sistema/reabastecimiento" data-bs-dismiss="offcanvas" class="sidebar-link" routerLinkActive="sidebar-link--active">
+                <i class="bi bi-cart-plus"></i> Reabastecimiento
+            </a>
+
+            <a routerLink="/sistema/compra" data-bs-dismiss="offcanvas" class="sidebar-link" routerLinkActive="sidebar-link--active">
+                <i class="bi bi-cart-check"></i> Compras
+            </a>
+
+            <div class="sidebar-section-label">Gestión</div>
+            <a *ngIf="tieneAcceso('Proveedores')" routerLink="/sistema/proveedor" data-bs-dismiss="offcanvas" class="sidebar-link" routerLinkActive="sidebar-link--active">
+                <i class="bi bi-truck"></i> Proveedores
+            </a>
+            <a *ngIf="tieneAcceso('Clientes')" routerLink="/sistema/cliente" data-bs-dismiss="offcanvas" class="sidebar-link" routerLinkActive="sidebar-link--active">
+                <i class="bi bi-people"></i> Clientes
+            </a>
+            <a *ngIf="tieneAcceso('Trabajadores')" routerLink="/sistema/trabajador" data-bs-dismiss="offcanvas" class="sidebar-link" routerLinkActive="sidebar-link--active">
+                <i class="bi bi-person-badge"></i> Trabajadores
+            </a>
+
+            <div class="sidebar-divider"></div>
+            <a routerLink="/sistema/auditoria" data-bs-dismiss="offcanvas" class="sidebar-link" routerLinkActive="sidebar-link--active">
+                <i class="bi bi-clock-history"></i> Auditoría
+            </a>
+            <a *ngIf="tieneAcceso('Configuración')" routerLink="/sistema/configuracion" data-bs-dismiss="offcanvas" class="sidebar-link" routerLinkActive="sidebar-link--active">
+                <i class="bi bi-gear"></i> Configuración
+            </a>
+        </nav>
+
+        <div class="sidebar-user mt-3" (click)="cerrarSesion()">
+            <div class="sidebar-avatar">A</div>
+            <div class="sidebar-user-info">
+                <div class="sidebar-user-name">Administrador</div>
+                <div class="sidebar-user-role">Cerrar sesión</div>
+            </div>
+            <i class="bi bi-box-arrow-right sidebar-user-exit"></i>
+        </div>
+    </div>
+</div>

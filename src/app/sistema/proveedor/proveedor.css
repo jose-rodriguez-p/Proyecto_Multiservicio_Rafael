@@ -1,0 +1,67 @@
+.provider-card {
+    transition: all 0.3s ease;
+    border-radius: 15px;
+}
+
+.provider-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0,0,0,0.1) !important;
+}
+
+.icon-box {
+    width: 60px;
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.badge {
+    font-weight: 500;
+    padding: 6px 12px;
+}
+
+/* Responsive adjustments for Proveedor */
+@media (max-width: 768px) {
+  .btn-group {
+    flex-direction: column;
+    width: 100%;
+  }
+  
+  .btn-group .btn {
+    width: 100%;
+    margin-bottom: 0.25rem;
+  }
+  
+  .icon-box {
+    width: 50px;
+    height: 50px;
+  }
+  
+  .icon-box i {
+    font-size: 1.5rem;
+  }
+}
+
+@media (max-width: 576px) {
+  .container-fluid {
+    padding: 1rem;
+  }
+  
+  .card-body {
+    padding: 1rem;
+  }
+  
+  .provider-card {
+    margin-bottom: 1rem;
+  }
+  
+  .card-footer {
+    padding: 0.75rem;
+  }
+  
+  .btn-sm {
+    font-size: 0.8rem;
+    padding: 0.25rem 0.5rem;
+  }
+}

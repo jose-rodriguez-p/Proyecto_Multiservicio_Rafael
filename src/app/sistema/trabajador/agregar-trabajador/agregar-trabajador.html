@@ -1,0 +1,201 @@
+<div class="modal-header bg-danger text-white border-0 py-3 py-md-4">
+    <h5 class="modal-title fw-bold">
+        <i class="bi bi-person-plus-fill me-2"></i>
+        Nuevo Trabajador
+    </h5>
+    <button type="button" class="btn-close btn-close-white" (click)="cerrarModal()"></button>
+</div>
+
+<div class="modal-body p-4 p-md-5">
+    <form #trabajadorForm="ngForm">
+        <div class="row g-3 g-md-4">
+
+            <!-- Tipo Documento -->
+            <div class="col-md-6">
+                <label class="form-label fw-bold small mb-2">Tipo Documento</label>
+                <select class="form-select" [(ngModel)]="nuevoTrabajador.id_documento" name="id_documento">
+                    <option *ngFor="let doc of documentos" [ngValue]="doc.id">{{ doc.nombre }}</option>
+                </select>
+            </div>
+
+            <!-- Número Documento -->
+            <div class="col-md-6">
+                <label class="form-label fw-bold small mb-2">Número Documento</label>
+                <div class="input-group">
+                    <input type="text" class="form-control" maxlength="8"
+                        [(ngModel)]="nuevoTrabajador.numeroDocumento"
+                        (input)="validarDni()" name="numeroDocumento"
+                        placeholder="Ingrese documento"
+                        [ngClass]="{'is-invalid': errorDni}" required>
+                    <span class="input-group-text" *ngIf="consultandoDni">
+                        <span class="spinner-border spinner-border-sm text-danger"></span>
+                    </span>
+                </div>
+                <div class="text-danger small mt-2" *ngIf="errorDni">Debe tener exactamente 8 números.</div>
+                <div class="text-success small mt-2" *ngIf="dniValidado">Documento validado.</div>
+            </div>
+
+            <!-- Nombres -->
+            <div class="col-md-4">
+                <label class="form-label fw-bold small mb-2">Nombres</label>
+                <input type="text" class="form-control" [(ngModel)]="nuevoTrabajador.nombre"
+                    name="nombre" [readonly]="dniValidado && !permiteEdicionManual"
+                    [ngClass]="{'bg-light': dniValidado && !permiteEdicionManual}" required>
+            </div>
+
+            <!-- Apellido Paterno -->
+            <div class="col-md-4">
+                <label class="form-label fw-bold small mb-2">Apellido Paterno</label>
+                <input type="text" class="form-control" [(ngModel)]="nuevoTrabajador.apellido_paterno"
+                    name="apellido_paterno" [readonly]="dniValidado && !permiteEdicionManual"
+                    [ngClass]="{'bg-light': dniValidado && !permiteEdicionManual}" required>
+            </div>
+
+            <!-- Apellido Materno -->
+            <div class="col-md-4">
+                <label class="form-label fw-bold small mb-2">Apellido Materno</label>
+                <input type="text" class="form-control" [(ngModel)]="nuevoTrabajador.apellido_materno"
+                    name="apellido_materno" [readonly]="dniValidado && !permiteEdicionManual"
+                    [ngClass]="{'bg-light': dniValidado && !permiteEdicionManual}" required>
+            </div>
+
+            <!-- Celular -->
+            <div class="col-md-6">
+                <label class="form-label fw-bold small mb-2">Celular</label>
+                <input type="text" maxlength="9" class="form-control"
+                    [(ngModel)]="nuevoTrabajador.celular"
+                    (input)="validarCelular()" name="celular"
+                    placeholder="9XXXXXXXX"
+                    [ngClass]="{'is-invalid': errorCelular}">
+                <div class="text-danger small mt-2" *ngIf="errorCelular">Debe comenzar con 9 y tener 9 dígitos.</div>
+            </div>
+
+            <!-- Correo -->
+            <div class="col-md-6">
+                <label class="form-label fw-bold small mb-2">Correo Electrónico</label>
+                <div class="input-group">
+                    <input type="email" class="form-control"
+                        [(ngModel)]="nuevoTrabajador.correo"
+                        (input)="validarCorreo()"
+                        name="correo" placeholder="correo@dominio.com"
+                        [readonly]="correoValidado && !permiteEdicionManual"
+                        [ngClass]="{'is-invalid': errorCorreo, 'bg-light': correoValidado && !permiteEdicionManual}">
+                    <button *ngIf="correoValido && !correoValidado && !validandoCorreo"
+                        class="btn btn-outline-success" type="button"
+                        (click)="validarCorreoBackend()">
+                        Validar correo
+                    </button>
+                    <button *ngIf="correoValidado && !permiteEdicionManual"
+                        class="btn btn-outline-warning" type="button"
+                        (click)="desbloquearCampos()" title="Desbloquear correo para edición">
+                        <i class="bi bi-unlock"></i>
+                    </button>
+                    <span class="input-group-text" *ngIf="validandoCorreo">
+                        <span class="spinner-border spinner-border-sm text-success"></span>
+                    </span>
+                </div>
+                <div class="text-danger small mt-2" *ngIf="errorCorreo">Formato de correo inválido.</div>
+                <div class="text-success small mt-2" *ngIf="correoValidado">Correo validado correctamente.</div>
+            </div>
+
+            <!-- ── DIRECCIÓN ESTRUCTURADA ──────────────────────────────────── -->
+            <div class="col-12">
+                <label class="form-label fw-bold small mb-2">
+                    <i class="bi bi-geo-alt me-1 text-secondary"></i>Dirección
+                </label>
+                <div class="row g-2">
+
+                    <!-- Tipo de vía -->
+                    <div class="col-md-3">
+                        <label class="form-text text-muted mb-1 d-block">Tipo de vía</label>
+                        <select class="form-select form-select-sm"
+                            [(ngModel)]="dir.tipo" name="dir_tipo">
+                            <option *ngFor="let t of tiposVia" [value]="t">{{ t }}</option>
+                        </select>
+                    </div>
+
+                    <!-- Nombre de vía -->
+                    <div class="col-md-6">
+                        <label class="form-text text-muted mb-1 d-block">Nombre de vía</label>
+                        <input type="text" class="form-control form-control-sm"
+                            placeholder="Ej: Los Pinos, Benavides, Las Flores..."
+                            [(ngModel)]="dir.nombre" name="dir_nombre"
+                            maxlength="120"
+                            (input)="dirTocado = true"
+                            [ngClass]="{'is-invalid': dirTocado && !dir.nombre.trim()}">
+                    </div>
+
+                    <!-- Número / Piso -->
+                    <div class="col-md-3">
+                        <label class="form-text text-muted mb-1 d-block">N° / Piso / Int.</label>
+                        <input type="text" class="form-control form-control-sm"
+                            placeholder="Ej: 245, Piso 3, Int. 4B"
+                            [(ngModel)]="dir.numero" name="dir_numero"
+                            maxlength="30"
+                            (input)="dirTocado = true"
+                            [ngClass]="{'is-invalid': dirTocado && !dir.numero.trim() && dir.nombre.trim()}">
+                    </div>
+
+                </div>
+
+                <!-- Vista previa -->
+                <div class="mt-2 px-2 py-1 rounded bg-light border d-flex align-items-center gap-2"
+                    style="font-size:0.80rem;" *ngIf="direccionCompleta">
+                    <i class="bi bi-map text-secondary"></i>
+                    <span class="text-muted">Se guardará como:</span>
+                    <strong>{{ direccionCompleta }}</strong>
+                </div>
+                <div class="text-danger small mt-1"
+                    *ngIf="dirTocado && !direccionValida && dir.nombre.trim()">
+                    Complete el número o piso.
+                </div>
+            </div>
+            <!-- ── FIN DIRECCIÓN ───────────────────────────────────────────── -->
+
+            <!-- Cargo -->
+            <div class="col-md-6">
+                <label class="form-label fw-bold small mb-2">Cargo</label>
+                <select class="form-select" [(ngModel)]="nuevoTrabajador.id_cargo" name="id_cargo"
+                    (change)="onCargoChange()">
+                    <option *ngFor="let cargo of cargos" [ngValue]="cargo.id">{{ cargo.nombre }}</option>
+                </select>
+            </div>
+
+            <!-- Estado -->
+            <div class="col-md-6">
+                <label class="form-label fw-bold small mb-2">Estado</label>
+                <select class="form-select" [(ngModel)]="nuevoTrabajador.estado" name="estado">
+                    <option value="Activo">Activo</option>
+                    <option value="Inactivo">Inactivo</option>
+                </select>
+            </div>
+
+            <!-- Credenciales -->
+            <div class="col-12 mt-4" *ngIf="cargoRequiereCredenciales()">
+                <div class="p-4 p-md-5 bg-light rounded">
+                    <h6 class="fw-bold text-danger mb-3">Credenciales de acceso</h6>
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold small mb-2">Usuario</label>
+                            <input class="form-control" [(ngModel)]="nuevoTrabajador.usuario" name="usuario">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold small mb-2">Contraseña</label>
+                            <input type="password" class="form-control"
+                                [(ngModel)]="nuevoTrabajador.contrasena" name="contrasena">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </form>
+</div>
+
+<div class="modal-footer border-0 p-4 p-md-5">
+    <button class="btn btn-outline-secondary" (click)="cerrarModal()">Cancelar</button>
+    <button class="btn btn-danger" (click)="guardarTrabajador()"
+        [disabled]="!permiteEdicionManual && (!correoValidado || !dniValidado)">
+        Guardar Trabajador
+    </button>
+</div>

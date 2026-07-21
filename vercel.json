@@ -1,0 +1,10 @@
+{
+  "buildCommand": "ng build",
+  "outputDirectory": "dist/Multiservicio_rafael/browser",
+  "rewrites": [
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
+    }
+  ]
+}

@@ -1,0 +1,165 @@
+<div class="modal-header bg-dark text-white border-0 py-3 py-md-4">
+    <h5 class="modal-title fw-bold">
+        <i class="bi bi-pencil-square me-2 text-danger"></i> Editar Trabajador
+    </h5>
+    <button type="button" class="btn-close btn-close-white" (click)="cerrarModal()"></button>
+</div>
+
+<div class="modal-body p-4 p-md-5">
+    <form #trabajadorEditForm="ngForm">
+        <div class="row g-3 g-md-4">
+
+            <!-- DNI (solo lectura) -->
+            <div class="col-md-6">
+                <label class="form-label fw-bold small mb-2">DNI / Usuario</label>
+                <input type="text" class="form-control form-control-sm bg-light"
+                    [(ngModel)]="trabajadorEditando.numeroDocumento" name="dni_edit" readonly>
+            </div>
+
+            <!-- Cargo -->
+            <div class="col-md-6">
+                <label class="form-label fw-bold small mb-2">Cargo</label>
+                <select class="form-select form-select-sm"
+                    [(ngModel)]="trabajadorEditando.cargo" name="cargo_edit">
+                    <option *ngFor="let cargo of cargos" [value]="cargo.nombre">{{ cargo.nombre }}</option>
+                </select>
+            </div>
+
+            <!-- Nombres -->
+            <div class="col-md-4">
+                <label class="form-label fw-bold small mb-2">Nombres</label>
+                <input type="text" pattern="[A-Za-z\s]+" class="form-control form-control-sm"
+                    [(ngModel)]="trabajadorEditando.nombre" name="nombre_edit" required
+                    [ngClass]="{'is-invalid': trabajadorEditForm.submitted && !trabajadorEditando.nombre.trim()}"
+                    (input)="trabajadorEditForm.form.controls['nombre_edit'].setValue(trabajadorEditando.nombre.trim())"
+                    >
+            </div>
+
+            <!-- Apellido Paterno -->
+            <div class="col-md-4">
+                <label class="form-label fw-bold small mb-2">Apellido Paterno</label>
+                <input type="text" class="form-control form-control-sm"
+                    [(ngModel)]="trabajadorEditando.apellido_paterno" name="ap_edit" required>
+            </div>
+
+            <!-- Apellido Materno -->
+            <div class="col-md-4">
+                <label class="form-label fw-bold small mb-2">Apellido Materno</label>
+                <input type="text" class="form-control form-control-sm"
+                    [(ngModel)]="trabajadorEditando.apellido_materno" name="am_edit" required>
+            </div>
+
+            <!-- Celular -->
+            <div class="col-md-6">
+                <label class="form-label fw-bold small mb-2">Celular</label>
+                <input type="text" class="form-control form-control-sm"
+                    [(ngModel)]="trabajadorEditando.celular" name="cel_edit" maxlength="9">
+            </div>
+
+            <!-- Correo -->
+            <div class="col-md-6">
+                <label class="form-label fw-bold small mb-2">Correo</label>
+                <div class="input-group input-group-sm">
+                    <input type="email" class="form-control form-control-sm"
+                        [(ngModel)]="trabajadorEditando.correo" name="correo_edit"
+                        [readonly]="!editarCorreo"
+                        [ngClass]="{'is-invalid': errorCorreo, 'is-valid': correoValidado && editarCorreo}"
+                        (input)="validarCorreo()">
+                    <button class="btn btn-outline-secondary" type="button"
+                        (click)="toggleEditarCorreo()"
+                        [title]="editarCorreo ? 'Cancelar edición' : 'Editar correo'">
+                        <i class="bi" [ngClass]="editarCorreo ? 'bi-lock-fill' : 'bi-pencil'"></i>
+                    </button>
+                </div>
+                <div class="text-danger small mt-1" *ngIf="errorCorreo">Formato de correo inválido.</div>
+                <div class="text-success small mt-1" *ngIf="correoValidado && editarCorreo">Correo válido.</div>
+            </div>
+
+            <!-- ── DIRECCIÓN ESTRUCTURADA ──────────────────────────────────── -->
+            <div class="col-12">
+                <label class="form-label fw-bold small mb-2">
+                    <i class="bi bi-geo-alt me-1 text-secondary"></i>Dirección
+                </label>
+                <div class="row g-2">
+
+                    <!-- Tipo de vía -->
+                    <div class="col-md-3">
+                        <label class="form-text text-muted mb-1 d-block">Tipo de vía</label>
+                        <select class="form-select form-select-sm"
+                            [(ngModel)]="dir.tipo" name="dir_tipo">
+                            <option *ngFor="let t of tiposVia" [value]="t">{{ t }}</option>
+                        </select>
+                    </div>
+
+                    <!-- Nombre de vía -->
+                    <div class="col-md-6">
+                        <label class="form-text text-muted mb-1 d-block">Nombre de vía</label>
+                        <input type="text" class="form-control form-control-sm"
+                            placeholder="Ej: Los Pinos, Benavides, Las Flores..."
+                            [(ngModel)]="dir.nombre" name="dir_nombre"
+                            maxlength="120"
+                            (input)="dirTocado = true"
+                            [ngClass]="{'is-invalid': dirTocado && !dir.nombre.trim()}">
+                    </div>
+
+                    <!-- Número / Piso -->
+                    <div class="col-md-3">
+                        <label class="form-text text-muted mb-1 d-block">N° / Piso / Int.</label>
+                        <input type="text" class="form-control form-control-sm"
+                            placeholder="Ej: 245, Piso 3, Int. 4B"
+                            [(ngModel)]="dir.numero" name="dir_numero"
+                            maxlength="30"
+                            (input)="dirTocado = true"
+                            [ngClass]="{'is-invalid': dirTocado && !dir.numero.trim() && dir.nombre.trim()}">
+                    </div>
+
+                </div>
+
+                <!-- Vista previa -->
+                <div class="mt-2 px-2 py-1 rounded bg-light border d-flex align-items-center gap-2"
+                    style="font-size:0.80rem;" *ngIf="direccionCompleta">
+                    <i class="bi bi-map text-secondary"></i>
+                    <span class="text-muted">Se guardará como:</span>
+                    <strong>{{ direccionCompleta }}</strong>
+                </div>
+                <div class="text-danger small mt-1" *ngIf="dirTocado && !direccionValida && dir.nombre.trim()">
+                    Complete el número o piso.
+                </div>
+            </div>
+            <!-- ── FIN DIRECCIÓN ───────────────────────────────────────────── -->
+
+            <!-- Estado -->
+            <div class="col-md-6">
+                <label class="form-label fw-bold small mb-2">Estado</label>
+                <select class="form-select form-select-sm"
+                    [(ngModel)]="trabajadorEditando.estado" name="estado_edit">
+                    <option value="Activo">Activo</option>
+                    <option value="Inactivo">Inactivo</option>
+                </select>
+                <br>
+            </div>
+
+            <!-- ── RESETEAR CONTRASEÑA ────────────────────────────────────────── -->
+            <div class="col-12 mt-1" *ngIf="cargoRequiereContrasena()">
+                <div class="d-flex align-items-center gap-2">
+                    <hr class="flex-grow-1 m-0">
+                    <button type="button" class="btn btn-sm btn-outline-warning px-3"
+                        (click)="resetearContrasena()">
+                        <i class="bi bi-arrow-counterclockwise me-1"></i>
+                        Resetear contraseña
+                    </button>
+                    <hr class="flex-grow-1 m-0">
+                </div>
+            </div>
+            <!-- ── FIN RESETEAR CONTRASEÑA ────────────────────────────────────── -->
+
+        </div>
+    </form>
+</div>
+
+<div class="modal-footer border-0 p-4 p-md-5">
+    <button type="button" class="btn btn-outline-secondary px-4" (click)="cerrarModal()">Cancelar</button>
+    <button type="button" class="btn btn-danger px-4" (click)="actualizarTrabajador()">
+        <i class="bi bi-save me-1"></i>Actualizar Datos
+    </button>
+</div>

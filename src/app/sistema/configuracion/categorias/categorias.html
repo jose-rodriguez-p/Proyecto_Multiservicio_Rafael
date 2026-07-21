@@ -1,0 +1,77 @@
+<div class="cat-page">
+
+  <div class="cat-header">
+    <div class="cat-titulo">
+      <div class="cat-titulo-icono">
+        <i class="bi bi-tags-fill"></i>
+      </div>
+      <div>
+        <h4 class="mb-0 fw-bold">Categorías de Productos</h4>
+        <span class="text-muted small">Organiza el inventario con categorías personalizadas</span>
+      </div>
+    </div>
+    <button class="btn-nueva-cat" (click)="router.navigate(['/sistema/configuracion/categorias/agregar-categorias'])">
+      <i class="bi bi-plus-lg me-2"></i> Nueva Categoría
+    </button>
+  </div>
+
+  <!-- Buscador y Filtro -->
+  <div class="d-flex flex-wrap gap-2 align-items-center mb-1">
+    <div class="input-group" style="max-width:320px;">
+      <span class="input-group-text bg-white border-end-0 text-muted"><i class="bi bi-search"></i></span>
+      <input type="text" class="form-control border-start-0 ps-0"
+        placeholder="Buscar categoría..."
+        [(ngModel)]="filtro" />
+    </div>
+
+    <div style="width:150px;">
+      <select class="form-select" [(ngModel)]="estadoFiltro">
+        <option value="Todos">Todos</option>
+        <option value="Activos">Activos</option>
+        <option value="Inactivos">Inactivos</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- Lista -->
+  <div class="cat-lista" *ngIf="categoriasFiltradas.length > 0">
+    <div *ngFor="let cat of categoriasFiltradas" class="cat-item">
+      <div class="cat-item-icono">
+        <i class="bi bi-tag-fill"></i>
+      </div>
+      <span class="cat-item-nombre">{{ cat.nombre }}</span>
+      <span class="badge me-3" [ngClass]="cat.estado === 'Activo' ? 'bg-success-subtle text-success border border-success-subtle' : 'bg-secondary-subtle text-secondary border border-secondary-subtle'">
+        {{ cat.estado }}
+      </span>
+      <button class="cat-btn-editar" (click)="abrirModalEdit(cat)">
+        <i class="bi bi-pencil-fill"></i> Editar
+      </button>
+    </div>
+  </div>
+
+  <!-- Vacío -->
+  <div *ngIf="categoriasFiltradas.length === 0" class="cat-vacio">
+    <i class="bi bi-tags"></i>
+    <p class="mb-0 mt-2">No se encontraron categorías</p>
+  </div>
+
+  <!-- Router outlet para subcarpetas -->
+  <!-- Overlay agregar -->
+<div class="modal fade show d-block" *ngIf="showAgregarOverlay" style="background:rgba(0,0,0,0.5); position:fixed; inset:0; z-index:1070;">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content border-0 shadow-lg">
+      <router-outlet></router-outlet>
+    </div>
+  </div>
+</div>
+
+<!-- Overlay editar -->
+<div class="modal fade show d-block" *ngIf="showEditarOverlay" style="background:rgba(0,0,0,0.5); position:fixed; inset:0; z-index:1070;">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content border-0 shadow-lg">
+      <router-outlet></router-outlet>
+    </div>
+  </div>
+</div>
+
+</div>

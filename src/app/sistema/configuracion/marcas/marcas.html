@@ -1,0 +1,102 @@
+<div class="marcas-page">
+
+  <!-- Header -->
+  <div class="marcas-header">
+    <div class="marcas-titulo">
+      <div class="marcas-titulo-icono">
+        <i class="bi bi-award-fill"></i>
+      </div>
+      <div>
+        <h4 class="mb-0 fw-bold">Gestión de Marcas</h4>
+        <span class="text-muted small">Administra las marcas por categoría de producto</span>
+      </div>
+    </div>
+    <button class="btn-nueva-marca" (click)="router.navigate(['/sistema/configuracion/marcas/agregar-marcas'])">
+      <i class="bi bi-plus-lg me-2"></i> Nueva Marca
+    </button>
+  </div>
+
+  <!-- Filtros -->
+  <div class="marcas-filtros">
+    <div class="input-group" style="max-width:280px;">
+      <span class="input-group-text bg-white border-end-0 text-muted"><i class="bi bi-search"></i></span>
+      <input type="text" class="form-control border-start-0 ps-0"
+        placeholder="Buscar marca..."
+        [(ngModel)]="filtroNombre" />
+    </div>
+    <select class="form-select" style="max-width:180px;" [(ngModel)]="filtroEstado">
+      <option value="Todos">Todos</option>
+      <option value="Activo">Activos</option>
+      <option value="Inactivo">Inactivos</option>
+    </select>
+  </div>
+
+  <!-- Tabla -->
+  <div class="marcas-tabla-wrap">
+    <div *ngIf="loading" class="text-center py-5">
+      <div class="spinner-border text-danger" role="status">
+        <span class="visually-hidden">Cargando...</span>
+      </div>
+      <p class="text-muted mt-2">Cargando marcas...</p>
+    </div>
+
+    <div *ngIf="error" class="alert alert-danger">
+      <i class="bi bi-exclamation-triangle-fill me-2"></i>
+      {{ error }}
+    </div>
+
+    <table class="marcas-tabla" *ngIf="!loading && !error">
+      <thead>
+        <tr>
+          <th>Nombre</th>
+          <th>Categorías</th>
+          <th>Estado</th>
+          <th class="text-end">Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let marca of marcasFiltradas">
+          <td>
+            <div class="d-flex align-items-center gap-2">
+              <div class="marca-icono"><i class="bi bi-award-fill"></i></div>
+              <span class="fw-semibold">{{ marca.nombre }}</span>
+            </div>
+          </td>
+          <td>
+            <span class="marca-cat-chip">{{ nombresCategoriasDeMarca(marca) }}</span>
+          </td>
+          <td>
+            <span class="marca-badge" [class.activo]="marca.estado === 'Activo'" [class.inactivo]="marca.estado !== 'Activo'">
+              <i class="bi" [class.bi-check-circle-fill]="marca.estado === 'Activo'" [class.bi-x-circle-fill]="marca.estado !== 'Activo'"></i>
+              {{ marca.estado }}
+            </span>
+          </td>
+          <td class="text-end">
+            <button class="btn-accion editar"
+              (click)="router.navigate(['/sistema/configuracion/marcas/editar-marcas', marca.nombre])">
+              <i class="bi bi-pencil-fill"></i> Editar
+            </button>
+          </td>
+        </tr>
+        <tr *ngIf="marcasFiltradas.length === 0">
+          <td colspan="4" class="text-center text-muted py-4">
+            <i class="bi bi-inbox d-block fs-2 mb-2"></i>
+            No se encontraron marcas
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Overlay agregar / editar -->
+  <div class="modal fade show d-block"
+    *ngIf="showAgregarOverlay || showEditarOverlay"
+    style="background:rgba(0,0,0,0.5); position:fixed; inset:0; z-index:1070;">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content border-0 shadow-lg">
+        <router-outlet></router-outlet>
+      </div>
+    </div>
+  </div>
+
+</div>

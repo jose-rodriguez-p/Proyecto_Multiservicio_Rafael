@@ -1,0 +1,56 @@
+.border-start-4 {
+    border-left: 4px solid transparent;
+}
+
+.active-item {
+    background-color: #f8f9fa;
+    border-left-color: #0d6efd !important;
+}
+
+.list-group-item-action {
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.list-group-item-action:hover {
+    background-color: #f1f3f5;
+}
+
+.search-box {
+    width: 300px;
+}
+
+.scroll-container::-webkit-scrollbar {
+    width: 6px;
+}
+
+.scroll-container::-webkit-scrollbar-track {
+    background: #f1f1f1;
+}
+
+.scroll-container::-webkit-scrollbar-thumb {
+    background: #ccc;
+    border-radius: 10px;
+}
+
+.scroll-container::-webkit-scrollbar-thumb:hover {
+    background: #bbb;
+}
+
+.table th {
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-weight: 600;
+}
+
+.badge.bg-info.bg-opacity-10 {
+    color: #0dcaf0 !important;
+}
+
+@media (max-width: 992px) {
+    .search-box {
+        width: 100%;
+        margin-top: 15px;
+    }
+}

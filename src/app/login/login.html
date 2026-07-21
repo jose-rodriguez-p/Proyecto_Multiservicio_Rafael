@@ -1,0 +1,96 @@
+<main
+    class="container-fluid d-flex justify-content-center align-items-center pantalla_login"
+    style="min-height: 100vh;">
+
+    @if(login_validacion){
+    <div class="card p-4 rounded-4 shadow-lg border-0" style="width: 100%; max-width: 450px; min-height: 500px;">
+        <div class="text-center mb-4">
+            <img src="logo/Logo.png" class="img-fluid" style="max-width: 250px;"
+                alt="Logo de la empresa">
+        </div>
+        <form class="px-2">
+            <div class="form-floating mb-3">
+                <input type="text" class="form-control" id="usuario" name="usuario"
+                    [(ngModel)]="txtusuario" placeholder="Usuario">
+                <label for="usuario">Usuario</label>
+            </div>
+            <div class="form-floating mb-3 position-relative">
+                <input [type]="ocultarContrasena ? 'password' : 'text'"
+                    class="form-control" id="contrasena" name="contrasena"
+                    [(ngModel)]="txtcontrasena" placeholder="Contraseña">
+                <label for="contrasena">Contraseña</label>
+                <button type="button" class="btn position-absolute top-50 end-0 translate-middle-y border-0 bg-transparent pe-3" (click)="check()">
+                    <i class="bi" [class.bi-eye-slash]="ocultarContrasena" [class.bi-eye]="!ocultarContrasena"></i>
+                </button>
+            </div>
+
+            <div class="text-center mb-4">
+                <button class="btn btn-danger w-100 py-2 fw-bold shadow-sm"
+                    (click)="login()">
+                    <i class="bi bi-box-arrow-in-right me-2"></i> Iniciar Sesión
+                </button>
+            </div>
+
+            <div class="hr-text text-muted small">
+                <span class="recuperar-link" (click)="click_Olvide_contrasena()">
+                    ¿Olvidaste tu acceso? <i class="bi bi-shield-lock ms-1"></i>
+                </span>
+            </div>
+
+        </form>
+    </div>
+    }
+
+    @if(olvide_contrasena){
+    <div class="card p-4 rounded-4 shadow-lg border-0" style="width: 90%; max-width: 500px; max-height: 90vh; overflow-y: auto;">
+        <div class="text-center mb-1">
+            <img src="logo/Logo.png" style="max-width: 250px; height: auto;"
+                alt="Logo de la empresa">
+        </div>
+        <div class="px-4 text-center mb-3">
+            <p id="texto" class="text-muted small">{{mensaje_texto}}</p>
+        </div>
+        <form class="px-4">
+            <div class="mb-3">
+                <label for="codigo" class="form-label fw-bold">Código de Verificación (6 dígitos)</label>
+                <input type="text" class="form-control text-center fs-4 letter-spacing-lg" 
+                       id="codigo" name="codigo" maxlength="6"
+                       [(ngModel)]="codigoVerificacion" (input)="onCodigoChange()"
+                       placeholder="000000">
+                <div *ngIf="codigoEnviado && !usuarioValidado" class="form-text text-primary">
+                    <i class="bi bi-info-circle me-1"></i> Ingresa el código para habilitar el cambio
+                </div>
+            </div>
+            <div class="mb-3">
+                <label for="contrasena" class="form-label">Nueva Contraseña</label>
+                <input [type]="ocultarContrasena ? 'password' : 'text'"
+                    class="form-control" id="contrasena" name="contrasena"
+                    [(ngModel)]="txtcontrasena"
+                    [disabled]="inputBloqueados">
+            </div>
+            <div class="mb-3">
+                <label for="contrasena2" class="form-label">Confirmar Contraseña</label>
+                <input [type]="ocultarContrasena ? 'password' : 'text'"
+                    class="form-control" id="contrasena2" name="contrasena2"
+                    [(ngModel)]="txtConfirmarContrasena"
+                    [disabled]="inputBloqueados">
+            </div>
+
+            <div class="mb-3 form-check">
+                <input type="checkbox" class="form-check-input"
+                    id="mostrar_contrasena2" (change)="check()">
+                <label class="form-check-label"
+                    for="mostrar_contrasena2">Mostrar contraseña</label>
+            </div>
+            <div class="txt-center d-flex justify-content-between align-items-center flex-row">
+                <button type="button" class="btn btn-outline-secondary px-4"
+                    (click)="login_validacion=true; olvide_contrasena=false;">Regresar</button>
+                <button type="button" class="btn btn-primary px-4"
+                    [disabled]="!usuarioValidado"
+                    (click)="registra()">Registrar</button>
+            </div>
+        </form>
+    </div>
+    }
+
+</main>

@@ -1,0 +1,100 @@
+<div class="rol-page">
+
+  <!-- Encabezado -->
+  <div class="rol-header">
+    <div class="rol-titulo">
+      <div class="rol-titulo-icono">
+        <i class="bi bi-shield-lock-fill"></i>
+      </div>
+      <div>
+        <h4 class="mb-0 fw-bold">Gestión de Roles</h4>
+        <span class="text-muted small">Administra los roles y permisos del sistema</span>
+      </div>
+    </div>
+
+    <div class="rol-acciones">
+      <div class="input-group input-busqueda">
+        <span class="input-group-text bg-white border-end-0 text-muted">
+          <i class="bi bi-search"></i>
+        </span>
+        <input
+          type="text"
+          class="form-control border-start-0 ps-0"
+          placeholder="Buscar por nombre o menú..."
+          [(ngModel)]="filtroBusqueda" />
+      </div>
+
+      <button class="btn btn-nuevo-rol" (click)="abrirModal()">
+        <i class="bi bi-plus-lg me-2"></i> Nuevo Rol
+      </button>
+    </div>
+  </div>
+
+  <!-- Sin resultados -->
+  <div *ngIf="rolesFiltrados.length === 0" class="rol-vacio">
+    <i class="bi bi-shield-x"></i>
+    <p class="mb-0 mt-2">No se encontraron roles</p>
+  </div>
+
+  <!-- Grid de tarjetas -->
+  <div class="rol-grid" *ngIf="rolesFiltrados.length > 0">
+    <div *ngFor="let rol of rolesFiltrados" class="rol-card">
+
+      <!-- Cabecera de la card -->
+      <div class="rol-card-head">
+        <div class="rol-card-icono">
+          <i class="bi bi-shield-fill-check"></i>
+        </div>
+        <div class="flex-grow-1">
+          <div class="rol-card-nombre">{{ rol.nombre }}</div>
+          <div class="rol-card-desc">{{ rol.descripcion }}</div>
+        </div>
+        <span class="rol-badge" [class.activo]="rol.activo" [class.inactivo]="!rol.activo">
+          <i class="bi" [class.bi-check-circle-fill]="rol.activo" [class.bi-x-circle-fill]="!rol.activo"></i>
+          {{ rol.activo ? 'Activo' : 'Inactivo' }}
+        </span>
+      </div>
+
+      <!-- Lista de menús -->
+      <div class="rol-card-menus">
+        <div class="rol-menus-titulo">
+          <i class="bi bi-list-check me-1"></i> Menús con acceso
+          <span class="rol-menus-contador">{{ rol.menus.length }}</span>
+        </div>
+        <div class="rol-menus-lista">
+          <span *ngFor="let m of rol.menus" class="rol-menu-chip">
+            <i class="bi bi-check2"></i> {{ m }}
+          </span>
+          <span *ngIf="rol.menus.length === 0" class="text-muted small fst-italic">
+            Sin menús asignados
+          </span>
+        </div>
+      </div>
+
+      <!-- Footer con acciones -->
+      <div class="rol-card-footer">
+        <button class="btn-accion editar" (click)="abrirModalEdit(rol)" title="Editar">
+          <i class="bi bi-pencil-fill"></i> Editar
+        </button>
+        <!-- <button class="btn-accion eliminar" (click)="eliminarRol(rol.id)" title="Eliminar">
+          <i class="bi bi-trash3-fill"></i> Eliminar
+        </button> -->
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- Modal (router-outlet) -->
+<div
+  class="modal fade"
+  [class.show]="mostrarModal"
+  [style.display]="mostrarModal ? 'block' : 'none'">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content border-0 shadow">
+      <router-outlet (activate)="cargarRoles()"></router-outlet>
+    </div>
+  </div>
+</div>
+
+<div *ngIf="mostrarModal" class="modal-backdrop fade show"></div>

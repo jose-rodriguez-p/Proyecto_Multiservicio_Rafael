@@ -1,0 +1,94 @@
+<div class="modal-header border-0 px-4 pt-4 pb-3" style="background:linear-gradient(135deg,#b91c1c,#991b1b);">
+  <div class="d-flex align-items-center gap-3">
+    <div style="width:40px;height:40px;background:rgba(255,255,255,0.2);border-radius:10px;display:flex;align-items:center;justify-content:center;">
+      <i class="bi bi-award text-white fs-5"></i>
+    </div>
+    <div>
+      <h5 class="fw-bold mb-0 text-white">Nueva Marca</h5>
+      <small class="text-white" style="opacity:0.8;">Complete los datos de la nueva marca</small>
+    </div>
+  </div>
+  <button class="btn-close btn-close-white ms-auto" (click)="cancelar()"></button>
+</div>
+
+<div class="modal-body p-4">
+  <div *ngIf="loadingCategorias" class="text-center py-4">
+    <div class="spinner-border text-danger" role="status">
+      <span class="visually-hidden">Cargando categorías...</span>
+    </div>
+    <p class="text-muted mt-2">Cargando categorías...</p>
+  </div>
+  <div *ngIf="!loadingCategorias">
+    <div class="mb-3">
+      <label class="form-label fw-semibold small">
+        <i class="bi bi-award me-1 text-danger"></i> Nombre <span class="text-danger">*</span>
+      </label>
+      <input type="text" class="form-control"
+      [(ngModel)]="nombre"
+      (input)="validar()"
+      (keypress)="$event.charCode === 32 || $event.charCode === 45 || $event.charCode === 46 || $event.charCode === 38 || ($event.charCode >= 48 && $event.charCode <= 57) || ($event.charCode >= 65 && $event.charCode <= 90) || ($event.charCode >= 97 && $event.charCode <= 122) ? true : $event.preventDefault()"
+      placeholder="Ej: Castrol, Mobil, Brembo..."
+      maxlength="50"
+      [ngClass]="{'is-invalid': errorNombre, 'is-valid': nombre.trim() && !errorNombre}" />
+      <div class="invalid-feedback">{{ mensajeError }}</div>
+    </div>
+
+    <div class="mb-3">
+      <label class="form-label fw-semibold small">
+        <i class="bi bi-toggle-on me-1 text-danger"></i> Estado
+      </label>
+      <select class="form-select" [(ngModel)]="estado">
+        <option value="Activo">Activo</option>
+        <option value="Inactivo">Inactivo</option>
+      </select>
+    </div>
+
+    <div class="mb-1">
+      <label class="form-label fw-semibold small mb-2">
+        <i class="bi bi-tags me-1 text-danger"></i> Categorías disponibles
+        <span class="text-danger">*</span>
+        <span class="text-muted ms-1">(selecciona al menos una)</span>
+      </label>
+      <div class="row g-2">
+        <div *ngFor="let cat of categorias" class="col-md-6">
+          <div class="cat-check-card"
+            [class.selected]="isSeleccionada(cat.nombre)"
+            (click)="toggleCategoria(cat.nombre)">
+            <input type="checkbox" class="form-check-input"
+              [checked]="isSeleccionada(cat.nombre)"
+              (click)="$event.stopPropagation()" />
+            <span class="ms-2 fw-medium">{{ cat.nombre }}</span>
+            <i class="bi ms-auto"
+              [class.bi-check-circle-fill]="isSeleccionada(cat.nombre)"
+              [class.text-success]="isSeleccionada(cat.nombre)"
+              [class.bi-circle]="!isSeleccionada(cat.nombre)"
+              [class.text-muted]="!isSeleccionada(cat.nombre)"></i>
+          </div>
+        </div>
+      </div>
+      <div class="text-danger small mt-2" *ngIf="!formularioValido && categoriasSeleccionadas.length === 0 && nombre.trim()">
+        Selecciona al menos una categoría.
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal-footer border-0 bg-light px-4 py-3">
+  <button class="btn btn-light border fw-medium px-4" (click)="cancelar()">Cancelar</button>
+  <button class="btn btn-danger fw-medium px-4" (click)="guardar()" [disabled]="!formularioValido">
+    <i class="bi bi-save me-2"></i> Guardar Marca
+  </button>
+</div>
+
+<style>
+.cat-check-card {
+  display: flex; align-items: center;
+  padding: 0.55rem 0.85rem;
+  border: 1.5px solid #e2e8f0; border-radius: 8px;
+  cursor: pointer; font-size: 0.85rem;
+  transition: border-color 0.15s, background 0.15s;
+  user-select: none; background: #fff;
+}
+.cat-check-card:hover { border-color: #fca5a5; background: #fff5f5; }
+.cat-check-card.selected { border-color: #16a34a; background: #f0fdf4; }
+</style>

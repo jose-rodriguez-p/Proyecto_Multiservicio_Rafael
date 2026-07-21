@@ -1,0 +1,137 @@
+<div class="contenedor-centrado">
+  <div class="card shadow border-0" style="max-width: 480px; width: 100%;">
+
+    <div
+      class="card-header bg-danger text-white border-0 py-3 px-4 d-flex justify-content-between align-items-center">
+      <div>
+        <h5 class="mb-0 fw-bold">
+          <i class="bi bi-shield-lock-fill me-2"></i>Cambiar Contraseña
+        </h5>
+        <div class="small opacity-75 mt-1">
+          Usuario: <strong>{{ obtenerUsuario() }}</strong>
+        </div>
+      </div>
+      <button type="button" class="btn-close btn-close-white"
+        (click)="cerrar()"></button>
+    </div>
+
+    <div class="card-body p-4">
+
+      <!-- CONTRASEÑA ACTUAL -->
+      <div class="mb-3">
+        <label class="form-label fw-semibold small">Contraseña actual *</label>
+
+        <div class="input-group">
+          <input
+            [type]="verActual ? 'text' : 'password'"
+            class="form-control"
+            [ngClass]="{
+              'is-invalid': errorActual && contrasenaActual.length > 0,
+              'is-valid': contrasenaActualValida
+            }"
+            [(ngModel)]="contrasenaActual"
+            (input)="validarActual()"
+            placeholder="Tu contraseña actual">
+
+          <span class="input-group-text bg-white" *ngIf="validandoEnServidor">
+            <span
+              class="spinner-border spinner-border-sm text-secondary"></span>
+          </span>
+
+          <button class="btn btn-outline-secondary" type="button"
+            (click)="verActual = !verActual">
+            <i class="bi" [class.bi-eye]="!verActual"
+              [class.bi-eye-slash]="verActual"></i>
+          </button>
+        </div>
+
+        <div class="text-danger small mt-1"
+          *ngIf="errorActual && contrasenaActual.length > 0">
+          La contraseña introducida es incorrecta.
+        </div>
+
+        <div class="text-success small mt-1" *ngIf="contrasenaActualValida">
+          <i class="bi bi-check-circle-fill me-1"></i>Contraseña verificada.
+        </div>
+      </div>
+
+      <hr class="my-3">
+
+      <fieldset [disabled]="!contrasenaActualValida">
+
+        <div class="mb-2">
+          <label class="form-label fw-semibold small">Nueva contraseña *</label>
+
+          <div class="input-group">
+            <input
+              [type]="verNueva ? 'text' : 'password'"
+              class="form-control"
+              [ngClass]="{
+                'is-invalid': errorNueva || errorIgualActual,
+                'is-valid': nuevaContrasena.length >= 8 && !errorIgualActual
+              }"
+              [(ngModel)]="nuevaContrasena"
+              (input)="validarNueva()"
+              placeholder="Mínimo 8 caracteres">
+
+            <button class="btn btn-outline-secondary" type="button"
+              (click)="verNueva = !verNueva">
+              <i class="bi" [class.bi-eye]="!verNueva"
+                [class.bi-eye-slash]="verNueva"></i>
+            </button>
+          </div>
+
+          <div class="text-danger small mt-1" *ngIf="errorNueva">
+            Mínimo 8 caracteres.
+          </div>
+
+          <div class="text-danger small mt-1" *ngIf="errorIgualActual">
+            La nueva contraseña no puede ser igual a la actual.
+          </div>
+        </div>
+        <div class="mb-4">
+          <label class="form-label fw-semibold small">Confirmar nueva contraseña
+            *</label>
+
+          <div class="input-group">
+            <input
+              [type]="verConfirmar ? 'text' : 'password'"
+              class="form-control"
+              [ngClass]="{
+                'is-invalid': errorCoincide,
+                'is-valid': confirmarContrasena && !errorCoincide
+              }"
+              [(ngModel)]="confirmarContrasena"
+              (input)="validarConfirmar()"
+              placeholder="Repite la nueva contraseña">
+
+            <button class="btn btn-outline-secondary" type="button"
+              (click)="verConfirmar = !verConfirmar">
+              <i class="bi" [class.bi-eye]="!verConfirmar"
+                [class.bi-eye-slash]="verConfirmar"></i>
+            </button>
+          </div>
+
+          <div class="text-danger small mt-1" *ngIf="errorCoincide">
+            Las contraseñas no coinciden.
+          </div>
+        </div>
+
+      </fieldset>
+
+      <!-- BOTÓN -->
+      <button
+        class="btn btn-danger w-100 py-2 fw-bold"
+        (click)="actualizarContrasena()"
+        [disabled]="actualizando || !formularioValido">
+
+        <span *ngIf="actualizando"
+          class="spinner-border spinner-border-sm me-2"></span>
+        <i *ngIf="!actualizando" class="bi bi-shield-check me-2"></i>
+
+        {{ actualizando ? 'Actualizando...' : 'Actualizar Contraseña' }}
+      </button>
+
+    </div>
+  </div>
+</div>

@@ -1,0 +1,70 @@
+<div class="bg-white rounded-3 overflow-hidden">
+  <div class="p-3 text-white" style="background: linear-gradient(135deg, #b91c1c, #dc2626);">
+    <h5 class="mb-0"><i class="bi bi-pencil me-2"></i>Editar Servicio</h5>
+  </div>
+  <div class="p-3">
+    <div class="row g-3 mb-3">
+      <div class="col-md-6">
+        <label class="form-label fw-semibold small">Nombre del servicio</label>
+        <input type="text" class="form-control" [(ngModel)]="nombre" maxlength="100"
+          (input)="validarNombre()"
+          [ngClass]="{'is-invalid': errorNombreDuplicado}">
+        <div class="invalid-feedback" *ngIf="errorNombreDuplicado">Ese nombre de servicio ya existe.</div>
+      </div>
+      <div class="col-md-3">
+        <label class="form-label fw-semibold small">Estado</label>
+        <select class="form-select" [(ngModel)]="estado">
+          <option value="Activo">Activo</option>
+          <option value="Inactivo">Inactivo</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Repuestos -->
+    <div class="p-3 bg-light rounded mb-2">
+      <div class="d-flex align-items-center gap-2 mb-3">
+        <i class="bi bi-box-seam text-danger"></i>
+        <span class="fw-semibold small">Repuestos del Servicio</span>
+      </div>
+
+      <div class="d-flex gap-2 align-items-end mb-2 flex-wrap">
+        <div style="min-width:220px;">
+          <label class="form-label fw-semibold small">Agregar repuesto</label>
+          <select class="form-select form-select-sm" [(ngModel)]="repuestoSeleccionadoNombre">
+            <option [ngValue]="null">— Seleccione —</option>
+            <option *ngFor="let r of repuestosDisponibles" [ngValue]="r.nombre_repuesto">
+              {{ r.nombre_repuesto }}
+            </option>
+          </select>
+        </div>
+        <div style="width:80px;">
+          <label class="form-label fw-semibold small">Cantidad</label>
+          <input type="number" class="form-control form-control-sm" [(ngModel)]="repuestoCantidad" min="1">
+        </div>
+        <button class="btn btn-sm btn-danger mb-0" (click)="agregarRepuesto()"
+          [disabled]="!repuestoSeleccionadoNombre || repuestoCantidad < 1">
+          <i class="bi bi-plus"></i> Agregar
+        </button>
+      </div>
+
+      <div *ngIf="repuestosSeleccionados.length > 0">
+        <div *ngFor="let r of repuestosSeleccionados; let i = index" class="d-flex align-items-center gap-2 p-1 bg-white rounded mb-1 border">
+          <i class="bi bi-dot text-danger"></i>
+          <span class="flex-grow-1 small">{{ r.nombre_repuesto }}</span>
+          <span class="badge bg-light text-dark border small">x{{ r.cantidad }}</span>
+          <button class="btn btn-sm btn-outline-danger border-0" (click)="quitarRepuesto(i)">
+            <i class="bi bi-x"></i>
+          </button>
+        </div>
+      </div>
+      <div *ngIf="repuestosSeleccionados.length === 0" class="text-muted small fst-italic">
+        Sin repuestos seleccionados
+      </div>
+    </div>
+
+  </div>
+  <div class="d-flex justify-content-end gap-2 p-3 border-top">
+    <button class="btn btn-outline-secondary btn-sm" (click)="cerrar()">Cancelar</button>
+    <button class="btn btn-danger btn-sm" (click)="guardar()" [disabled]="!nombre.trim()">Guardar Cambios</button>
+  </div>
+</div>

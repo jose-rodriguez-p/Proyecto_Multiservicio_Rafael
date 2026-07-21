@@ -1,0 +1,49 @@
+/* ==========================================
+   CORRECCIÓN DE OSCURIDAD Y VISIBILIDAD
+   El modal hijo se renderiza dentro del modal
+   padre (trabajador.html), por eso hay que
+   forzar fondos blancos y z-index adecuado.
+   ========================================== */
+
+/* El componente ocupa todo el espacio del modal padre */
+:host {
+  display: contents;
+}
+
+/* Forzar fondo blanco en todo el contenido del modal */
+:host .modal-content {
+  background-color: #ffffff !important;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3) !important;
+}
+
+:host .modal-body {
+  background-color: #ffffff;
+}
+
+:host .modal-header {
+  border-radius: 0;
+}
+
+:host .modal-footer {
+  background-color: #ffffff;
+}
+
+/* Fondos consistentes en inputs y selects */
+:host .input-group-text {
+  background-color: #fff;
+}
+
+:host input.form-control,
+:host select.form-select {
+  background-color: #ffffff;
+}
+
+:host input.bg-light[readonly] {
+  background-color: #f8f9fa !important;
+  opacity: 0.9;
+}
+
+/* Fondo blanco para la sección de credenciales */
+:host .bg-light.rounded {
+  background-color: #f8f9fa !important;
+}
