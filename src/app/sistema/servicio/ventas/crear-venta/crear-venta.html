@@ -9,6 +9,14 @@
     </h2>
   </div>
 
+  <!-- Alerta Caja Cerrada -->
+  <div class="alert alert-warning d-flex align-items-center mb-3" *ngIf="!cajaAbierta && !cargandoCaja">
+    <i class="bi bi-exclamation-triangle-fill me-2 fs-5"></i>
+    <div>
+      <strong>La caja se encuentra cerrada.</strong> Debe abrir la caja en el panel de Ventas para poder registrar nuevos comprobantes.
+    </div>
+  </div>
+
   <!-- Cabecera -->
   <div class="card border-0 shadow-sm mb-3">
     <div class="card-body p-3">

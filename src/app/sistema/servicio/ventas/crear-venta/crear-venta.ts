@@ -56,6 +56,7 @@ export class CrearVenta implements OnInit {
   private URL_VENTAS   = `${API_BASE_URL}/api/ventas`;
   private URL_CLIENTES = `${API_BASE_URL}/api/clientes`;
   private URL_PRODUCTOS = `${API_BASE_URL}/api/productos`;
+  private URL_CAJA      = `${API_BASE_URL}/api/caja`;
 
   tipoComprobante = 'Boleta';
   serie           = 'B001';
@@ -72,6 +73,8 @@ export class CrearVenta implements OnInit {
   vendedor = { nombre: '', cargo: '', codigo: '' };
   nota     = '';
   guardando = false;
+  cajaAbierta = false;
+  cargandoCaja = false;
 
   readonly metodosPago = ['Efectivo', 'Tarjeta', 'Transferencia', 'Yape', 'Plin'];
 
@@ -107,8 +110,25 @@ export class CrearVenta implements OnInit {
     if (isPlatformBrowser(this.platformId)) {
       this.cargarVendedor();
       this.cargarRepuestos();
+      this.cargarEstadoCaja();
       this.agregarItem();
     }
+  }
+
+  cargarEstadoCaja() {
+    this.cargandoCaja = true;
+    this.http.get<any>(`${this.URL_CAJA}/estado`).subscribe({
+      next: (res) => {
+        this.cajaAbierta = !!res?.abierta;
+        this.cargandoCaja = false;
+        this.cdr.detectChanges();
+      },
+      error: () => {
+        this.cajaAbierta = false;
+        this.cargandoCaja = false;
+        this.cdr.detectChanges();
+      },
+    });
   }
 
   cargarVendedor() {
